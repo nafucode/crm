@@ -129,6 +129,18 @@ app.get('/api/data', authenticateAdmin, async (req, res) => {
     }
 });
 
+// API 路由：获取当前用户的提交历史
+app.get('/api/my-submissions', authenticateToken, async (req, res) => {
+    try {
+        const allFeedback = await kv.lrange('feedback', 0, -1);
+        const userSubmissions = allFeedback.filter(item => item.salesperson === req.user.realName);
+        res.json(userSubmissions.reverse()); // 返回倒序，让最新的在前面
+    } catch (error) {
+        console.error('从 Redis 读取用户提交历史时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
+});
+
 // API 路由：为地图提供按国家聚合的数据
 app.get('/api/map-data', authenticateAdmin, async (req, res) => {
     try {

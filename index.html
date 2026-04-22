@@ -223,6 +223,31 @@
         .choices__input {
             background-color: transparent;
         }
+        .table-container {
+            overflow-x: auto;
+            max-height: 400px; /* Limit height and make it scrollable */
+            margin-top: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+        thead th {
+            background-color: var(--light-gray);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+        }
+        tbody tr:hover {
+            background-color: #f1f3f5;
+        }
     </style>
 </head>
 <body>
@@ -253,6 +278,27 @@
             </form>
         </div>
     </div>
+
+    <div class="main-content" style="padding-top: 0;">
+        <div class="container">
+            <h2>我的提交历史</h2>
+            <div class="table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>国家</th>
+                            <th>客户信息</th>
+                            <th>电话</th>
+                            <th>其他描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 历史数据将动态插入这里 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     <script>
         const countryOptions = {
@@ -456,8 +502,35 @@
                 renumberVisualHeaders();
             }
 
-            addCustomerForm();
             addCustomerBtn.addEventListener('click', addCustomerForm);
+
+            // Fetch and render history on initial load
+            fetchAndRenderHistory();
+
+            function fetchAndRenderHistory() {
+                fetch('/api/my-submissions', { 
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('获取历史记录失败');
+                    return response.json();
+                })
+                .then(data => {
+                    const historyTableBody = document.querySelector('#history-table tbody');
+                    historyTableBody.innerHTML = ''; // Clear existing rows
+                    data.forEach(item => {
+                        const row = historyTableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${new Date(item.Timestamp || item.timestamp).toLocaleString()}</td>
+                            <td>${item.country}</td>
+                            <td>${item.customerId}</td>
+                            <td>${item.phone || '-'}</td>
+                            <td>${item.summary || '-'}</td>
+                        `;
+                    });
+                })
+                .catch(error => console.error('Error fetching history:', error));
+            }
 
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -498,10 +571,10 @@
                 .then(data => {
                     alert('所有客户反馈提交成功！');
                     container.innerHTML = '';
-                    nextCustomerId = 1;
-                    addCustomerForm();
+                    addCustomerForm(); // Add a fresh form
+                    fetchAndRenderHistory(); // Refresh history table
                 })
-                .catch((error) => {
+                .catch(error => {
                     alert(error.message);
                 });
             });
