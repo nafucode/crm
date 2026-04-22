@@ -23,7 +23,7 @@ async function addUser() {
             role,
         };
 
-        await kv.hset(`user:${username}`, user);
+        await redis.hset(`user:${username}`, user);
 
         console.log(`用户 '${username}' (${realName}) 已作为 '${role}' 角色成功添加/更新到数据库。`);
     } catch (error) {
