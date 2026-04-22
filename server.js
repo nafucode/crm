@@ -8,10 +8,7 @@ const bcrypt = require('bcryptjs');
 
 const { Redis } = require('@upstash/redis');
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || process.env.REDIS_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.REDIS_TOKEN,
-});
+const redis = Redis.fromEnv();
 
 const app = express();
 const port = 3000;
