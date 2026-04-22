@@ -18,13 +18,25 @@ const JWT_SECRET = 'your_super_secret_key_that_should_be_long_and_random'; // �
 app.use(cors()); // 允许跨域请求
 app.use(express.json()); // 解析 JSON 请求体
 
-app.use(express.static(__dirname));
+// 明确的页面路由
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html')); // 根目录直接导向登录
+});
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+app.get('/dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
 
 // API: 用户登录
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const user = await kv.hgetall(`user:${username}`);
+        const user = await redis.hgetall(`user:${username}`);
         if (!user) {
             return res.status(401).json({ message: '用户名或密码错误' });
         }
@@ -92,14 +104,14 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
 
     try {
         // 使用 pipeline 批量插入，效率更高
-        const pipeline = kv.pipeline();
+        const pipeline = redis.pipeline();
         submissions.forEach(submission => {
             pipeline.lpush('feedback', submission);
         });
         await pipeline.exec();
         res.status(200).send('数据提交成功');
     } catch (error) {
-        console.error('向 KV 写入数据时出错:', error);
+        console.error('向 Redis 写入数据时出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
@@ -107,10 +119,10 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
 // API 路由：读取并返回所有反馈数据
 app.get('/api/data', authenticateAdmin, async (req, res) => {
     try {
-        const feedback = await kv.lrange('feedback', 0, -1);
+        const feedback = await redis.lrange('feedback', 0, -1);
         res.json(feedback.reverse()); // 返回倒序，让最新的在前面
     } catch (error) {
-        console.error('从 KV 读取数据时出错:', error);
+        console.error('从 Redis 读取数据时出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
@@ -150,17 +162,17 @@ app.get('/api/map-data', authenticateAdmin, (req, res) => {
 app.post('/api/update', authenticateAdmin, async (req, res) => {
     const updatedRow = req.body;
     try {
-        const allFeedback = await kv.lrange('feedback', 0, -1);
+        const allFeedback = await redis.lrange('feedback', 0, -1);
         const index = allFeedback.findIndex(item => item.Timestamp === updatedRow.Timestamp);
 
         if (index === -1) {
             return res.status(404).send('未找到要更新的数据行');
         }
 
-        await kv.lset('feedback', index, updatedRow);
+        await redis.lset('feedback', index, updatedRow);
         res.status(200).send('数据更新成功');
     } catch (error) {
-        console.error('更新 KV 数据时出错:', error);
+        console.error('更新 Redis 数据时出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
@@ -173,18 +185,17 @@ app.post('/api/delete', authenticateAdmin, async (req, res) => {
     }
 
     try {
-        const allFeedback = await kv.lrange('feedback', 0, -1);
+        const allFeedback = await redis.lrange('feedback', 0, -1);
         const itemToDelete = allFeedback.find(item => item.Timestamp === Timestamp);
 
         if (!itemToDelete) {
             return res.status(404).send('未找到要删除的数据行');
         }
 
-        // lrem 方法可以从列表中删除一个或多个匹配的元素
-        await kv.lrem('feedback', 1, itemToDelete);
+        await redis.lrem('feedback', 1, itemToDelete);
         res.status(200).send('数据删除成功');
     } catch (error) {
-        console.error('删除 KV 数据时出错:', error);
+        console.error('删除 Redis 数据时出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
