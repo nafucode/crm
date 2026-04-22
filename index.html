@@ -315,9 +315,13 @@
                 const formInstance = document.createElement('div');
                 formInstance.className = 'customer-form-instance';
 
-                let countryOptions = '<option value="">-- 请选择国家 --</option>';
-                for (const [englishName, chineseName] of Object.entries(countryNameMap)) {
-                    countryOptions += `<option value="${englishName}">${chineseName}</option>`;
+                let countryOptionsHTML = '<option value="">-- 请选择国家 --</option>';
+                for (const [region, countries] of Object.entries(countryOptions)) {
+                    const optionGroup = document.createElement('optgroup');
+                    optionGroup.label = region;
+                    countries.forEach(country => {
+                        countryOptionsHTML += `<option value="${country}">${country}</option>`;
+                    });
                 }
 
                 formInstance.innerHTML = `
@@ -325,7 +329,7 @@
                     <h2>客户</h2>
                     <div class="form-group">
                         <label for="country-${customerId}">国家</label>
-                        <select id="country-${customerId}" name="country" required>${countryOptions}</select>
+                        <select id="country-${customerId}" name="country" required>${countryOptionsHTML}</select>
                     </div>
                     <div class="form-group">
                         <label for="customerInfo-${customerId}">客户信息</label>
