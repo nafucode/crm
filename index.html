@@ -209,6 +209,20 @@
         button[type="submit"]:active {
             transform: translateY(1px);
         }
+
+        .choices {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        .choices__inner {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--white);
+            min-height: 44px;
+        }
+        .choices__input {
+            background-color: transparent;
+        }
     </style>
 </head>
 <body>
@@ -322,7 +336,7 @@
                     <h2>客户</h2>
                     <div class="form-group">
                         <label for="country-${customerId}">国家</label>
-                        <input type="text" id="country-${customerId}" name="country" required>
+                        <select id="country-${customerId}" name="country" required></select>
                     </div>
                     <div class="form-group">
                         <label for="customerInfo-${customerId}">客户信息</label>
@@ -338,20 +352,27 @@
                     </div>
                 `;
 
-                const countryInput = formInstance.querySelector(`#country-${customerId}`);
+                const countrySelect = formInstance.querySelector(`#country-${customerId}`);
+
+                const choices = new Choices(countrySelect, {
+                    shouldSort: false,
+                    searchEnabled: true,
+                    searchPlaceholderValue: '输入字母搜索国家...',
+                    placeholder: true,
+                    placeholderValue: '输入或选择国家',
+                    itemSelectText: '',
+                    noResultsText: '没有找到匹配的国家',
+                    noChoicesText: '没有可选国家',
+                });
+
                 const choicesData = Object.entries(countryOptions).map(([region, countries]) => ({
                     label: region,
+                    id: region,
+                    disabled: false,
                     choices: countries.map(country => ({ value: country, label: country }))
                 }));
 
-                const choices = new Choices(countryInput, {
-                    choices: choicesData,
-                    shouldSort: false,
-                    searchEnabled: true,
-                    placeholder: true,
-                    placeholderValue: '输入或选择国家',
-                    itemSelectText: '按 Enter 选择',
-                });
+                choices.setChoices(choicesData, 'value', 'label', true);
 
                 formInstance.querySelector('.delete-btn').addEventListener('click', function() {
                     if (container.querySelectorAll('.customer-form-instance').length > 1) {
