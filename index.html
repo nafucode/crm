@@ -339,8 +339,13 @@
                 `;
 
                 const countryInput = formInstance.querySelector(`#country-${customerId}`);
+                const choicesData = Object.entries(countryOptions).map(([region, countries]) => ({
+                    label: region,
+                    choices: countries.map(country => ({ value: country, label: country }))
+                }));
+
                 const choices = new Choices(countryInput, {
-                    choices: Object.values(countryOptions).flat().map(country => ({ value: country, label: country })),
+                    choices: choicesData,
                     shouldSort: false,
                     searchEnabled: true,
                     placeholder: true,
