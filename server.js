@@ -6,6 +6,13 @@ const csv = require('csv-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
+const { createClient } = require('@vercel/kv');
+
+const kv = createClient({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
+
 const app = express();
 const port = 3000;
 const JWT_SECRET = 'your_super_secret_key_that_should_be_long_and_random'; // 请在未来替换为一个更安全的密钥
@@ -17,26 +24,29 @@ app.use(express.json()); // 解析 JSON 请求体
 app.use(express.static(__dirname));
 
 // API: 用户登录
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
-    const users = JSON.parse(fs.readFileSync(path.join(__dirname, 'users.json'), 'utf8'));
-    const user = users.find(u => u.username === username);
+    try {
+        const user = await kv.hgetall(`user:${username}`);
+        if (!user) {
+            return res.status(401).json({ message: '用户名或密码错误' });
+        }
 
-    if (!user) {
-        return res.status(401).json({ message: '用户名或密码错误' });
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+            if (err) {
+                return res.status(500).json({ message: '服务器错误' });
+            }
+            if (isMatch) {
+                const token = jwt.sign({ username: user.username, realName: user.realName, role: user.role }, JWT_SECRET, { expiresIn: '8h' });
+                res.json({ token });
+            } else {
+                res.status(401).json({ message: '用户名或密码错误' });
+            }
+        });
+    } catch (error) {
+        console.error('登录时从 KV 读取用户数据出错:', error);
+        res.status(500).send('服务器内部错误');
     }
-
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err) {
-            return res.status(500).json({ message: '服务器错误' });
-        }
-        if (isMatch) {
-            const token = jwt.sign({ username: user.username, realName: user.realName, role: user.role }, JWT_SECRET, { expiresIn: '8h' });
-            res.json({ token });
-        } else {
-            res.status(401).json({ message: '用户名或密码错误' });
-        }
-    });
 });
 
 // 认证中间件
@@ -83,58 +93,36 @@ if (!fs.existsSync(csvFilePath)) {
 }
 
 // API 路由：处理表单提交（支持批量）
-app.post('/api/submit', authenticateToken, (req, res) => {
-    const submissions = req.body; // 现在 submissions 是一个数组
+app.post('/api/submit', authenticateToken, async (req, res) => {
+    const submissions = req.body;
 
     if (!Array.isArray(submissions) || submissions.length === 0) {
         return res.status(400).send('提交数据格式不正确或为空');
     }
 
-    const formatCsvField = (field) => {
-        const str = String(field || '').replace(/"/g, '""');
-        return `"${str}"`;
-    };
-
-    // 为每个提交对象创建一个 CSV 行
-    const csvRows = submissions.map(submission => {
-        const rowData = {
-            Timestamp: submission.timestamp,
-            Country: submission.country,
-            CustomerInfo: submission.customerInfo,
-            Phone: submission.phone,
-            Description: submission.description,
-            Submitter: submission.submitter
-        };
-        return CSV_HEADERS.map(header => formatCsvField(rowData[header])).join(',');
-    }).join('\n') + '\n';
-
-    // 将所有新行一次性追加到 CSV 文件中
-    fs.appendFile(csvFilePath, csvRows, 'utf8', (err) => {
-        if (err) {
-            console.error('文件写入失败:', err);
-            return res.status(500).send('服务器内部错误');
-        }
+    try {
+        // 使用 pipeline 批量插入，效率更高
+        const pipeline = kv.pipeline();
+        submissions.forEach(submission => {
+            pipeline.lpush('feedback', submission);
+        });
+        await pipeline.exec();
         res.status(200).send('数据提交成功');
-    });
+    } catch (error) {
+        console.error('向 KV 写入数据时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
 });
 
 // API 路由：读取并返回所有反馈数据
-app.get('/api/data', authenticateToken, (req, res) => {
-    const results = [];
-    if (!fs.existsSync(csvFilePath)) {
-        return res.json([]); // 如果文件不存在，返回空数组
+app.get('/api/data', authenticateAdmin, async (req, res) => {
+    try {
+        const feedback = await kv.lrange('feedback', 0, -1);
+        res.json(feedback.reverse()); // 返回倒序，让最新的在前面
+    } catch (error) {
+        console.error('从 KV 读取数据时出错:', error);
+        res.status(500).send('服务器内部错误');
     }
-
-    fs.createReadStream(csvFilePath)
-        .pipe(csv())
-        .on('data', (data) => results.push(data))
-        .on('end', () => {
-            res.json(results); // 在文件读取结束后，将结果作为 JSON 返回
-        })
-        .on('error', (error) => {
-            console.error('读取 CSV 文件时出错:', error);
-            res.status(500).send('服务器内部错误');
-        });
 });
 
 // API 路由：为地图提供按国家聚合的数据
@@ -169,96 +157,46 @@ app.get('/api/map-data', authenticateAdmin, (req, res) => {
 });
 
 // API 路由：更新一行数据
-app.post('/api/update', authenticateAdmin, (req, res) => {
+app.post('/api/update', authenticateAdmin, async (req, res) => {
     const updatedRow = req.body;
-    const results = [];
+    try {
+        const allFeedback = await kv.lrange('feedback', 0, -1);
+        const index = allFeedback.findIndex(item => item.Timestamp === updatedRow.Timestamp);
 
-    // 1. 读取整个 CSV 文件
-    fs.createReadStream(csvFilePath)
-        .pipe(csv())
-        .on('data', (data) => results.push(data))
-        .on('end', () => {
-            // 2. 找到并更新数据
-            const rowIndex = results.findIndex(row => row.Timestamp === updatedRow.Timestamp);
-            if (rowIndex === -1) {
-                return res.status(404).send('未找到要更新的数据行');
-            }
-            results[rowIndex] = updatedRow;
+        if (index === -1) {
+            return res.status(404).send('未找到要更新的数据行');
+        }
 
-            // 3. 将更新后的数据转换回 CSV 字符串
-            if (results.length === 0) {
-                const headerString = CSV_HEADERS.map(h => `"${h}"`).join(',') + '\n';
-                fs.writeFileSync(csvFilePath, headerString, 'utf8');
-                return res.status(200).send('数据更新成功');
-            }
-
-            const headerString = CSV_HEADERS.map(h => `"${h}"`).join(',') + '\n';
-            const csvString = results.map(row => {
-                return CSV_HEADERS.map(header => {
-                    const value = String(row[header] || '').replace(/"/g, '""');
-                    return `"${value}"`;
-                }).join(',');
-            }).join('\n');
-
-            // 4. 重写整个 CSV 文件
-            fs.writeFile(csvFilePath, headerString + csvString, 'utf8', (err) => {
-                if (err) {
-                    console.error('文件写入失败:', err);
-                    return res.status(500).send('服务器内部错误');
-                }
-                res.status(200).send('数据更新成功');
-            });
-        })
-        .on('error', (error) => {
-            console.error('读取 CSV 文件时出错:', error);
-            res.status(500).send('服务器内部错误');
-        });
+        await kv.lset('feedback', index, updatedRow);
+        res.status(200).send('数据更新成功');
+    } catch (error) {
+        console.error('更新 KV 数据时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
 });
 
 // API 路由：删除一行数据
-app.post('/api/delete', authenticateAdmin, (req, res) => {
+app.post('/api/delete', authenticateAdmin, async (req, res) => {
     const { Timestamp } = req.body;
     if (!Timestamp) {
         return res.status(400).send('缺少时间戳标识');
     }
 
-    const results = [];
-    fs.createReadStream(csvFilePath)
-        .pipe(csv())
-        .on('data', (data) => results.push(data))
-        .on('end', () => {
-            const filteredResults = results.filter(row => row.Timestamp !== Timestamp);
+    try {
+        const allFeedback = await kv.lrange('feedback', 0, -1);
+        const itemToDelete = allFeedback.find(item => item.Timestamp === Timestamp);
 
-            if (results.length === filteredResults.length) {
-                return res.status(404).send('未找到要删除的数据行');
-            }
+        if (!itemToDelete) {
+            return res.status(404).send('未找到要删除的数据行');
+        }
 
-            if (filteredResults.length === 0) {
-                const headerString = CSV_HEADERS.map(h => `"${h}"`).join(',') + '\n';
-                fs.writeFileSync(csvFilePath, headerString, 'utf8');
-                return res.status(200).send('数据删除成功，文件已清空');
-            }
-
-            const headerString = CSV_HEADERS.map(h => `"${h}"`).join(',') + '\n';
-            const csvString = filteredResults.map(row => {
-                return CSV_HEADERS.map(header => {
-                    const value = String(row[header] || '').replace(/"/g, '""');
-                    return `"${value}"`;
-                }).join(',');
-            }).join('\n');
-
-            fs.writeFile(csvFilePath, headerString + csvString, 'utf8', (err) => {
-                if (err) {
-                    console.error('文件写入失败:', err);
-                    return res.status(500).send('服务器内部错误');
-                }
-                res.status(200).send('数据删除成功');
-            });
-        })
-        .on('error', (error) => {
-            console.error('读取 CSV 文件时出错:', error);
-            res.status(500).send('服务器内部错误');
-        });
+        // lrem 方法可以从列表中删除一个或多个匹配的元素
+        await kv.lrem('feedback', 1, itemToDelete);
+        res.status(200).send('数据删除成功');
+    } catch (error) {
+        console.error('删除 KV 数据时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
 });
 
 // 启动服务器
