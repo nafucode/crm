@@ -36,7 +36,7 @@ app.get('/dashboard.html', (req, res) => {
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const user = await redis.hgetall(`user:${username}`);
+        const user = await kv.hgetall(`user:${username}`);
         if (!user) {
             return res.status(401).json({ message: '用户名或密码错误' });
         }
@@ -104,7 +104,7 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
 
     try {
         // 使用 pipeline 批量插入，效率更高
-        const pipeline = redis.pipeline();
+        const pipeline = kv.pipeline();
         submissions.forEach(submission => {
             pipeline.lpush('feedback', submission);
         });
@@ -119,7 +119,7 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
 // API 路由：读取并返回所有反馈数据
 app.get('/api/data', authenticateAdmin, async (req, res) => {
     try {
-        const feedback = await redis.lrange('feedback', 0, -1);
+        const feedback = await kv.lrange('feedback', 0, -1);
         res.json(feedback.reverse()); // 返回倒序，让最新的在前面
     } catch (error) {
         console.error('从 Redis 读取数据时出错:', error);
@@ -162,14 +162,14 @@ app.get('/api/map-data', authenticateAdmin, (req, res) => {
 app.post('/api/update', authenticateAdmin, async (req, res) => {
     const updatedRow = req.body;
     try {
-        const allFeedback = await redis.lrange('feedback', 0, -1);
+        const allFeedback = await kv.lrange('feedback', 0, -1);
         const index = allFeedback.findIndex(item => item.Timestamp === updatedRow.Timestamp);
 
         if (index === -1) {
             return res.status(404).send('未找到要更新的数据行');
         }
 
-        await redis.lset('feedback', index, updatedRow);
+        await kv.lset('feedback', index, updatedRow);
         res.status(200).send('数据更新成功');
     } catch (error) {
         console.error('更新 Redis 数据时出错:', error);
@@ -185,14 +185,14 @@ app.post('/api/delete', authenticateAdmin, async (req, res) => {
     }
 
     try {
-        const allFeedback = await redis.lrange('feedback', 0, -1);
+        const allFeedback = await kv.lrange('feedback', 0, -1);
         const itemToDelete = allFeedback.find(item => item.Timestamp === Timestamp);
 
         if (!itemToDelete) {
             return res.status(404).send('未找到要删除的数据行');
         }
 
-        await redis.lrem('feedback', 1, itemToDelete);
+        await kv.lrem('feedback', 1, itemToDelete);
         res.status(200).send('数据删除成功');
     } catch (error) {
         console.error('删除 Redis 数据时出错:', error);
