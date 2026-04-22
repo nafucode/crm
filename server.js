@@ -202,7 +202,5 @@ app.post('/api/delete', authenticateAdmin, async (req, res) => {
     }
 });
 
-// 启动服务器
-app.listen(port, () => {
-    console.log(`服务器正在运行在 http://localhost:${port}`);
-});
+// 导出 app 实例以供 Vercel 使用
+module.exports = app;
