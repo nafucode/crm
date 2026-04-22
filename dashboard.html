@@ -264,17 +264,16 @@
             <div class="panel-title">// Customer Data</div>
             <div class="table-container">
                 <table id="data-table">
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Salesperson</th>
-                            <th>Customer ID</th>
-                            <th>Country</th>
-                            <th>Potential</th>
-                            <th>Summary</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>国家</th>
+                                <th>客户信息</th>
+                                <th>电话</th>
+                                <th>其他描述</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
                     <tbody>
                         <!-- Data will be populated here -->
                     </tbody>
@@ -389,10 +388,9 @@
                 const timestamp = item.Timestamp || item.timestamp;
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
-                    <td data-field="salesperson">${item.salesperson}</td>
-                    <td data-field="customerId">${item.customerId}</td>
                     <td data-field="country">${item.country}</td>
-                    <td data-field="potential" contenteditable="true">${item.potential}</td>
+                    <td data-field="customerId">${item.customerId}</td>
+                    <td data-field="phone" contenteditable="true">${item.phone || ''}</td>
                     <td data-field="summary" contenteditable="true">${item.summary}</td>
                     <td>
                         <button class="btn btn-save" onclick="updateRow(this)">Save</button>
@@ -424,8 +422,8 @@
         window.updateRow = function (button) {
             const row = button.closest('tr');
             const timestamp = row.dataset.timestamp;
-            const potential = row.querySelector('[data-field="potential"]').textContent;
-            const summary = row.querySelector('[data-field="summary"]').textContent;
+            const phone = row.querySelector('[data-field="phone"]').textContent;
+            const summary = row.querySelector('[data-field="summary"]').textContent; // This is now "其他描述"
 
             fetch('/api/update', {
                 method: 'POST',
@@ -433,7 +431,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ timestamp, potential, summary })
+                body: JSON.stringify({ timestamp, phone, summary })
             })
                 .then(response => {
                     if (!response.ok) throw new Error('Update failed');

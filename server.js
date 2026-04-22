@@ -156,17 +156,30 @@ app.get('/api/map-data', authenticateAdmin, async (req, res) => {
 
 // API 路由：更新一行数据
 app.post('/api/update', authenticateAdmin, async (req, res) => {
-    const updatedRow = req.body;
+    const { timestamp, phone, summary } = req.body;
+
+    if (!timestamp) {
+        return res.status(400).send('缺少时间戳标识');
+    }
+
     try {
         const allFeedback = await kv.lrange('feedback', 0, -1);
-        const index = allFeedback.findIndex(item => item.Timestamp === updatedRow.Timestamp);
+        const index = allFeedback.findIndex(item => (item.Timestamp || item.timestamp) === timestamp);
 
         if (index === -1) {
             return res.status(404).send('未找到要更新的数据行');
         }
 
-        await kv.lset('feedback', index, updatedRow);
-        res.status(200).send('数据更新成功');
+        // 获取旧记录，然后更新它
+        const oldRecord = allFeedback[index];
+        const newRecord = {
+            ...oldRecord,
+            phone: phone, // 添加或更新 phone 字段
+            summary: summary // 更新 summary 字段
+        };
+
+        await kv.lset('feedback', index, newRecord);
+        res.status(200).json({ message: '数据更新成功', updatedRecord: newRecord });
     } catch (error) {
         console.error('更新 Redis 数据时出错:', error);
         res.status(500).send('服务器内部错误');
