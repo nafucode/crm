@@ -1,2 +1,1 @@
 UPSTASH_REDIS_REST_URL="redis://default:hCTZMx1vvINnTSJjP8Xqbkx4hUucTqQV@redis-12543.c85.us-east-1-2.ec2.cloud.redislabs.com:12543"
-UPSTASH_REDIS_REST_TOKEN="您从Vercel复制的TOKEN"
