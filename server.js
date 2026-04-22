@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 const { Redis } = require('@upstash/redis');
 
 const redis = Redis.fromEnv();
+const kv = redis; // 兼容所有 kv 引用
 
 const app = express();
 const port = 3000;
