@@ -239,22 +239,14 @@
     </div>
 
     <script>
-        // 国家中英文映射
-        const countryNameMap = {
-            "Nigeria": "尼日利亚",
-            "Cameroon": "喀麦隆",
-            "China": "中国",
-            "United States": "美国",
-            "United Kingdom": "英国",
-            "Japan": "日本",
-            "Germany": "德国",
-            "France": "法国",
-            "Canada": "加拿大",
-            "Australia": "澳大利亚",
-            "India": "印度",
-            "Brazil": "巴西",
-            "South Africa": "南非",
-            // 您可以根据需要继续添加更多国家
+        const countryOptions = {
+            "非洲": ["Nigeria", "Cameroon", "South Africa", "Kenya", "Ghana", "Ethiopia"],
+            "中亚": ["Kazakhstan", "Uzbekistan", "Turkmenistan"],
+            "中东": ["Saudi Arabia", "UAE", "Qatar", "Kuwait", "Oman"],
+            "东南亚": ["Vietnam", "Thailand", "Malaysia", "Indonesia", "Philippines"],
+            "大洋洲": ["Australia", "New Zealand"],
+            "中美洲": ["Mexico", "Panama", "Costa Rica"],
+            "南美洲": ["Brazil", "Argentina", "Colombia", "Chile", "Peru"]
         };
 
         function parseJwt(token) {
