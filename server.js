@@ -130,7 +130,7 @@ app.get('/api/data', authenticateAdmin, async (req, res) => {
 });
 
 // API 路由：为地图提供按国家聚合的数据
-app.get('/api/map-data', authenticateAdmin, (req, res) => {
+app.get('/api/map-data', authenticateAdmin, async (req, res) => {
     const results = [];
     if (!fs.existsSync(csvFilePath)) {
         return res.json([]);
