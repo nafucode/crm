@@ -9,8 +9,7 @@ const bcrypt = require('bcryptjs');
 const { createClient } = require('@vercel/kv');
 
 const kv = createClient({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
+  url: process.env.REDIS_URL,
 });
 
 const app = express();
