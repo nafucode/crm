@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '.env.development.local' });
 const { Redis } = require('@upstash/redis');
 const bcrypt = require('bcryptjs');
 
