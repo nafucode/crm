@@ -278,11 +278,11 @@
                         const option = {
                             tooltip: { trigger: 'item', formatter: params => `${params.name} : ${params.value || 0} 客户` },
                             visualMap: {
-                                min: 0,
-                                max: Math.max(...mapData.map(item => item.value), 10),
-                                left: 'left', top: 'bottom', text: ['高', '低'], calculable: true,
-                                inRange: { color: ['#e0ffff', '#006edd'] }
-                            },
+                            min: 0,
+                            max: Math.max(...mapData.map(item => item.value), 10),
+                            left: 'left', top: 'bottom', text: ['高', '低'], calculable: true,
+                            inRange: { color: ['#E0FFFF', '#008080', '#FF4500'] } // 从浅蓝到青色再到橙红
+                        },
                             series: [{
                                 name: '客户分布', type: 'map', map: 'world', roam: true,
                                 scaleLimit: { min: 1, max: 8 }, // 限制缩放范围
