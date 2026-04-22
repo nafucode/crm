@@ -1,8 +1,8 @@
 require('dotenv').config();
-const { createClient } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 const bcrypt = require('bcryptjs');
 
-const kv = createClient();
+const redis = Redis.fromEnv();
 
 const [,, username, password, realName, role = 'user'] = process.argv;
 
