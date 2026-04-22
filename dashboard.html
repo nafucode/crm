@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据看板</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --border-radius: 0.375rem;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .nav-links a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-color);
+        }
+        #logout-btn {
+            background: none;
+            border: none;
+            color: var(--dark-gray);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2.5rem;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-top: 0;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        #map-container {
+            width: 100%;
+            height: 600px;
+            margin-bottom: 2.5rem;
+        }
+
+        h2 {
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 0.5rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+            white-space: normal;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .date-header td {
+            background-color: var(--medium-gray);
+            font-weight: bold;
+            color: #495057;
+            text-align: center;
+            border-top: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        /* Column Widths */
+        table th:nth-child(1) { width: 14%; }
+        table th:nth-child(2) { width: 8%; }
+        table th:nth-child(3) { width: 20%; }
+        table th:nth-child(4) { width: 12%; }
+        table th:nth-child(5) { width: 24%; }
+        table th:nth-child(6) { width: 10%; }
+        table th:nth-child(7) { width: 12%; }
+
+        .save-btn {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .save-btn:hover {
+            background-color: #218838;
+        }
+
+        .delete-btn-dash {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: #dc3545;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-left: 0.5rem;
+        }
+
+        .delete-btn-dash:hover {
+            background-color: #c82333;
+        }
+
+        td[contenteditable="true"] {
+            background-color: #fffef0;
+            transition: background-color 0.3s;
+        }
+
+        td[contenteditable="true"]:focus {
+            outline: 2px solid var(--primary-color);
+            background-color: var(--white);
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/dashboard.html" class="navbar-brand">数据看板系统</a>
+        <div class="nav-links">
+            <a href="/index.html">提交反馈</a>
+            <a href="/dashboard.html" class="active">数据看板</a>
+            <button id="logout-btn">退出登录</button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="container">
+            <h1>数据看板</h1>
+            
+            <h2>客户地理分布</h2>
+            <div id="map-container"></div>
+
+            <h2>详细数据列表</h2>
+            <div class="table-wrapper">
+                <table id="feedbackTable">
+                    <thead>
+                        <tr>
+                            <!-- 表头将由 JavaScript 动态生成 -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 数据行将由 JavaScript 动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function parseJwt(token) {
+            try {
+                return JSON.parse(atob(token.split('.')[1]));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = '/login.html';
+        } else {
+            const userPayload = parseJwt(token);
+            if (!userPayload || userPayload.role !== 'admin') {
+                alert('您没有权限访问此页面。');
+                window.location.href = '/index.html'; // 非管理员跳转到提交页
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 ECharts 实例
+            const mapChart = echarts.init(document.getElementById('map-container'));
+
+            // 获取地图数据并渲染
+            function renderMap() {
+                fetch('/api/map-data', { headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(handleAuthError)
+                    .then(response => response.json())
+                    .then(mapData => {
+                        const option = {
+                            tooltip: { trigger: 'item', formatter: params => `${params.name} : ${params.value || 0} 客户` },
+                            visualMap: {
+                                min: 0,
+                                max: Math.max(...mapData.map(item => item.value), 10),
+                                left: 'left', top: 'bottom', text: ['高', '低'], calculable: true,
+                                inRange: { color: ['#e0ffff', '#006edd'] }
+                            },
+                            series: [{
+                                name: '客户分布', type: 'map', map: 'world', roam: true,
+                                scaleLimit: { min: 1, max: 8 }, // 限制缩放范围
+                                emphasis: { label: { show: true } },
+                                data: mapData
+                            }]
+                        };
+                        mapChart.setOption(option);
+                    })
+                    .catch(error => console.error('加载地图数据失败:', error));
+            }
+
+            // 获取表格数据并渲染
+            function renderTable() {
+                fetch('/api/data', { headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(handleAuthError)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tableHead = document.querySelector('#feedbackTable thead tr');
+                        const tableBody = document.querySelector('#feedbackTable tbody');
+                        tableHead.innerHTML = ''; // 清空旧表头
+                        tableBody.innerHTML = ''; // 清空旧数据
+
+                        if (data.length === 0) {
+                            tableBody.innerHTML = '<tr><td colspan="7">暂无数据</td></tr>';
+                            return;
+                        }
+
+                        const headerMapping = {
+                            'Timestamp': '日期', 'Country': '国家', 'CustomerInfo': '客户信息',
+                            'Phone': '电话', 'Description': '其他描述', 'Submitter': '提交人'
+                        };
+                        const orderedHeaders = ['Timestamp', 'Country', 'CustomerInfo', 'Phone', 'Description', 'Submitter'];
+
+                        orderedHeaders.forEach(key => {
+                            const th = document.createElement('th');
+                            th.textContent = headerMapping[key];
+                            tableHead.appendChild(th);
+                        });
+                        tableHead.appendChild(document.createElement('th')).textContent = '操作';
+
+                        const groupedData = data.reduce((acc, row) => {
+                            const date = row.Timestamp.split('T')[0];
+                            if (!acc[date]) acc[date] = [];
+                            acc[date].push(row);
+                            return acc;
+                        }, {});
+
+                        for (const date in groupedData) {
+                            const dateRow = tableBody.insertRow();
+                            dateRow.className = 'date-header';
+                            const dateCell = dateRow.insertCell();
+                            dateCell.colSpan = orderedHeaders.length + 1;
+                            dateCell.textContent = date;
+
+                            groupedData[date].forEach(row => {
+                                const tr = tableBody.insertRow();
+                                orderedHeaders.forEach(key => {
+                                    const td = tr.insertCell();
+                                    td.textContent = row[key];
+                                    if (key !== 'Timestamp') td.contentEditable = true;
+                                });
+
+                                const actionTd = tr.insertCell();
+                                const saveButton = document.createElement('button');
+                                saveButton.textContent = '保存';
+                                saveButton.className = 'save-btn';
+                                saveButton.onclick = () => saveRow(tr, orderedHeaders);
+                                actionTd.appendChild(saveButton);
+
+                                const deleteButton = document.createElement('button');
+                                deleteButton.textContent = '删除';
+                                deleteButton.className = 'delete-btn-dash';
+                                deleteButton.onclick = () => deleteRow(tr, row.Timestamp);
+                                actionTd.appendChild(deleteButton);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取表格数据失败:', error);
+                        document.querySelector('#feedbackTable tbody').innerHTML = `<tr><td colspan="7">加载数据失败。</td></tr>`;
+                    });
+            }
+
+            // 初始加载
+            renderMap();
+            renderTable();
+
+            // 窗口大小改变时重绘图表
+            window.addEventListener('resize', () => mapChart.resize());
+        });
+
+        function handleAuthError(response) {
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('authToken');
+                window.location.href = '/login.html';
+            }
+            return response;
+        }
+
+        function saveRow(tableRow, headers) {
+            const updatedRow = {};
+            headers.forEach((header, index) => {
+                updatedRow[header] = tableRow.cells[index].textContent;
+            });
+
+            fetch('/api/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(updatedRow),
+            })
+            .then(handleAuthError)
+            .then(response => {
+                if (!response.ok) throw new Error('网络响应错误');
+                alert('数据已成功保存！');
+            })
+            .catch(error => alert('保存失败，请检查服务器日志。'));
+        }
+
+        function deleteRow(tableRow, timestamp) {
+            if (!confirm('您确定要删除这条记录吗？此操作无法撤销。')) return;
+
+            fetch('/api/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ Timestamp: timestamp }),
+            })
+            .then(handleAuthError)
+            .then(response => {
+                if (!response.ok) throw new Error('网络响应错误');
+                alert('数据已成功删除！');
+                tableRow.remove();
+                // 重新渲染地图以反映删除
+                window.location.reload();
+            })
+            .catch(error => alert('删除失败，请检查服务器日志。'));
+        }
+    </script>
+</body>
+</html>

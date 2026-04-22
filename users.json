@@ -1,0 +1,44 @@
+[
+    {
+        "username": "admin",
+        "password": "$2b$10$YDzhYD7U9FYMydJnuCCw4.STE7mOzieUE/He0iNHsjPPnaY3gJVvq",
+        "realName": "管理员",
+        "role": "admin"
+    },
+    {
+        "username": "melody",
+        "password": "$2b$10$HHo0.O4.ryV2tQ3Dvh8r7Ova8/PVxglmgBGvtgZspMl.ZI7vEzVUS",
+        "realName": "李孟琪",
+        "role": "user"
+    },
+    {
+        "username": "dorcas",
+        "password": "$2b$10$XEBWMS6JoJdJ2TGNZzAvVuIvgogLyBrqxMNfVn4mqxvhyXh.ML6xC",
+        "realName": "张多加",
+        "role": "user"
+    },
+    {
+        "username": "sarah",
+        "password": "$2b$10$.L.TP3hWoqj02q9Scrix2eprk1eDSJYakXnEhS4yMc2gGlnjcLLyq",
+        "realName": "陈颢",
+        "role": "user"
+    },
+    {
+        "username": "qian",
+        "password": "$2b$10$6XwovckccR/YCysh9xSdTOgsQZWCHTxfu9BVGmCtOI5akseyGwKJu",
+        "realName": "钱晨阳",
+        "role": "user"
+    },
+    {
+        "username": "lydia",
+        "password": "$2b$10$PD9DvjCnPib6FmTYHiB.BeI6nXL5dZz13R63trPwu9188hFzXxYYG",
+        "realName": "李菲艳",
+        "role": "user"
+    },
+    {
+        "username": "joy",
+        "password": "$2b$10$zmCSaHnMV2xBZdIIbYM8wey4iGRLKNp85vMivTUfky20WmQsWqwLa",
+        "realName": "魏佳瑶",
+        "role": "user"
+    }
+]
