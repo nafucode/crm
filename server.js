@@ -6,10 +6,11 @@ const csv = require('csv-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const { createClient } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 
-const kv = createClient({
+const redis = new Redis({
   url: process.env.REDIS_URL,
+  token: process.env.REDIS_TOKEN, // 注意：Upstash 通常需要一个单独的 token
 });
 
 const app = express();

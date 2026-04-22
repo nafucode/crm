@@ -1,9 +1,10 @@
-require('dotenv').config(); // 在文件顶部引入 dotenv
-const { createClient } = require('@vercel/kv');
+require('dotenv').config();
+const { Redis } = require('@upstash/redis');
 const bcrypt = require('bcryptjs');
 
-const kv = createClient({
+const redis = new Redis({
   url: process.env.REDIS_URL,
+  token: process.env.REDIS_TOKEN,
 });
 
 const [,, username, password, realName, role = 'user'] = process.argv;
