@@ -253,27 +253,6 @@
     <div class="main-content">
         <div class="page-header">Dashboard</div>
 
-        <div class="panel filter-panel">
-            <div class="filter-controls">
-                <div class="form-group">
-                    <label for="filter-start-date">开始日期</label>
-                    <input type="date" id="filter-start-date" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="filter-end-date">结束日期</label>
-                    <input type="date" id="filter-end-date" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="filter-country">国家</label>
-                    <input type="text" id="filter-country" placeholder="输入国家名称..." class="form-control">
-                </div>
-                <div class="form-group-buttons">
-                    <button id="filter-apply-btn" class="btn">应用筛选</button>
-                    <button id="filter-reset-btn" class="btn btn-secondary">重置</button>
-                </div>
-            </div>
-        </div>
-
         <div class="summary-grid" id="summary-grid">
             <div class="stat-card">
                 <div class="stat-label">总客户数</div>
@@ -294,8 +273,29 @@
         </div>
 
         <div class="panel map-panel">
-            <div class="panel-title">Global Distribution</div>
+            <div class="panel-title">全球分布</div>
             <div id="world-map"></div>
+        </div>
+
+        <div class="panel filter-panel">
+            <div class="filter-controls">
+                <div class="form-group">
+                    <label for="filter-start-date">开始日期</label>
+                    <input type="date" id="filter-start-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="filter-end-date">结束日期</label>
+                    <input type="date" id="filter-end-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="filter-country">国家</label>
+                    <input type="text" id="filter-country" placeholder="输入国家名称..." class="form-control">
+                </div>
+                <div class="form-group-buttons">
+                    <button id="filter-apply-btn" class="btn">应用筛选</button>
+                    <button id="filter-reset-btn" class="btn btn-secondary">重置</button>
+                </div>
+            </div>
         </div>
 
         <div class="panel table-panel">
