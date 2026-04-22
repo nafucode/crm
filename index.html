@@ -473,10 +473,10 @@
                     }
                     allCustomersData.push({
                         country: country,
-                        customerInfo: customerForm.querySelector(`[name="customerInfo"]`).value,
+                        customerId: customerForm.querySelector(`[name="customerInfo"]`).value, // 使用 customerId
                         phone: customerForm.querySelector(`[name="phone"]`).value,
-                        description: customerForm.querySelector(`[name="description"]`).value,
-                        submitter: submitter,
+                        summary: customerForm.querySelector(`[name="description"]`).value, // 使用 summary
+                        salesperson: submitter, // 字段名改为 salesperson 以保持一致
                         Timestamp: new Date().toISOString()
                     });
                 }
