@@ -295,10 +295,10 @@
                         }
 
                         const headerMapping = {
-                            'Timestamp': '日期', 'Country': '国家', 'CustomerInfo': '客户信息',
-                            'Phone': '电话', 'Description': '其他描述', 'Submitter': '提交人'
+                            'timestamp': '日期', 'country': '国家', 'customerInfo': '客户信息',
+                            'phone': '电话', 'description': '其他描述', 'submitter': '提交人'
                         };
-                        const orderedHeaders = ['Timestamp', 'Country', 'CustomerInfo', 'Phone', 'Description', 'Submitter'];
+                        const orderedHeaders = ['timestamp', 'country', 'customerInfo', 'phone', 'description', 'submitter'];
 
                         orderedHeaders.forEach(key => {
                             const th = document.createElement('th');
@@ -308,7 +308,8 @@
                         tableHead.appendChild(document.createElement('th')).textContent = '操作';
 
                         const groupedData = data.reduce((acc, row) => {
-                            const date = row.Timestamp.split('T')[0];
+                            const timestamp = row.Timestamp || row.timestamp || '';
+                            const date = timestamp ? timestamp.split('T')[0] : '未知日期';
                             if (!acc[date]) acc[date] = [];
                             acc[date].push(row);
                             return acc;
@@ -325,8 +326,8 @@
                                 const tr = tableBody.insertRow();
                                 orderedHeaders.forEach(key => {
                                     const td = tr.insertCell();
-                                    td.textContent = row[key];
-                                    if (key !== 'Timestamp') td.contentEditable = true;
+                                    td.textContent = row[key.charAt(0).toUpperCase() + key.slice(1)] || row[key];
+                                    if (key !== 'timestamp') td.contentEditable = true;
                                 });
 
                                 const actionTd = tr.insertCell();
