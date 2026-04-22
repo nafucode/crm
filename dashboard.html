@@ -127,6 +127,40 @@
             margin-bottom: 1.5rem;
         }
 
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .form-control {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-text-color);
+            border-color: var(--secondary-text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
         #world-map {
             width: 100%;
             height: 500px;
@@ -219,6 +253,27 @@
     <div class="main-content">
         <div class="page-header">Dashboard</div>
 
+        <div class="panel filter-panel">
+            <div class="filter-controls">
+                <div class="form-group">
+                    <label for="filter-start-date">开始日期</label>
+                    <input type="date" id="filter-start-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="filter-end-date">结束日期</label>
+                    <input type="date" id="filter-end-date" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="filter-country">国家</label>
+                    <input type="text" id="filter-country" placeholder="输入国家名称..." class="form-control">
+                </div>
+                <div class="form-group-buttons">
+                    <button id="filter-apply-btn" class="btn">应用筛选</button>
+                    <button id="filter-reset-btn" class="btn btn-secondary">重置</button>
+                </div>
+            </div>
+        </div>
+
         <div class="summary-grid" id="summary-grid">
             <div class="stat-card">
                 <div class="stat-label">总客户数</div>
@@ -266,6 +321,8 @@
     </div>
 
     <script>
+        let allData = []; // Store all data globally
+
         document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -289,35 +346,80 @@
                 window.location.href = '/login.html';
             });
 
-            fetchDataAndRender();
-            fetchMapDataAndRender();
+            document.getElementById('filter-apply-btn').addEventListener('click', applyFilters);
+            document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
+
+            fetchInitialData();
         });
 
-        function fetchDataAndRender() {
+        function fetchInitialData() {
             fetch('/api/data', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             })
-                .then(response => response.json())
-                .then(data => {
-                    renderTable(data);
-                    updateSummary(data);
-                })
-                .catch(error => console.error('Error fetching data:', error));
+            .then(response => response.json())
+            .then(data => {
+                allData = data;
+                renderAll(allData);
+            })
+            .catch(error => console.error('Error fetching data:', error));
         }
 
-        function fetchMapDataAndRender() {
-            fetch('/api/map-data', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+        function renderAll(data) {
+            renderTable(data);
+            updateSummary(data);
+            renderMap(generateMapData(data));
+        }
+
+        function generateMapData(data) {
+            const countryCounts = data.reduce((acc, row) => {
+                const country = row.country;
+                if (country) {
+                    acc[country] = (acc[country] || 0) + 1;
                 }
-            })
-                .then(response => response.json())
-                .then(mapData => {
-                    renderMap(mapData);
-                })
-                .catch(error => console.error('Error fetching map data:', error));
+                return acc;
+            }, {});
+
+            return Object.keys(countryCounts).map(name => ({
+                name,
+                value: countryCounts[name]
+            }));
+        }
+
+        function applyFilters() {
+            const startDate = document.getElementById('filter-start-date').value;
+            const endDate = document.getElementById('filter-end-date').value;
+            const country = document.getElementById('filter-country').value.toLowerCase();
+
+            let filteredData = allData.filter(item => {
+                const itemDate = new Date(item.Timestamp || item.timestamp);
+                const itemCountry = item.country ? item.country.toLowerCase() : '';
+
+                let dateMatch = true;
+                if (startDate) {
+                    dateMatch = itemDate >= new Date(startDate);
+                }
+                if (endDate) {
+                    // Add 1 day to the end date to include the whole day
+                    const endOfDay = new Date(endDate);
+                    endOfDay.setDate(endOfDay.getDate() + 1);
+                    dateMatch = dateMatch && itemDate < endOfDay;
+                }
+
+                const countryMatch = country ? itemCountry.includes(country) : true;
+
+                return dateMatch && countryMatch;
+            });
+
+            renderAll(filteredData);
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            document.getElementById('filter-country').value = '';
+            renderAll(allData);
         }
 
         function renderMap(mapData) {
