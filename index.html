@@ -256,13 +256,49 @@
 
     <script>
         const countryOptions = {
-            "非洲": ["Nigeria", "Cameroon", "South Africa", "Kenya", "Ghana", "Ethiopia"],
-            "中亚": ["Kazakhstan", "Uzbekistan", "Turkmenistan"],
-            "中东": ["Saudi Arabia", "UAE", "Qatar", "Kuwait", "Oman"],
-            "东南亚": ["Vietnam", "Thailand", "Malaysia", "Indonesia", "Philippines"],
-            "大洋洲": ["Australia", "New Zealand"],
-            "中美洲": ["Mexico", "Panama", "Costa Rica"],
-            "南美洲": ["Brazil", "Argentina", "Colombia", "Chile", "Peru"]
+            "非洲": [
+                { value: "Nigeria", label: "Nigeria 尼日利亚" },
+                { value: "Cameroon", label: "Cameroon 喀麦隆" },
+                { value: "South Africa", label: "South Africa 南非" },
+                { value: "Kenya", label: "Kenya 肯尼亚" },
+                { value: "Ghana", label: "Ghana 加纳" },
+                { value: "Ethiopia", label: "Ethiopia 埃塞俄比亚" },
+            ],
+            "中亚": [
+                { value: "Kazakhstan", label: "Kazakhstan 哈萨克斯坦" },
+                { value: "Uzbekistan", label: "Uzbekistan 乌兹别克斯坦" },
+                { value: "Turkmenistan", label: "Turkmenistan 土库曼斯坦" },
+            ],
+            "中东": [
+                { value: "Saudi Arabia", label: "Saudi Arabia 沙特阿拉伯" },
+                { value: "UAE", label: "UAE 阿联酋" },
+                { value: "Qatar", label: "Qatar 卡塔尔" },
+                { value: "Kuwait", label: "Kuwait 科威特" },
+                { value: "Oman", label: "Oman 阿曼" },
+            ],
+            "东南亚": [
+                { value: "Vietnam", label: "Vietnam 越南" },
+                { value: "Thailand", label: "Thailand 泰国" },
+                { value: "Malaysia", label: "Malaysia 马来西亚" },
+                { value: "Indonesia", label: "Indonesia 印度尼西亚" },
+                { value: "Philippines", label: "Philippines 菲律宾" },
+            ],
+            "大洋洲": [
+                { value: "Australia", label: "Australia 澳大利亚" },
+                { value: "New Zealand", label: "New Zealand 新西兰" },
+            ],
+            "中美洲": [
+                { value: "Mexico", label: "Mexico 墨西哥" },
+                { value: "Panama", label: "Panama 巴拿马" },
+                { value: "Costa Rica", label: "Costa Rica 哥斯达黎加" },
+            ],
+            "南美洲": [
+                { value: "Brazil", label: "Brazil 巴西" },
+                { value: "Argentina", label: "Argentina 阿根廷" },
+                { value: "Colombia", label: "Colombia 哥伦比亚" },
+                { value: "Chile", label: "Chile 智利" },
+                { value: "Peru", label: "Peru 秘鲁" },
+            ]
         };
 
         function parseJwt(token) {
@@ -369,7 +405,7 @@
                     label: region,
                     id: region,
                     disabled: false,
-                    choices: countries.map(country => ({ value: country, label: country }))
+                    choices: countries
                 }));
 
                 choices.setChoices(choicesData, 'value', 'label', true);
