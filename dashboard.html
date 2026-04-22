@@ -361,7 +361,7 @@
                                 const deleteButton = document.createElement('button');
                                 deleteButton.textContent = '删除';
                                 deleteButton.className = 'delete-btn-dash';
-                                deleteButton.onclick = () => deleteRow(tr, row.Timestamp);
+                                deleteButton.onclick = () => deleteRow(tr, row.timestamp || row.Timestamp);
                                 actionTd.appendChild(deleteButton);
                             });
                         }

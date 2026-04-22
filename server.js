@@ -175,20 +175,22 @@ app.post('/api/update', authenticateAdmin, async (req, res) => {
 
 // API 路由：删除一行数据
 app.post('/api/delete', authenticateAdmin, async (req, res) => {
-    const { Timestamp } = req.body;
-    if (!Timestamp) {
+    const { Timestamp, timestamp } = req.body;
+    const ts = Timestamp || timestamp; // 兼容大小写两种写法
+
+    if (!ts) {
         return res.status(400).send('缺少时间戳标识');
     }
 
     try {
-        const allFeedback = await kv.lrange('feedback', 0, -1);
-        const itemToDelete = allFeedback.find(item => item.Timestamp === Timestamp);
+        const allFeedback = await redis.lrange('feedback', 0, -1);
+        const itemToDelete = allFeedback.find(item => (item.timestamp || item.Timestamp) === ts);
 
         if (!itemToDelete) {
             return res.status(404).send('未找到要删除的数据行');
         }
 
-        await kv.lrem('feedback', 1, itemToDelete);
+        await redis.lrem('feedback', 1, itemToDelete);
         res.status(200).send('数据删除成功');
     } catch (error) {
         console.error('删除 Redis 数据时出错:', error);
