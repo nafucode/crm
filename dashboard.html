@@ -232,6 +232,23 @@
             }
         }
 
+        // 国家中英文映射
+        const countryNameMap = {
+            "Nigeria": "尼日利亚",
+            "Cameroon": "喀麦隆",
+            "China": "中国",
+            "United States": "美国",
+            "United Kingdom": "英国",
+            "Japan": "日本",
+            "Germany": "德国",
+            "France": "法国",
+            "Canada": "加拿大",
+            "Australia": "澳大利亚",
+            "India": "印度",
+            "Brazil": "巴西",
+            "South Africa": "南非",
+        };
+
         const token = localStorage.getItem('authToken');
         if (!token) {
             window.location.href = '/login.html';
@@ -326,7 +343,11 @@
                                 const tr = tableBody.insertRow();
                                 orderedHeaders.forEach(key => {
                                     const td = tr.insertCell();
-                                    td.textContent = row[key.charAt(0).toUpperCase() + key.slice(1)] || row[key];
+                                    let cellValue = row[key.charAt(0).toUpperCase() + key.slice(1)] || row[key];
+                                    if (key === 'country') {
+                                        cellValue = countryNameMap[cellValue] || cellValue;
+                                    }
+                                    td.textContent = cellValue;
                                     if (key !== 'timestamp') td.contentEditable = true;
                                 });
 

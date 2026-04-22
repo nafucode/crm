@@ -133,21 +133,23 @@ app.get('/api/data', authenticateAdmin, async (req, res) => {
 app.get('/api/map-data', authenticateAdmin, async (req, res) => {
     try {
         const feedback = await redis.lrange('feedback', 0, -1);
+        
         const countryCounts = feedback.reduce((acc, row) => {
-            const country = row.Country;
+            const country = row.country; // 注意是小写
             if (country) {
                 acc[country] = (acc[country] || 0) + 1;
             }
             return acc;
         }, {});
 
-        const mapData = Object.keys(countryCounts).map(countryName => {
-            return { name: countryName, value: countryCounts[countryName] };
-        });
+        const mapData = Object.keys(countryCounts).map(name => ({
+            name,
+            value: countryCounts[name]
+        }));
 
         res.json(mapData);
     } catch (error) {
-        console.error('聚合地图数据时出错:', error);
+        console.error('读取地图数据出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
