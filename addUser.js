@@ -3,8 +3,8 @@ const { Redis } = require('@upstash/redis');
 const bcrypt = require('bcryptjs');
 
 const redis = new Redis({
-  url: process.env.REDIS_URL,
-  token: process.env.REDIS_TOKEN,
+  url: process.env.UPSTASH_REDIS_REST_URL || process.env.REDIS_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.REDIS_TOKEN,
 });
 
 const [,, username, password, realName, role = 'user'] = process.argv;

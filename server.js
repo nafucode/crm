@@ -9,8 +9,8 @@ const bcrypt = require('bcryptjs');
 const { Redis } = require('@upstash/redis');
 
 const redis = new Redis({
-  url: process.env.REDIS_URL,
-  token: process.env.REDIS_TOKEN, // 注意：Upstash 通常需要一个单独的 token
+  url: process.env.UPSTASH_REDIS_REST_URL || process.env.REDIS_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.REDIS_TOKEN,
 });
 
 const app = express();
@@ -83,14 +83,7 @@ app.get('/api/user', authenticateToken, (req, res) => {
     res.json({ realName: req.user.realName });
 });
 
-const csvFilePath = path.join(__dirname, 'feedback.csv');
-const CSV_HEADERS = ['Timestamp', 'Country', 'CustomerInfo', 'Phone', 'Description', 'Submitter'];
 
-// 写入 CSV 文件的表头（如果文件不存在）
-if (!fs.existsSync(csvFilePath)) {
-    const headerString = CSV_HEADERS.map(h => `"${h}"`).join(',') + '\n';
-    fs.writeFileSync(csvFilePath, headerString, 'utf8');
-}
 
 // API 路由：处理表单提交（支持批量）
 app.post('/api/submit', authenticateToken, async (req, res) => {
