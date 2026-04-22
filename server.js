@@ -6,9 +6,9 @@ const csv = require('csv-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const { createClient } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
 
-const kv = createClient();
+const redis = Redis.fromEnv();
 
 const app = express();
 const port = 3000;
