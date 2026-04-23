@@ -199,7 +199,13 @@
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             font-size: 0.9rem; /* Smaller font */
-            white-space: nowrap; /* Prevent wrapping */
+            white-space: nowrap; /* Prevent wrapping by default */
+        }
+
+        td[data-field="summary"] {
+            white-space: normal; /* Allow wrapping for summary column */
+            word-break: break-word;
+            min-width: 250px; /* Give it a reasonable minimum width */
         }
 
         thead th {
