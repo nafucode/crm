@@ -317,11 +317,11 @@
                         <thead>
                             <tr>
                             <th>日期</th>
-                            <th>提交人</th>
                             <th>国家</th>
                             <th>客户信息</th>
                             <th>电话</th>
                             <th>其他描述</th>
+                            <th>提交人</th>
                             <th>操作</th>
                         </tr>
                         </thead>
@@ -609,11 +609,11 @@
                 const timestamp = item.Timestamp || item.timestamp;
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
-                    <td data-field="salesperson">${item.salesperson}</td>
                     <td data-field="country">${translateCountry(item.country)}</td>
                     <td data-field="customerId">${item.customerId}</td>
                     <td data-field="phone" contenteditable="true">${item.phone || ''}</td>
                     <td data-field="summary" contenteditable="true">${item.summary}</td>
+                    <td data-field="salesperson">${item.salesperson}</td>
                     <td>
                         <button class="btn btn-save" onclick="updateRow(this)">Save</button>
                         <button class="btn btn-delete" onclick="deleteRow(this)">Delete</button>
