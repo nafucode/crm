@@ -96,7 +96,7 @@ app.get('/api/user', authenticateToken, (req, res) => {
 
 
 
-// API 路由：处理表单提交（支持批量）
+// API 路由：处理表单提交（支持批量和合并）
 app.post('/api/submit', authenticateToken, async (req, res) => {
     const submissions = req.body;
 
@@ -105,13 +105,53 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
     }
 
     try {
-        // 使用 pipeline 批量插入，效率更高
-        const pipeline = kv.pipeline();
-        submissions.forEach(submission => {
-            pipeline.lpush('feedback', submission);
+        // 1. 获取所有现有数据用于查重
+        const allFeedback = await kv.lrange('feedback', 0, -1);
+        
+        // 2. 创建一个查找映射表，提高效率
+        const feedbackMap = new Map();
+        allFeedback.forEach((item, index) => {
+            if (item.country && item.phone) {
+                const key = `${item.country}:${item.phone}`;
+                feedbackMap.set(key, { ...item, originalIndex: index });
+            }
         });
+
+        const pipeline = kv.pipeline();
+        let hasUpdates = false; // 标记是否有更新操作
+
+        // 3. 遍历本次提交的所有数据
+        for (const submission of submissions) {
+            // 只有当国家和电话都存在时，才进行查重
+            if (submission.country && submission.phone) {
+                const key = `${submission.country}:${submission.phone}`;
+                const existingRecord = feedbackMap.get(key);
+
+                if (existingRecord) {
+                    // 找到了重复记录，进行合并
+                    const mergedRecord = {
+                        ...existingRecord,
+                        customerId: submission.customerId, // 更新客户信息
+                        summary: `${submission.summary} (更新于 ${new Date(submission.Timestamp).toLocaleString()})\n${existingRecord.summary}`,
+                        salesperson: submission.salesperson, // 更新提交人
+                        Timestamp: submission.Timestamp, // 更新时间戳
+                    };
+                    delete mergedRecord.originalIndex; // 删除辅助字段
+
+                    // 使用 LSET 更新指定索引的元素
+                    pipeline.lset('feedback', existingRecord.originalIndex, mergedRecord);
+                    hasUpdates = true;
+                    continue; // 处理下一个提交
+                }
+            }
+            // 如果没有重复，则作为新记录添加
+            pipeline.lpush('feedback', submission);
+        }
+
         await pipeline.exec();
-        res.status(200).send('数据提交成功');
+
+        res.status(200).send('数据提交成功，重复记录已智能合并。');
+
     } catch (error) {
         console.error('向 Redis 写入数据时出错:', error);
         res.status(500).send('服务器内部错误');
