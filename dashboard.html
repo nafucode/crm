@@ -316,13 +316,14 @@
                 <table id="data-table">
                         <thead>
                             <tr>
-                                <th>日期</th>
-                                <th>国家</th>
-                                <th>客户信息</th>
-                                <th>电话</th>
-                                <th>其他描述</th>
-                                <th>操作</th>
-                            </tr>
+                            <th>日期</th>
+                            <th>提交人</th>
+                            <th>国家</th>
+                            <th>客户信息</th>
+                            <th>电话</th>
+                            <th>其他描述</th>
+                            <th>操作</th>
+                        </tr>
                         </thead>
                     <tbody>
                         <!-- Data will be populated here -->
@@ -490,7 +491,7 @@
                 '客户信息': item.customerId,
                 '电话': item.phone || '',
                 '其他描述': item.summary || '',
-                '销售员': item.salesperson
+                '提交人': item.salesperson
             }));
 
             // 2. Create worksheet and workbook
@@ -608,6 +609,7 @@
                 const timestamp = item.Timestamp || item.timestamp;
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
+                    <td data-field="salesperson">${item.salesperson}</td>
                     <td data-field="country">${translateCountry(item.country)}</td>
                     <td data-field="customerId">${item.customerId}</td>
                     <td data-field="phone" contenteditable="true">${item.phone || ''}</td>
