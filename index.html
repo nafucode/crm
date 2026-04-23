@@ -389,7 +389,7 @@
         }
 
         // 认证和用户信息获取
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = '/login.html';
         } else {
@@ -415,17 +415,17 @@
                     })
                     .catch(error => {
                         console.error('获取用户信息失败:', error);
-                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('token');
                         window.location.href = '/login.html';
                     });
             } else {
-                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
                 window.location.href = '/login.html';
             }
         }
 
         document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('authToken');
+            localStorage.removeItem('token');
             window.location.href = '/login.html';
         });
 
