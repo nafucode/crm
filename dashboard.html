@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Intelligence Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script> <!-- Add SheetJS library -->
     <style>
         :root {
             --bg-color: #f8f9fa; /* Light gray background */
@@ -125,6 +126,13 @@
         .panel-title {
             font-size: 1.5rem;
             color: var(--text-color);
+            margin-bottom: 0; /* Remove margin when in container */
+        }
+
+        .panel-title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 1.5rem;
         }
 
@@ -300,7 +308,10 @@
         </div>
 
         <div class="panel table-panel">
-            <div class="panel-title">Customer Data</div>
+            <div class="panel-title-container">
+                <div class="panel-title">Customer Data</div>
+                <button id="export-excel-btn" class="btn">导出 Excel</button>
+            </div>
             <div class="table-container">
                 <table id="data-table">
                         <thead>
@@ -437,9 +448,12 @@
 
             document.getElementById('filter-apply-btn').addEventListener('click', applyFilters);
             document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
+            document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
 
             fetchInitialData();
         });
+
+        let currentFilteredData = []; // Store currently filtered data
 
         function fetchInitialData() {
             fetch('/api/data', {
@@ -450,15 +464,42 @@
             .then(response => response.json())
             .then(data => {
                 allData = data;
-                renderAll(allData);
+                currentFilteredData = allData;
+                renderAll(currentFilteredData);
             })
             .catch(error => console.error('Error fetching data:', error));
         }
 
         function renderAll(data) {
+            currentFilteredData = data; // Update the global filtered data
             renderTable(data);
             updateSummary(data);
             renderMap(generateMapData(data));
+        }
+
+        function exportToExcel() {
+            if (currentFilteredData.length === 0) {
+                alert('没有可导出的数据。');
+                return;
+            }
+
+            // 1. Prepare data with Chinese headers
+            const dataToExport = currentFilteredData.map(item => ({
+                '日期': new Date(item.Timestamp || item.timestamp).toLocaleString(),
+                '国家': translateCountry(item.country),
+                '客户信息': item.customerId,
+                '电话': item.phone || '',
+                '其他描述': item.summary || '',
+                '销售员': item.salesperson
+            }));
+
+            // 2. Create worksheet and workbook
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "客户数据");
+
+            // 3. Trigger download
+            XLSX.writeFile(wb, "customer_data.xlsx");
         }
 
         function generateMapData(data) {
