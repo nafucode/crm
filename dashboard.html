@@ -49,6 +49,13 @@
             font-weight: 600;
             font-size: 1.5rem;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 40px; /* Adjust height as needed */
+            width: auto;
         }
 
         .navbar-nav {
@@ -253,7 +260,7 @@
 
 <body>
     <nav class="navbar">
-        <a href="/dashboard.html" class="navbar-brand">CRM Intelligence</a>
+        <a href="/dashboard.html" class="navbar-brand"><img src="/logo.jpg" alt="XINFUJI Logo" class="logo-img"></a>
         <div class="navbar-nav">
             <a href="/index.html" class="nav-link">返回提交表单</a>
             <span id="username-display" class="nav-link"></span>
@@ -262,7 +269,7 @@
     </nav>
 
     <div class="main-content">
-        <div class="page-header">Dashboard</div>
+        <div class="page-header">数据看板</div>
 
         <div class="summary-grid" id="summary-grid">
             <div class="stat-card">
