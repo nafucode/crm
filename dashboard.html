@@ -188,9 +188,11 @@
 
         th,
         td {
-            padding: 12px 15px;
+            padding: 10px 15px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem; /* Smaller font */
+            white-space: nowrap; /* Prevent wrapping */
         }
 
         thead th {
@@ -309,7 +311,7 @@
 
         <div class="panel table-panel">
             <div class="panel-title-container">
-                <div class="panel-title">Customer Data</div>
+                <div class="panel-title">客户信息</div>
                 <button id="export-excel-btn" class="btn">导出 Excel</button>
             </div>
             <div class="table-container">
