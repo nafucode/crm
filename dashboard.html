@@ -618,7 +618,9 @@
         function renderTable(data) {
             const tableBody = document.querySelector('#data-table tbody');
             tableBody.innerHTML = '';
-            data.forEach(item => {
+            // Final reverse before rendering to ensure latest is on top
+            const reversedData = [...data].reverse();
+            reversedData.forEach(item => {
                 const row = tableBody.insertRow();
                 // Handle both 'Timestamp' and 'timestamp'
                 const timestamp = item.Timestamp || item.timestamp;
