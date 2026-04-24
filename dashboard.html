@@ -437,6 +437,17 @@
             return countryTranslationMap[englishName] || englishName;
         }
 
+        const countryChineseNameMap = Object.values(countryOptions).flat().reduce((acc, country) => {
+            const parts = country.label.split(' ');
+            const chineseName = parts.slice(1).join(' ');
+            acc[country.value] = chineseName.trim() ? chineseName.trim() : parts[0]; // Fallback to English if no Chinese part
+            return acc;
+        }, {});
+
+        function getChineseCountryName(englishName) {
+            return countryChineseNameMap[englishName] || englishName;
+        }
+
         let allData = []; // Store all data globally
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -502,7 +513,7 @@
             // 1. Prepare data with Chinese headers
             const dataToExport = currentFilteredData.map(item => ({
                 '日期': new Date(item.Timestamp || item.timestamp).toLocaleString(),
-                '国家': translateCountry(item.country),
+                '国家': getChineseCountryName(item.country),
                 '客户信息': item.customerId,
                 '电话': item.phone || '',
                 '其他描述': item.summary || '',
@@ -626,7 +637,7 @@
                 const timestamp = item.Timestamp || item.timestamp;
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
-                    <td data-field="country">${translateCountry(item.country)}</td>
+                    <td data-field="country">${getChineseCountryName(item.country)}</td>
                     <td data-field="customerId">${item.customerId}</td>
                     <td data-field="phone" contenteditable="true">${item.phone || ''}</td>
                     <td data-field="summary" contenteditable="true">${item.summary}</td>
