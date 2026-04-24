@@ -329,8 +329,8 @@
             </div>
             <div class="table-container">
                 <table id="data-table">
-                        <thead>
-                            <tr>
+                    <thead>
+                        <tr>
                             <th>日期</th>
                             <th>国家</th>
                             <th>客户信息</th>
@@ -339,12 +339,17 @@
                             <th>提交人</th>
                             <th>操作</th>
                         </tr>
-                        </thead>
+                    </thead>
                     <tbody>
                         <!-- Data will be populated here -->
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <div class="panel bar-chart-panel">
+            <div class="panel-title">每日提交趋势 (最近7天)</div>
+            <div id="daily-submission-chart" style="height: 400px;"></div>
         </div>
     </div>
 
@@ -502,6 +507,7 @@
             renderTable(data);
             updateSummary(data);
             renderMap(generateMapData(data));
+            renderDailySubmissionChart(data);
         }
 
         function exportToExcel() {
@@ -527,6 +533,81 @@
 
             // 3. Trigger download
             XLSX.writeFile(wb, "customer_data.xlsx");
+        }
+
+        function renderDailySubmissionChart(data) {
+            const chartDom = document.getElementById('daily-submission-chart');
+            const myChart = echarts.init(chartDom);
+
+            // 1. Prepare date range (last 7 days)
+            const dates = [];
+            const dateLabels = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                dates.push(d.toISOString().split('T')[0]); // YYYY-MM-DD for matching
+                dateLabels.push(`${d.getMonth() + 1}/${d.getDate()}`); // M/D for display
+            }
+
+            // 2. Process data
+            const adminData = new Array(7).fill(0);
+            const otherData = new Array(7).fill(0);
+
+            data.forEach(item => {
+                const itemDate = (item.Timestamp || item.timestamp).split('T')[0];
+                const dateIndex = dates.indexOf(itemDate);
+                if (dateIndex > -1) {
+                    if (item.salesperson === 'admin') {
+                        adminData[dateIndex]++;
+                    } else {
+                        otherData[dateIndex]++;
+                    }
+                }
+            });
+
+            // 3. ECharts option
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['邮件和表单 (admin)', 'Whatsapp咨询 (其他)']
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dateLabels
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: '邮件和表单 (admin)',
+                        type: 'bar',
+                        stack: 'total',
+                        emphasis: { focus: 'series' },
+                        data: adminData,
+                        itemStyle: { color: '#007bff' } // Blue for admin
+                    },
+                    {
+                        name: 'Whatsapp咨询 (其他)',
+                        type: 'bar',
+                        stack: 'total',
+                        emphasis: { focus: 'series' },
+                        data: otherData,
+                        itemStyle: { color: '#6c757d' } // Gray for others
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
         }
 
         function generateMapData(data) {
