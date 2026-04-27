@@ -163,9 +163,33 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
 app.get('/api/data', authenticateAdmin, async (req, res) => {
     try {
         const feedback = await kv.lrange('feedback', 0, -1);
-        res.json(feedback.reverse()); // 返回倒序，让最新的在前面
+        res.json(feedback); // Keep original order for client-side reversal
     } catch (error) {
         console.error('从 Redis 读取数据时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
+});
+
+// API 路由：获取地图数据（对所有登录用户开放）
+app.get('/api/map-data', authenticateToken, async (req, res) => {
+    try {
+        const allFeedback = await kv.lrange('feedback', 0, -1);
+        const countryCounts = allFeedback.reduce((acc, row) => {
+            const country = row.country;
+            if (country) {
+                acc[country] = (acc[country] || 0) + 1;
+            }
+            return acc;
+        }, {});
+
+        const mapData = Object.keys(countryCounts).map(name => ({
+            name,
+            value: countryCounts[name]
+        }));
+
+        res.json(mapData);
+    } catch (error) {
+        console.error('从 Redis 读取地图数据时出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
