@@ -261,6 +261,17 @@
         tbody tr:hover {
             background-color: #f1f3f5;
         }
+        .btn-save {
+            padding: 4px 8px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-save:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -298,12 +309,13 @@
             <table id="history-table">
                 <thead>
                     <tr>
-                        <th>日期</th>
-                        <th>国家</th>
-                        <th>客户信息</th>
-                        <th>电话</th>
-                        <th>其他描述</th>
-                    </tr>
+                            <th>日期</th>
+                            <th>国家</th>
+                            <th>客户信息</th>
+                            <th>电话</th>
+                            <th>其他描述</th>
+                            <th>操作</th>
+                        </tr>
                 </thead>
                 <tbody>
                     <!-- 历史数据将动态插入这里 -->
@@ -439,9 +451,40 @@
         }
 
         document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = '/login.html';
-        });
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            });
+
+            // Function to handle saving updated row data
+            window.updateHistoryRow = function(button) {
+                const row = button.closest('tr');
+                const timestamp = row.dataset.timestamp;
+                const customerId = row.querySelector('[data-field="customerId"]').textContent;
+                const phone = row.querySelector('[data-field="phone"]').textContent;
+                const summary = row.querySelector('[data-field="summary"]').textContent;
+
+                fetch('/api/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ timestamp, customerId, phone, summary })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text || '更新失败') });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('记录更新成功！');
+                })
+                .catch(error => {
+                    console.error('Error updating row:', error);
+                    alert(`更新失败: ${error.message}`);
+                });
+            }
 
         document.addEventListener('DOMContentLoaded', function() {
             const addCustomerBtn = document.getElementById('add-customer-btn');
@@ -534,12 +577,15 @@
                     historyTableBody.innerHTML = ''; // Clear existing rows
                     data.forEach(item => {
                         const row = historyTableBody.insertRow();
+                        const timestamp = item.Timestamp || item.timestamp;
+                        row.dataset.timestamp = timestamp; // Store timestamp for updates
                         row.innerHTML = `
-                            <td>${new Date(item.Timestamp || item.timestamp).toLocaleString()}</td>
+                            <td>${new Date(timestamp).toLocaleString()}</td>
                             <td>${item.country}</td>
-                            <td>${item.customerId}</td>
-                            <td>${item.phone || '-'}</td>
-                            <td>${item.summary || '-'}</td>
+                            <td data-field="customerId" contenteditable="true">${item.customerId}</td>
+                            <td data-field="phone" contenteditable="true">${item.phone || '-'}</td>
+                            <td data-field="summary" contenteditable="true">${item.summary || '-'}</td>
+                            <td><button class="btn btn-save" onclick="updateHistoryRow(this)">保存</button></td>
                         `;
                     });
                 })

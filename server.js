@@ -231,9 +231,9 @@ app.get('/api/map-data', authenticateAdmin, async (req, res) => {
     }
 });
 
-// API 路由：更新一行数据
-app.post('/api/update', authenticateAdmin, async (req, res) => {
-    const { timestamp, phone, summary } = req.body;
+// API 路由：更新数据行（管理员或记录所有者）
+app.post('/api/update', authenticateToken, async (req, res) => {
+    const { timestamp, customerId, phone, summary } = req.body;
 
     if (!timestamp) {
         return res.status(400).send('缺少时间戳标识');
@@ -247,12 +247,18 @@ app.post('/api/update', authenticateAdmin, async (req, res) => {
             return res.status(404).send('未找到要更新的数据行');
         }
 
-        // 获取旧记录，然后更新它
         const oldRecord = allFeedback[index];
+
+        // 权限检查：必须是管理员或记录的原始提交人
+        if (req.user.role !== 'admin' && req.user.realName !== oldRecord.salesperson) {
+            return res.status(403).send('权限不足：您只能修改自己的提交记录。');
+        }
+
         const newRecord = {
             ...oldRecord,
-            phone: phone, // 添加或更新 phone 字段
-            summary: summary // 更新 summary 字段
+            customerId: customerId, // 更新客户信息
+            phone: phone, // 更新电话
+            summary: summary // 更新描述
         };
 
         await kv.lset('feedback', index, newRecord);
