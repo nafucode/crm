@@ -223,6 +223,19 @@
         .choices__input {
             background-color: transparent;
         }
+
+        .history-container {
+            width: 100%;
+            padding: 2rem 4rem; /* Add some padding */
+            box-sizing: border-box;
+        }
+
+        .history-container h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
         .table-container {
             overflow-x: auto;
             max-height: 400px; /* Limit height and make it scrollable */
@@ -279,26 +292,25 @@
         </div>
     </div>
 
-    <div class="main-content" style="padding-top: 0;">
-        <div class="container">
-            <h2>我的提交历史</h2>
-            <div class="table-container">
-                <table id="history-table">
-                    <thead>
-                        <tr>
-                            <th>日期</th>
-                            <th>国家</th>
-                            <th>客户信息</th>
-                            <th>电话</th>
-                            <th>其他描述</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- 历史数据将动态插入这里 -->
-                    </tbody>
-                </table>
-            </div>
+    <div class="history-container">
+        <h2>我的提交历史</h2>
+        <div class="table-container">
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>国家</th>
+                        <th>客户信息</th>
+                        <th>电话</th>
+                        <th>其他描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 历史数据将动态插入这里 -->
+                </tbody>
+            </table>
         </div>
+    </div>
 
     <script>
         const countryOptions = {
