@@ -730,9 +730,13 @@
         function renderTable(data) {
             const tableBody = document.querySelector('#data-table tbody');
             tableBody.innerHTML = '';
-            // Final reverse before rendering to ensure latest is on top
-            const reversedData = [...data].reverse();
-            reversedData.forEach(item => {
+            // Sort by timestamp descending (newest first) to guarantee order
+            const sortedData = [...data].sort((a, b) => {
+                const dateA = new Date(a.Timestamp || a.timestamp);
+                const dateB = new Date(b.Timestamp || b.timestamp);
+                return dateB - dateA;
+            });
+            sortedData.forEach(item => {
                 const row = tableBody.insertRow();
                 // Handle both 'Timestamp' and 'timestamp'
                 const timestamp = item.Timestamp || item.timestamp;
