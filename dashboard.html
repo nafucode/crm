@@ -476,12 +476,11 @@
                 document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
                 fetchInitialDataForAdmin();
             } else {
-                // Salesperson sees only the map
+                // Salesperson sees only the map and the trend chart
                 document.querySelector('.summary-grid').style.display = 'none';
                 document.querySelector('.filter-panel').style.display = 'none';
                 document.querySelector('.table-panel').style.display = 'none';
-                document.querySelector('.bar-chart-panel').style.display = 'none';
-                fetchMapDataForSalesperson();
+                fetchDataForSalesperson();
             }
 
             document.getElementById('logout').addEventListener('click', function (e) {
@@ -506,15 +505,21 @@
             .catch(error => console.error('Error fetching admin data:', error));
         }
 
-        function fetchMapDataForSalesperson() {
-            fetch('/api/map-data', {
+        function fetchDataForSalesperson() {
+            const mapDataPromise = fetch('/api/map-data', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            })
-            .then(response => response.json())
-            .then(mapData => {
-                renderMap(mapData);
-            })
-            .catch(error => console.error('Error fetching map data for salesperson:', error));
+            }).then(res => res.json());
+
+            const chartDataPromise = fetch('/api/chart-data', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            }).then(res => res.json());
+
+            Promise.all([mapDataPromise, chartDataPromise])
+                .then(([mapData, chartData]) => {
+                    renderMap(mapData);
+                    renderDailySubmissionChart(chartData);
+                })
+                .catch(error => console.error('Error fetching data for salesperson:', error));
         }
 
         function renderAll(data) {

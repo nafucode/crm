@@ -194,6 +194,22 @@ app.get('/api/map-data', authenticateToken, async (req, res) => {
     }
 });
 
+// API 路由：获取图表数据（对所有登录用户开放）
+app.get('/api/chart-data', authenticateToken, async (req, res) => {
+    try {
+        const allFeedback = await kv.lrange('feedback', 0, -1);
+        // 只返回渲染图表所需的安全字段
+        const chartData = allFeedback.map(item => ({
+            Timestamp: item.Timestamp || item.timestamp,
+            salesperson: item.salesperson
+        }));
+        res.json(chartData);
+    } catch (error) {
+        console.error('从 Redis 读取图表数据时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
+});
+
 // API 路由：获取当前用户的提交历史
 app.get('/api/my-submissions', authenticateToken, async (req, res) => {
     try {
