@@ -363,7 +363,7 @@
                 { value: "Cameroon", label: "Cameroon 喀麦隆" },
                 { value: "Cote d'Ivoire", label: "Cote d'Ivoire 科特迪瓦" },
                 { value: "Djibouti", label: "Djibouti 吉布提" },
-                { value: "Democratic Republic of the Congo", label: "Democratic Republic of the Congo 刚果民主共和国" },
+                { value: "Democratic Republic of the Congo", label: "Democratic Republic of the Congo 刚果金" },
                 { value: "Egypt", label: "Egypt 埃及" },
                 { value: "Ethiopia", label: "Ethiopia 埃塞俄比亚" },
                 { value: "Ghana", label: "Ghana 加纳" },
@@ -445,9 +445,8 @@
         }
 
         const countryChineseNameMap = Object.values(countryOptions).flat().reduce((acc, country) => {
-            const parts = country.label.split(' ');
-            const chineseName = parts.slice(1).join(' ');
-            acc[country.value] = chineseName.trim() ? chineseName.trim() : parts[0]; // Fallback to English if no Chinese part
+            const match = country.label.match(/[一-鿿][一-鿿㐀-䶿]*/g);
+            acc[country.value] = match ? match.join('') : country.value;
             return acc;
         }, {});
 
