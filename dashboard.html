@@ -1123,7 +1123,19 @@
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({rows: toAdd})
-            }).catch(e => console.warn('Sheet sync failed:', e));
+            }).then(async r => {
+                const d = await r.json();
+                if (d.error) {
+                    const el = document.getElementById('p-sheet-status');
+                    if (el) el.innerHTML = `<span style="color:#dc3545">⚠️ Sheet 同步失败: ${d.error}</span>`;
+                } else {
+                    const el = document.getElementById('p-sheet-status');
+                    if (el) el.innerHTML = `<span style="color:green">✓ 已同步到 Google Sheet</span>`;
+                }
+            }).catch(e => {
+                const el = document.getElementById('p-sheet-status');
+                if (el) el.innerHTML = `<span style="color:#dc3545">⚠️ 网络错误: ${e.message}</span>`;
+            });
         }
 
         const rows = dealers.map((d, i) => {
@@ -1151,10 +1163,11 @@
             if (summary) summary.textContent = `已保存 ${savedCount} 家 · ${city}, ${country}`;
         } else {
             document.getElementById('p-results').innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                     <span id="p-results-summary" style="font-weight:600">已保存 ${savedCount} 家 · ${city}, ${country}</span>
                     <button id="p-more-btn" class="btn btn-secondary" onclick="crmSearchProspects(true)" style="padding:6px 16px">🔍 搜索更多</button>
                 </div>
+                <div id="p-sheet-status" style="font-size:.8rem;margin-bottom:10px;color:var(--secondary-text-color)">⏳ 正在同步到 Google Sheet...</div>
                 <div class="table-container">
                     <table class="prospect-table">
                         <thead><tr><th>状态</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th></tr></thead>
