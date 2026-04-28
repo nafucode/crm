@@ -1077,17 +1077,34 @@
         }
     }
 
-    let _crmDealers = [], _crmCountry = '', _crmCity = '';
-
     function crmRenderResults(dealers, country, city) {
-        _crmDealers = dealers; _crmCountry = country; _crmCity = city;
         if (!dealers.length) {
             document.getElementById('p-results').innerHTML = '<div class="prospect-empty">未找到结果，换个城市试试</div>';
             return;
         }
-        const rows = dealers.map((d,i) => `
-            <tr>
-                <td><input type="checkbox" id="pc-${i}" style="width:15px;height:15px;cursor:pointer"></td>
+
+        // Auto-save new dealers, skip duplicates (match by company name + city)
+        const existing = getCRMProspects();
+        const existingKeys = new Set(existing.map(p => (p.company||'').toLowerCase() + '|' + (p.city||'').toLowerCase()));
+        const toAdd = [];
+        const isNew = dealers.map(d => {
+            const key = (d.company||'').toLowerCase() + '|' + city.toLowerCase();
+            if (existingKeys.has(key)) return false;
+            existingKeys.add(key);
+            toAdd.push({...d, country, city, id: Date.now()+Math.random(), saved_at: new Date().toLocaleDateString('zh-CN')});
+            return true;
+        });
+        if (toAdd.length) {
+            saveCRMProspects([...toAdd, ...existing]);
+            crmLoadSaved();
+        }
+
+        const rows = dealers.map((d, i) => {
+            const alreadySaved = !isNew[i];
+            return `<tr style="${alreadySaved ? 'opacity:0.45' : ''}">
+                <td style="font-size:.75rem;color:${alreadySaved ? 'var(--secondary-text-color)' : 'var(--primary-color)'}">
+                    ${alreadySaved ? '已保存' : '✓ 新增'}
+                </td>
                 <td><span class="prospect-tag">${country}</span></td>
                 <td>${city}</td>
                 <td style="font-weight:500">${d.company||'-'}</td>
@@ -1095,38 +1112,20 @@
                 <td class="prospect-phone wa-num">${d.whatsapp||d.phone||'-'}</td>
                 <td style="font-size:.82rem">${d.website?`<a href="${d.website.startsWith('http')?d.website:'https://'+d.website}" target="_blank" style="color:var(--primary-color)">${d.website.replace(/^https?:\/\//,'').split('/')[0]}</a>`:'-'}</td>
                 <td style="font-size:.82rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.address||''}</td>
-            </tr>`).join('');
+            </tr>`;
+        }).join('');
 
         document.getElementById('p-results').innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                <span style="font-weight:600">找到 ${dealers.length} 家公司 · ${city}, ${country}</span>
-                <div style="display:flex;gap:8px">
-                    <button class="btn btn-secondary" onclick="crmSelectAll(${dealers.length})">全选</button>
-                    <button class="btn" onclick="crmSaveSelected()">💾 保存选中</button>
-                </div>
+            <div style="margin-bottom:12px;font-weight:600">
+                找到 ${dealers.length} 家公司 · ${city}, ${country}
+                ${toAdd.length ? `<span style="color:var(--primary-color);margin-left:8px">✓ 新增 ${toAdd.length} 家已自动保存</span>` : '<span style="color:var(--secondary-text-color);margin-left:8px">全部已存在</span>'}
             </div>
             <div class="table-container">
                 <table class="prospect-table">
-                    <thead><tr><th></th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th></tr></thead>
+                    <thead><tr><th>状态</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th></tr></thead>
                     <tbody>${rows}</tbody>
                 </table>
             </div>`;
-    }
-
-    function crmSelectAll(n) {
-        for (let i=0;i<n;i++) { const cb=document.getElementById(`pc-${i}`); if(cb) cb.checked=true; }
-    }
-
-    function crmSaveSelected() {
-        const selected = _crmDealers.filter((_,i) => {
-            const cb = document.getElementById(`pc-${i}`); return cb && cb.checked;
-        });
-        if (!selected.length) { alert('请先勾选要保存的公司'); return; }
-        const existing = getCRMProspects();
-        const toAdd = selected.map(d => ({...d, country:_crmCountry, city:_crmCity, id:Date.now()+Math.random(), saved_at:new Date().toLocaleDateString('zh-CN')}));
-        saveCRMProspects([...toAdd, ...existing]);
-        crmLoadSaved();
-        alert(`✅ 已保存 ${toAdd.length} 家公司`);
     }
 
     function crmLoadSaved() {
