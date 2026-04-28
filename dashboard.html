@@ -1049,37 +1049,48 @@
     }
     function saveCRMProspects(arr) { localStorage.setItem(PROSPECTS_KEY, JSON.stringify(arr)); }
 
-    async function crmSearchProspects() {
+    async function crmSearchProspects(loadMore = false) {
         const country = document.getElementById('p-country').value;
         const city    = document.getElementById('p-city').value;
         const type    = document.getElementById('p-type').value;
         if (!country) { alert('请选择国家'); return; }
         if (!city || city === '__other__') { alert('请选择或输入城市'); return; }
 
+        // Build exclude list from already-saved companies in this city
+        const exclude = loadMore
+            ? getCRMProspects().filter(p => p.city === city && p.country === country).map(p => p.company).filter(Boolean)
+            : [];
+
         const btn = document.getElementById('p-search-btn');
-        btn.disabled = true; btn.textContent = '搜索中...';
-        document.getElementById('p-results').innerHTML =
-            `<div class="prospect-loading">⏳ AI 正在用 Google 搜索 ${city}, ${country} 的电梯经销商...</div>`;
+        const moreBtn = document.getElementById('p-more-btn');
+        if (loadMore && moreBtn) { moreBtn.disabled = true; moreBtn.textContent = '搜索中...'; }
+        else { btn.disabled = true; btn.textContent = '搜索中...'; }
+
+        if (!loadMore) {
+            document.getElementById('p-results').innerHTML =
+                `<div class="prospect-loading">⏳ AI 正在用 Google 搜索 ${city}, ${country} 的电梯经销商...</div>`;
+        }
         try {
             const r = await fetch(SEO_API + '/api/search-dealers', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({country, city, type})
+                body: JSON.stringify({country, city, type, exclude})
             });
             const d = await r.json();
             if (d.error) throw new Error(d.error);
-            crmRenderResults(d.dealers || [], country, city);
+            crmRenderResults(d.dealers || [], country, city, loadMore);
         } catch(e) {
             document.getElementById('p-results').innerHTML =
                 `<div class="prospect-empty">❌ 搜索失败: ${e.message}</div>`;
         } finally {
             btn.disabled = false; btn.textContent = '🔍 AI 搜索';
+            if (moreBtn) { moreBtn.disabled = false; moreBtn.textContent = '🔍 搜索更多'; }
         }
     }
 
-    function crmRenderResults(dealers, country, city) {
+    function crmRenderResults(dealers, country, city, append = false) {
         if (!dealers.length) {
-            document.getElementById('p-results').innerHTML = '<div class="prospect-empty">未找到结果，换个城市试试</div>';
+            if (!append) document.getElementById('p-results').innerHTML = '<div class="prospect-empty">未找到结果，换个城市试试</div>';
             return;
         }
 
@@ -1115,17 +1126,27 @@
             </tr>`;
         }).join('');
 
-        document.getElementById('p-results').innerHTML = `
-            <div style="margin-bottom:12px;font-weight:600">
-                找到 ${dealers.length} 家公司 · ${city}, ${country}
-                ${toAdd.length ? `<span style="color:var(--primary-color);margin-left:8px">✓ 新增 ${toAdd.length} 家已自动保存</span>` : '<span style="color:var(--secondary-text-color);margin-left:8px">全部已存在</span>'}
-            </div>
-            <div class="table-container">
-                <table class="prospect-table">
-                    <thead><tr><th>状态</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th></tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
-            </div>`;
+        const savedCount = getCRMProspects().filter(p => p.city === city && p.country === country).length;
+
+        if (append) {
+            // Append rows to existing table
+            const tbody = document.querySelector('#p-results .prospect-table tbody');
+            if (tbody) tbody.insertAdjacentHTML('beforeend', rows);
+            const summary = document.getElementById('p-results-summary');
+            if (summary) summary.textContent = `已保存 ${savedCount} 家 · ${city}, ${country}`;
+        } else {
+            document.getElementById('p-results').innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <span id="p-results-summary" style="font-weight:600">已保存 ${savedCount} 家 · ${city}, ${country}</span>
+                    <button id="p-more-btn" class="btn btn-secondary" onclick="crmSearchProspects(true)" style="padding:6px 16px">🔍 搜索更多</button>
+                </div>
+                <div class="table-container">
+                    <table class="prospect-table">
+                        <thead><tr><th>状态</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+        }
     }
 
     function crmLoadSaved() {
