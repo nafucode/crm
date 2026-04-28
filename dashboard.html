@@ -1042,12 +1042,19 @@
 
     // ── 搜索逻辑 ───────────────────────────────────────────
     const SEO_API = 'https://elevator-seo-production.up.railway.app';
-    const PROSPECTS_KEY = 'crm_prospect_library';
 
-    function getCRMProspects() {
-        try { return JSON.parse(localStorage.getItem(PROSPECTS_KEY) || '[]'); } catch { return []; }
+    // In-memory cache of saved prospects (loaded from API)
+    let _savedProspects = null;
+
+    async function getSavedProspects() {
+        if (_savedProspects !== null) return _savedProspects;
+        try {
+            const r = await fetch(SEO_API + '/api/prospects');
+            const d = await r.json();
+            _savedProspects = d.prospects || [];
+        } catch { _savedProspects = []; }
+        return _savedProspects;
     }
-    function saveCRMProspects(arr) { localStorage.setItem(PROSPECTS_KEY, JSON.stringify(arr)); }
 
     async function crmSearchProspects(loadMore = false) {
         const country = document.getElementById('p-country').value;
@@ -1056,9 +1063,9 @@
         if (!country) { alert('请选择国家'); return; }
         if (!city || city === '__other__') { alert('请选择或输入城市'); return; }
 
-        // Build exclude list from already-saved companies in this city
+        const saved = await getSavedProspects();
         const exclude = loadMore
-            ? getCRMProspects().filter(p => p.city === city && p.country === country).map(p => p.company).filter(Boolean)
+            ? saved.filter(p => p.city === city && p.country === country).map(p => p.company).filter(Boolean)
             : [];
 
         const btn = document.getElementById('p-search-btn');
@@ -1078,7 +1085,7 @@
             });
             const d = await r.json();
             if (d.error) throw new Error(d.error);
-            crmRenderResults(d.dealers || [], country, city, loadMore);
+            await crmRenderResults(d.dealers || [], country, city, loadMore);
         } catch(e) {
             document.getElementById('p-results').innerHTML =
                 `<div class="prospect-empty">❌ 搜索失败: ${e.message}</div>`;
@@ -1088,26 +1095,33 @@
         }
     }
 
-    function crmRenderResults(dealers, country, city, append = false) {
+    async function crmRenderResults(dealers, country, city, append = false) {
         if (!dealers.length) {
             if (!append) document.getElementById('p-results').innerHTML = '<div class="prospect-empty">未找到结果，换个城市试试</div>';
             return;
         }
 
-        // Auto-save new dealers, skip duplicates (match by company name + city)
-        const existing = getCRMProspects();
-        const existingKeys = new Set(existing.map(p => (p.company||'').toLowerCase() + '|' + (p.city||'').toLowerCase()));
+        const saved = await getSavedProspects();
+        const existingKeys = new Set(saved.map(p => (p.company||'').toLowerCase() + '|' + (p.city||'').toLowerCase()));
         const toAdd = [];
         const isNew = dealers.map(d => {
             const key = (d.company||'').toLowerCase() + '|' + city.toLowerCase();
             if (existingKeys.has(key)) return false;
             existingKeys.add(key);
-            toAdd.push({...d, country, city, id: Date.now()+Math.random(), saved_at: new Date().toLocaleDateString('zh-CN')});
+            const rec = {...d, country, city, id: String(Date.now()) + String(Math.random()).slice(2,6),
+                         saved_at: new Date().toLocaleDateString('zh-CN')};
+            toAdd.push(rec);
+            _savedProspects.push(rec);
             return true;
         });
+
+        // Write new records to Google Sheets
         if (toAdd.length) {
-            saveCRMProspects([...toAdd, ...existing]);
-            crmLoadSaved();
+            fetch(SEO_API + '/api/prospects', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rows: toAdd})
+            }).then(() => crmLoadSaved());
         }
 
         const rows = dealers.map((d, i) => {
@@ -1126,10 +1140,9 @@
             </tr>`;
         }).join('');
 
-        const savedCount = getCRMProspects().filter(p => p.city === city && p.country === country).length;
+        const savedCount = (_savedProspects||[]).filter(p => p.city === city && p.country === country).length;
 
         if (append) {
-            // Append rows to existing table
             const tbody = document.querySelector('#p-results .prospect-table tbody');
             if (tbody) tbody.insertAdjacentHTML('beforeend', rows);
             const summary = document.getElementById('p-results-summary');
@@ -1149,8 +1162,9 @@
         }
     }
 
-    function crmLoadSaved() {
-        const list = getCRMProspects();
+    async function crmLoadSaved() {
+        _savedProspects = null; // force reload
+        const list = await getSavedProspects();
         const sec = document.getElementById('p-saved-section');
         if (!list.length) { sec.style.display='none'; return; }
         sec.style.display = 'block';
@@ -1169,14 +1183,13 @@
             </tr>`).join('');
     }
 
-    function crmDeleteProspect(id) {
-        saveCRMProspects(getCRMProspects().filter(p => String(p.id) !== String(id)));
+    async function crmDeleteProspect(id) {
+        await fetch(SEO_API + '/api/prospects/' + id, {method: 'DELETE'});
         crmLoadSaved();
     }
 
     function crmClearProspects() {
-        if (!confirm('确定清空所有已保存的代理商？')) return;
-        saveCRMProspects([]); crmLoadSaved();
+        alert('请直接在 Google Sheet 里清空数据');
     }
     </script>
 </body>
