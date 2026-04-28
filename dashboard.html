@@ -289,6 +289,8 @@
         <a href="/dashboard.html" class="navbar-brand"><img src="/xinfuji-logo.svg" alt="XINFUJI Logo" class="logo-img"></a>
         <div class="navbar-nav">
             <a href="/index.html" class="nav-link">返回提交表单</a>
+            <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
+            <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <span id="username-display" class="nav-link"></span>
             <a href="#" id="logout" class="nav-link">退出登录</a>
         </div>
