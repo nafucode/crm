@@ -261,6 +261,26 @@
             border-radius: 4px;
             width: calc(100% - 16px);
         }
+
+        /* ── Tabs ── */
+        .tab-nav {display:flex;gap:4px;border-bottom:2px solid var(--border-color);margin-bottom:1.5rem;}
+        .tab-btn{padding:10px 20px;border:none;background:none;cursor:pointer;font-size:0.95rem;color:var(--secondary-text-color);border-bottom:2px solid transparent;margin-bottom:-2px;font-family:inherit;transition:color .2s;}
+        .tab-btn.active{color:var(--primary-color);border-bottom-color:var(--primary-color);font-weight:600;}
+        .tab-btn:hover{color:var(--primary-color);}
+        .tab-pane{display:none;}.tab-pane.active{display:block;}
+
+        /* ── Prospect search ── */
+        .prospect-search-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:1.5rem;}
+        .prospect-field label{display:block;font-size:0.8rem;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+        .prospect-field select,.prospect-field input{padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--white);color:var(--text-color);min-width:160px;}
+        .prospect-table th{font-size:0.78rem;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:.04em;background:var(--bg-color);}
+        .prospect-table td{font-size:0.88rem;vertical-align:middle;}
+        .prospect-tag{display:inline-block;font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:#e7f0ff;color:var(--primary-color);}
+        .prospect-phone{font-family:'SF Mono',Menlo,monospace;font-size:0.82rem;}
+        .wa-num{color:#25d366;}
+        .prospect-loading{text-align:center;padding:50px;color:var(--secondary-text-color);}
+        .prospect-empty{text-align:center;padding:50px;color:var(--secondary-text-color);}
+        .saved-section{margin-top:2rem;}
     </style>
 </head>
 
@@ -275,7 +295,15 @@
     </nav>
 
     <div class="main-content">
-        <div class="page-header">数据看板</div>
+        <div class="page-header">CRM 工作台</div>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('dashboard',this)">📊 数据看板</button>
+            <button class="tab-btn" onclick="switchTab('prospects',this)">🌍 代理商开发</button>
+        </div>
+
+        <!-- TAB: 数据看板 -->
+        <div id="tab-dashboard" class="tab-pane active">
 
         <div class="summary-grid" id="summary-grid">
             <div class="stat-card">
@@ -351,6 +379,115 @@
             <div class="panel-title">每日提交趋势 (最近7天)</div>
             <div id="daily-submission-chart" style="height: 400px;"></div>
         </div>
+
+        </div><!-- end tab-dashboard -->
+
+        <!-- TAB: 代理商开发 -->
+        <div id="tab-prospects" class="tab-pane">
+
+            <div class="panel">
+                <div class="panel-title-container">
+                    <div class="panel-title">🌍 AI 代理商搜索</div>
+                    <span style="font-size:0.85rem;color:var(--secondary-text-color)">Google 实时搜索 · 勾选保存潜在客户</span>
+                </div>
+                <div class="prospect-search-row">
+                    <div class="prospect-field">
+                        <label>国家</label>
+                        <select id="p-country" onchange="updateCRMCities()" style="min-width:180px">
+                            <option value="">选择国家...</option>
+                            <optgroup label="非洲">
+                                <option value="Nigeria">尼日利亚</option>
+                                <option value="South Africa">南非</option>
+                                <option value="Egypt">埃及</option>
+                                <option value="Kenya">肯尼亚</option>
+                                <option value="Ghana">加纳</option>
+                                <option value="Tanzania">坦桑尼亚</option>
+                                <option value="Ethiopia">埃塞俄比亚</option>
+                                <option value="Angola">安哥拉</option>
+                                <option value="Morocco">摩洛哥</option>
+                                <option value="Democratic Republic of the Congo">刚果金</option>
+                                <option value="Cameroon">喀麦隆</option>
+                                <option value="Uganda">乌干达</option>
+                                <option value="Zambia">赞比亚</option>
+                                <option value="Mozambique">莫桑比克</option>
+                            </optgroup>
+                            <optgroup label="亚洲">
+                                <option value="Pakistan">巴基斯坦</option>
+                                <option value="Bangladesh">孟加拉国</option>
+                                <option value="Indonesia">印度尼西亚</option>
+                                <option value="Philippines">菲律宾</option>
+                                <option value="Vietnam">越南</option>
+                                <option value="Thailand">泰国</option>
+                                <option value="Malaysia">马来西亚</option>
+                                <option value="Iraq">伊拉克</option>
+                                <option value="Saudi Arabia">沙特阿拉伯</option>
+                                <option value="United Arab Emirates">阿联酋</option>
+                                <option value="Kazakhstan">哈萨克斯坦</option>
+                                <option value="Afghanistan">阿富汗</option>
+                                <option value="Myanmar">缅甸</option>
+                                <option value="Cambodia">柬埔寨</option>
+                            </optgroup>
+                            <optgroup label="南美洲">
+                                <option value="Brazil">巴西</option>
+                                <option value="Colombia">哥伦比亚</option>
+                                <option value="Venezuela">委内瑞拉</option>
+                                <option value="Peru">秘鲁</option>
+                                <option value="Ecuador">厄瓜多尔</option>
+                                <option value="Argentina">阿根廷</option>
+                            </optgroup>
+                            <optgroup label="欧洲">
+                                <option value="Russia">俄罗斯</option>
+                                <option value="Ukraine">乌克兰</option>
+                                <option value="Poland">波兰</option>
+                            </optgroup>
+                            <optgroup label="北美/中美">
+                                <option value="Mexico">墨西哥</option>
+                                <option value="Panama">巴拿马</option>
+                                <option value="Guatemala">危地马拉</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="prospect-field">
+                        <label>城市</label>
+                        <select id="p-city" style="min-width:180px">
+                            <option value="">先选择国家...</option>
+                        </select>
+                    </div>
+                    <div class="prospect-field">
+                        <label>搜索类型</label>
+                        <select id="p-type" style="min-width:200px">
+                            <option value="elevator distributor dealer agent">电梯经销商/代理商</option>
+                            <option value="elevator trading company importer">电梯贸易商/进口商</option>
+                            <option value="elevator installation company">电梯安装公司</option>
+                            <option value="escalator distributor">自动扶梯经销商</option>
+                        </select>
+                    </div>
+                    <div class="prospect-field">
+                        <button class="btn" id="p-search-btn" onclick="crmSearchProspects()" style="padding:8px 20px;height:38px">
+                            🔍 AI 搜索
+                        </button>
+                    </div>
+                </div>
+                <div id="p-results">
+                    <div class="prospect-empty">选择国家和城市，AI 用 Google 实时搜索当地电梯经销商</div>
+                </div>
+            </div>
+
+            <div class="panel saved-section" id="p-saved-section" style="display:none">
+                <div class="panel-title-container">
+                    <div class="panel-title">已保存的潜在客户 <span id="p-saved-count" style="font-size:1rem;color:var(--secondary-text-color)"></span></div>
+                    <button class="btn" style="background:var(--danger-color)" onclick="crmClearProspects()">清空</button>
+                </div>
+                <div class="table-container">
+                    <table class="prospect-table">
+                        <thead><tr><th>#</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th><th>操作</th></tr></thead>
+                        <tbody id="p-saved-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- end tab-prospects -->
+
     </div>
 
     <script>
@@ -846,6 +983,193 @@
                     alert(`Failed to delete record: ${error.message}`);
                 });
         }
+    // ── Tab 切换 ───────────────────────────────────────────
+    function switchTab(id, btn) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + id).classList.add('active');
+        btn.classList.add('active');
+        if (id === 'prospects') crmLoadSaved();
+    }
+
+    // ── 城市数据 ───────────────────────────────────────────
+    const CRM_CITIES = {
+        'Nigeria':['Lagos','Abuja','Port Harcourt','Kano','Ibadan','Benin City','Kaduna','Enugu','Onitsha','Warri'],
+        'South Africa':['Johannesburg','Cape Town','Durban','Pretoria','Port Elizabeth','Bloemfontein','East London','Polokwane','Nelspruit','Rustenburg'],
+        'Egypt':['Cairo','Alexandria','Giza','Mansoura','Luxor','Aswan','Port Said','Suez','Tanta','Hurghada'],
+        'Kenya':['Nairobi','Mombasa','Kisumu','Nakuru','Eldoret','Thika','Malindi','Kitale','Garissa','Nyeri'],
+        'Ghana':['Accra','Kumasi','Tamale','Takoradi','Cape Coast','Obuasi','Tema','Koforidua','Sunyani','Ho'],
+        'Tanzania':['Dar es Salaam','Dodoma','Mwanza','Arusha','Mbeya','Morogoro','Tanga','Zanzibar City','Kigoma','Tabora'],
+        'Ethiopia':['Addis Ababa','Dire Dawa','Gondar','Mekelle','Hawassa','Bahir Dar','Adama','Jimma','Dessie','Jijiga'],
+        'Angola':['Luanda','Huambo','Lobito','Benguela','Kuito','Lubango','Malanje','Namibe','Soyo','Cabinda'],
+        'Morocco':['Casablanca','Rabat','Fez','Marrakech','Agadir','Tangier','Meknes','Oujda','Kenitra','Tetouan'],
+        'Democratic Republic of the Congo':['Kinshasa','Lubumbashi','Mbuji-Mayi','Kananga','Kisangani','Bukavu','Tshikapa','Kolwezi','Likasi','Goma'],
+        'Cameroon':['Douala','Yaoundé','Bamenda','Bafoussam','Garoua','Maroua','Ngaoundéré','Bertoua','Buea','Limbe'],
+        'Uganda':['Kampala','Gulu','Lira','Mbarara','Jinja','Bwizibwera','Mukono','Kasese','Masaka','Entebbe'],
+        'Zambia':['Lusaka','Kitwe','Ndola','Kabwe','Chingola','Mufulira','Livingstone','Luanshya','Kasama','Chipata'],
+        'Mozambique':['Maputo','Matola','Beira','Nampula','Chimoio','Nacala','Quelimane','Tete','Xai-Xai','Pemba'],
+        'Pakistan':['Karachi','Lahore','Islamabad','Faisalabad','Rawalpindi','Multan','Hyderabad','Gujranwala','Peshawar','Quetta'],
+        'Bangladesh':['Dhaka','Chittagong','Sylhet','Rajshahi','Khulna','Comilla','Gazipur','Narayanganj','Mymensingh','Rangpur'],
+        'Indonesia':['Jakarta','Surabaya','Bandung','Medan','Bekasi','Tangerang','Depok','Semarang','Makassar','Palembang'],
+        'Philippines':['Manila','Quezon City','Davao','Cebu City','Caloocan','Pasig','Taguig','Antipolo','Cagayan de Oro','Zamboanga'],
+        'Vietnam':['Ho Chi Minh City','Hanoi','Da Nang','Hai Phong','Can Tho','Bien Hoa','Hue','Nha Trang','Buon Ma Thuot','Vung Tau'],
+        'Thailand':['Bangkok','Chiang Mai','Pattaya','Hat Yai','Nakhon Ratchasima','Udon Thani','Khon Kaen','Chiang Rai','Phuket','Samut Prakan'],
+        'Malaysia':['Kuala Lumpur','George Town','Johor Bahru','Ipoh','Kota Kinabalu','Kuching','Shah Alam','Petaling Jaya','Subang Jaya','Malacca'],
+        'Iraq':['Baghdad','Basra','Mosul','Erbil','Kirkuk','Sulaymaniyah','Najaf','Karbala','Ramadi','Duhok'],
+        'Saudi Arabia':['Riyadh','Jeddah','Mecca','Medina','Dammam','Khobar','Tabuk','Buraidah','Abha','Hail'],
+        'United Arab Emirates':['Dubai','Abu Dhabi','Sharjah','Ajman','Ras Al Khaimah','Fujairah','Al Ain','Umm Al Quwain','Khor Fakkan','Kalba'],
+        'Kazakhstan':['Almaty','Astana','Shymkent','Karaganda','Aktobe','Taraz','Oskemen','Pavlodar','Semey','Atyrau'],
+        'Afghanistan':['Kabul','Kandahar','Herat','Mazar-i-Sharif','Jalalabad','Kunduz','Ghazni','Balkh','Baghlan','Pul-e Khumri'],
+        'Myanmar':['Yangon','Mandalay','Naypyidaw','Mawlamyine','Bago','Pathein','Taunggyi','Sittwe','Myitkyina','Meiktila'],
+        'Cambodia':['Phnom Penh','Siem Reap','Battambang','Sihanoukville','Poipet','Kampong Cham','Kratié','Pursat','Kampot','Kep'],
+        'Brazil':['São Paulo','Rio de Janeiro','Brasília','Salvador','Fortaleza','Belo Horizonte','Manaus','Curitiba','Recife','Porto Alegre'],
+        'Colombia':['Bogotá','Medellín','Cali','Barranquilla','Cartagena','Bucaramanga','Pereira','Santa Marta','Ibagué','Cúcuta'],
+        'Venezuela':['Caracas','Maracaibo','Valencia','Barquisimeto','Maracay','Ciudad Guayana','San Cristóbal','Maturín','Barcelona','Cumaná'],
+        'Peru':['Lima','Arequipa','Trujillo','Chiclayo','Piura','Iquitos','Cusco','Chimbote','Huancayo','Pucallpa'],
+        'Ecuador':['Guayaquil','Quito','Cuenca','Santo Domingo','Machala','Manta','Portoviejo','Loja','Ambato','Esmeraldas'],
+        'Argentina':['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','San Miguel de Tucumán','Mar del Plata','Salta','Santa Fe','San Juan'],
+        'Russia':['Moscow','Saint Petersburg','Novosibirsk','Yekaterinburg','Kazan','Nizhny Novgorod','Chelyabinsk','Samara','Omsk','Rostov-on-Don'],
+        'Ukraine':['Kyiv','Kharkiv','Odesa','Dnipro','Donetsk','Zaporizhzhia','Lviv','Kryvyi Rih','Mykolaiv','Mariupol'],
+        'Poland':['Warsaw','Kraków','Łódź','Wrocław','Poznań','Gdańsk','Szczecin','Bydgoszcz','Lublin','Katowice'],
+        'Mexico':['Mexico City','Guadalajara','Monterrey','Puebla','Tijuana','León','Ciudad Juárez','Torreón','Mérida','Cancún'],
+        'Panama':['Panama City','Colón','David','Santiago','Chitré','La Chorrera','Aguadulce','Penonomé','Las Tablas','Arraiján'],
+        'Guatemala':['Guatemala City','Mixco','Villa Nueva','San Miguel Petapa','Quetzaltenango','Escuintla','Cobán','Chimaltenango','Huehuetenango','Jalapa'],
+    };
+
+    function updateCRMCities() {
+        const country = document.getElementById('p-country').value;
+        const sel = document.getElementById('p-city');
+        const cities = CRM_CITIES[country] || [];
+        if (!cities.length) { sel.innerHTML = '<option value="">请输入城市...</option>'; return; }
+        sel.innerHTML = cities.map((c,i) => `<option value="${c}"${i===0?' selected':''}>${c}</option>`).join('')
+            + '<option value="__other__">其他城市...</option>';
+        sel.onchange = function() {
+            if (this.value !== '__other__') return;
+            const inp = document.createElement('input');
+            inp.id = 'p-city'; inp.placeholder = '输入城市名称...';
+            inp.style.cssText = 'min-width:180px;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:.9rem';
+            this.replaceWith(inp); inp.focus();
+        };
+    }
+
+    // ── 搜索逻辑 ───────────────────────────────────────────
+    const SEO_API = 'https://elevator-seo-production.up.railway.app';
+    const PROSPECTS_KEY = 'crm_prospect_library';
+
+    function getCRMProspects() {
+        try { return JSON.parse(localStorage.getItem(PROSPECTS_KEY) || '[]'); } catch { return []; }
+    }
+    function saveCRMProspects(arr) { localStorage.setItem(PROSPECTS_KEY, JSON.stringify(arr)); }
+
+    async function crmSearchProspects() {
+        const country = document.getElementById('p-country').value;
+        const city    = document.getElementById('p-city').value;
+        const type    = document.getElementById('p-type').value;
+        if (!country) { alert('请选择国家'); return; }
+        if (!city || city === '__other__') { alert('请选择或输入城市'); return; }
+
+        const btn = document.getElementById('p-search-btn');
+        btn.disabled = true; btn.textContent = '搜索中...';
+        document.getElementById('p-results').innerHTML =
+            `<div class="prospect-loading">⏳ AI 正在用 Google 搜索 ${city}, ${country} 的电梯经销商...</div>`;
+        try {
+            const r = await fetch(SEO_API + '/api/search-dealers', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({country, city, type})
+            });
+            const d = await r.json();
+            if (d.error) throw new Error(d.error);
+            crmRenderResults(d.dealers || [], country, city);
+        } catch(e) {
+            document.getElementById('p-results').innerHTML =
+                `<div class="prospect-empty">❌ 搜索失败: ${e.message}</div>`;
+        } finally {
+            btn.disabled = false; btn.textContent = '🔍 AI 搜索';
+        }
+    }
+
+    let _crmDealers = [], _crmCountry = '', _crmCity = '';
+
+    function crmRenderResults(dealers, country, city) {
+        _crmDealers = dealers; _crmCountry = country; _crmCity = city;
+        if (!dealers.length) {
+            document.getElementById('p-results').innerHTML = '<div class="prospect-empty">未找到结果，换个城市试试</div>';
+            return;
+        }
+        const rows = dealers.map((d,i) => `
+            <tr>
+                <td><input type="checkbox" id="pc-${i}" style="width:15px;height:15px;cursor:pointer"></td>
+                <td><span class="prospect-tag">${country}</span></td>
+                <td>${city}</td>
+                <td style="font-weight:500">${d.company||'-'}</td>
+                <td class="prospect-phone">${d.phone||'-'}</td>
+                <td class="prospect-phone wa-num">${d.whatsapp||d.phone||'-'}</td>
+                <td style="font-size:.82rem">${d.website?`<a href="${d.website.startsWith('http')?d.website:'https://'+d.website}" target="_blank" style="color:var(--primary-color)">${d.website.replace(/^https?:\/\//,'').split('/')[0]}</a>`:'-'}</td>
+                <td style="font-size:.82rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.address||''}</td>
+            </tr>`).join('');
+
+        document.getElementById('p-results').innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <span style="font-weight:600">找到 ${dealers.length} 家公司 · ${city}, ${country}</span>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-secondary" onclick="crmSelectAll(${dealers.length})">全选</button>
+                    <button class="btn" onclick="crmSaveSelected()">💾 保存选中</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="prospect-table">
+                    <thead><tr><th></th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>`;
+    }
+
+    function crmSelectAll(n) {
+        for (let i=0;i<n;i++) { const cb=document.getElementById(`pc-${i}`); if(cb) cb.checked=true; }
+    }
+
+    function crmSaveSelected() {
+        const selected = _crmDealers.filter((_,i) => {
+            const cb = document.getElementById(`pc-${i}`); return cb && cb.checked;
+        });
+        if (!selected.length) { alert('请先勾选要保存的公司'); return; }
+        const existing = getCRMProspects();
+        const toAdd = selected.map(d => ({...d, country:_crmCountry, city:_crmCity, id:Date.now()+Math.random(), saved_at:new Date().toLocaleDateString('zh-CN')}));
+        saveCRMProspects([...toAdd, ...existing]);
+        crmLoadSaved();
+        alert(`✅ 已保存 ${toAdd.length} 家公司`);
+    }
+
+    function crmLoadSaved() {
+        const list = getCRMProspects();
+        const sec = document.getElementById('p-saved-section');
+        if (!list.length) { sec.style.display='none'; return; }
+        sec.style.display = 'block';
+        document.getElementById('p-saved-count').textContent = `(${list.length})`;
+        document.getElementById('p-saved-body').innerHTML = list.map((p,i) => `
+            <tr>
+                <td style="color:var(--secondary-text-color);font-size:.8rem">${i+1}</td>
+                <td><span class="prospect-tag">${p.country||''}</span></td>
+                <td>${p.city||''}</td>
+                <td style="font-weight:500">${p.company||'-'}</td>
+                <td class="prospect-phone">${p.phone||'-'}</td>
+                <td class="prospect-phone wa-num">${p.whatsapp||p.phone||'-'}</td>
+                <td style="font-size:.82rem">${p.website?`<a href="${p.website.startsWith('http')?p.website:'https://'+p.website}" target="_blank" style="color:var(--primary-color)">${p.website.replace(/^https?:\/\//,'').split('/')[0]}</a>`:'-'}</td>
+                <td style="font-size:.8rem;color:var(--secondary-text-color)">${p.saved_at||''}</td>
+                <td><button class="btn btn-delete" onclick="crmDeleteProspect('${p.id}')">删除</button></td>
+            </tr>`).join('');
+    }
+
+    function crmDeleteProspect(id) {
+        saveCRMProspects(getCRMProspects().filter(p => String(p.id) !== String(id)));
+        crmLoadSaved();
+    }
+
+    function crmClearProspects() {
+        if (!confirm('确定清空所有已保存的代理商？')) return;
+        saveCRMProspects([]); crmLoadSaved();
+    }
     </script>
 </body>
 
