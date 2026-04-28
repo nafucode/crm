@@ -1115,13 +1115,15 @@
             return true;
         });
 
-        // Write new records to Google Sheets
+        // Render saved list immediately from in-memory data
         if (toAdd.length) {
+            renderSavedList(_savedProspects);
+            // Then write to Google Sheets in background
             fetch(SEO_API + '/api/prospects', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({rows: toAdd})
-            }).then(() => crmLoadSaved());
+            }).catch(e => console.warn('Sheet sync failed:', e));
         }
 
         const rows = dealers.map((d, i) => {
@@ -1162,9 +1164,7 @@
         }
     }
 
-    async function crmLoadSaved() {
-        _savedProspects = null; // force reload
-        const list = await getSavedProspects();
+    function renderSavedList(list) {
         const sec = document.getElementById('p-saved-section');
         if (!list.length) { sec.style.display='none'; return; }
         sec.style.display = 'block';
@@ -1181,6 +1181,12 @@
                 <td style="font-size:.8rem;color:var(--secondary-text-color)">${p.saved_at||''}</td>
                 <td><button class="btn btn-delete" onclick="crmDeleteProspect('${p.id}')">删除</button></td>
             </tr>`).join('');
+    }
+
+    async function crmLoadSaved() {
+        _savedProspects = null; // force fresh fetch from Sheet
+        const list = await getSavedProspects();
+        renderSavedList(list);
     }
 
     async function crmDeleteProspect(id) {
