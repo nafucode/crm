@@ -215,6 +215,13 @@
             word-break: break-word;
         }
 
+        tbody tr.is-dealer {
+            background-color: #fffbe6 !important;
+        }
+        tbody tr.is-dealer:hover {
+            background-color: #fff3b0 !important;
+        }
+
         /* Toggle switch for 经销商 */
         .dealer-toggle {
             position: relative;
@@ -920,6 +927,7 @@
                 const row = tableBody.insertRow();
                 // Handle both 'Timestamp' and 'timestamp'
                 const timestamp = item.Timestamp || item.timestamp;
+                if (item.isDealer) row.classList.add('is-dealer');
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
                     <td data-field="country">${getChineseCountryName(item.country)}</td>
@@ -977,6 +985,7 @@
             })
             .then(response => {
                 if (!response.ok) throw new Error('Update failed');
+                row.classList.toggle('is-dealer', isDealer);
             })
             .catch(error => {
                 console.error('Error toggling dealer status:', error);
