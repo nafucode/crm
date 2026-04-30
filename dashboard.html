@@ -187,17 +187,71 @@
 
         th,
         td {
-            padding: 10px 15px;
+            padding: 10px 12px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
-            font-size: 0.9rem; /* Smaller font */
-            white-space: nowrap; /* Prevent wrapping by default */
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        td[data-field="summary"] {
-            white-space: normal; /* Allow wrapping for summary column */
+        #data-table {
+            table-layout: fixed;
+            min-width: 960px;
+        }
+        #data-table th:nth-child(1) { width: 155px; } /* 日期 */
+        #data-table th:nth-child(2) { width: 80px; }  /* 国家 */
+        #data-table th:nth-child(3) { }               /* 客户信息 — flexible */
+        #data-table th:nth-child(4) { width: 145px; } /* 电话 */
+        #data-table th:nth-child(5) { width: 160px; } /* 其他描述 */
+        #data-table th:nth-child(6) { width: 72px;  } /* 经销商 */
+        #data-table th:nth-child(7) { width: 72px;  } /* 提交人 */
+        #data-table th:nth-child(8) { width: 130px; } /* 操作 */
+
+        td[data-field="summary"],
+        td[data-field="customerId"] {
+            white-space: normal;
             word-break: break-word;
-            min-width: 250px; /* Give it a reasonable minimum width */
+        }
+
+        /* Toggle switch for 经销商 */
+        .dealer-toggle {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .dealer-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .dealer-slider {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 20px;
+            transition: background-color .25s;
+        }
+        .dealer-slider::before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform .25s;
+        }
+        .dealer-toggle input:checked + .dealer-slider {
+            background-color: var(--primary-color);
+        }
+        .dealer-toggle input:checked + .dealer-slider::before {
+            transform: translateX(16px);
         }
 
         thead th {
@@ -352,6 +406,7 @@
                             <th>客户信息</th>
                             <th>电话</th>
                             <th>其他描述</th>
+                            <th style="text-align:center">经销商</th>
                             <th>提交人</th>
                             <th>操作</th>
                         </tr>
@@ -667,6 +722,7 @@
                 '客户信息': item.customerId,
                 '电话': item.phone || '',
                 '其他描述': item.summary || '',
+                '经销商': item.isDealer ? '是' : '否',
                 '提交人': item.salesperson
             }));
 
@@ -870,6 +926,12 @@
                     <td data-field="customerId">${item.customerId}</td>
                     <td data-field="phone" contenteditable="true">${item.phone || ''}</td>
                     <td data-field="summary" contenteditable="true">${item.summary}</td>
+                    <td style="text-align:center">
+                        <label class="dealer-toggle" title="标记为经销商">
+                            <input type="checkbox" class="dealer-check" ${item.isDealer ? 'checked' : ''} onchange="toggleDealer(this)">
+                            <span class="dealer-slider"></span>
+                        </label>
+                    </td>
                     <td data-field="salesperson">${item.salesperson}</td>
                     <td>
                         <button class="btn btn-save" onclick="updateRow(this)">Save</button>
@@ -898,11 +960,12 @@
         }
 
 
-        window.updateRow = function (button) {
-            const row = button.closest('tr');
+        window.toggleDealer = function (checkbox) {
+            const row = checkbox.closest('tr');
             const timestamp = row.dataset.timestamp;
             const phone = row.querySelector('[data-field="phone"]').textContent;
-            const summary = row.querySelector('[data-field="summary"]').textContent; // This is now "其他描述"
+            const summary = row.querySelector('[data-field="summary"]').textContent;
+            const isDealer = checkbox.checked;
 
             fetch('/api/update', {
                 method: 'POST',
@@ -910,7 +973,31 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ timestamp, phone, summary })
+                body: JSON.stringify({ timestamp, phone, summary, isDealer })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Update failed');
+            })
+            .catch(error => {
+                console.error('Error toggling dealer status:', error);
+                checkbox.checked = !checkbox.checked; // revert on failure
+            });
+        }
+
+        window.updateRow = function (button) {
+            const row = button.closest('tr');
+            const timestamp = row.dataset.timestamp;
+            const phone = row.querySelector('[data-field="phone"]').textContent;
+            const summary = row.querySelector('[data-field="summary"]').textContent;
+            const isDealer = row.querySelector('.dealer-check')?.checked ?? false;
+
+            fetch('/api/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ timestamp, phone, summary, isDealer })
             })
                 .then(response => {
                     if (!response.ok) throw new Error('Update failed');

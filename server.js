@@ -249,7 +249,7 @@ app.get('/api/map-data', authenticateAdmin, async (req, res) => {
 
 // API 路由：更新数据行（管理员或记录所有者）
 app.post('/api/update', authenticateToken, async (req, res) => {
-    const { timestamp, customerId, phone, summary } = req.body;
+    const { timestamp, customerId, phone, summary, isDealer } = req.body;
 
     if (!timestamp) {
         return res.status(400).send('缺少时间戳标识');
@@ -272,9 +272,10 @@ app.post('/api/update', authenticateToken, async (req, res) => {
 
         const newRecord = {
             ...oldRecord,
-            customerId: customerId, // 更新客户信息
-            phone: phone, // 更新电话
-            summary: summary // 更新描述
+            customerId: customerId,
+            phone: phone,
+            summary: summary,
+            ...(isDealer !== undefined && { isDealer })
         };
 
         await kv.lset('feedback', index, newRecord);
