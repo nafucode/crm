@@ -358,6 +358,12 @@
         .sc-var-badge{display:inline-block;background:#fff3cd;color:#856404;border-radius:4px;padding:1px 6px;font-size:.75rem;font-family:monospace;margin:2px 2px 0 0}
         .sc-playbook-step{display:flex;align-items:flex-start;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border-color)}
         .sc-step-num{width:28px;height:28px;border-radius:50%;background:var(--primary-color);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+        .sm-input{border:1px solid var(--border-color);border-radius:6px;padding:7px 10px;font-size:.85rem;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color .2s}
+        .sm-input:focus{border-color:var(--primary-color)}
+        .sm-del-btn{border:none;background:#fff0f0;color:var(--danger-color);border-radius:6px;padding:4px 10px;font-size:.8rem;cursor:pointer;font-weight:600}
+        .sm-del-btn:hover{background:var(--danger-color);color:#fff}
+        .sm-edit-btn{border:none;background:#e8f0fe;color:var(--primary-color);border-radius:6px;padding:4px 10px;font-size:.8rem;cursor:pointer;font-weight:600;margin-right:4px}
+        .sm-edit-btn:hover{background:var(--primary-color);color:#fff}
     </style>
 </head>
 
@@ -370,6 +376,7 @@
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
             <a href="#" class="nav-link" onclick="switchTab('scripts', null);return false;">💬 话术模板</a>
+            <a href="#" class="nav-link" id="nav-scriptmgr" style="display:none" onclick="switchTab('scriptmgr', null);return false;">⚙️ 话术管理</a>
             <span id="username-display" class="nav-link"></span>
             <a href="#" id="logout" class="nav-link">退出登录</a>
         </div>
@@ -667,6 +674,99 @@
             </div>
         </div><!-- end tab-scripts -->
 
+        <!-- TAB: 话术管理（admin only） -->
+        <div id="tab-scriptmgr" class="tab-pane">
+            <div class="panel">
+                <div class="panel-title-container">
+                    <div class="panel-title">⚙️ 话术管理</div>
+                    <button class="btn" style="padding:6px 16px;font-size:.85rem;background:#28a745" onclick="smOpenModal()">＋ 新增话术</button>
+                </div>
+                <div id="sm-status" style="display:none;margin:.5rem 0;font-size:.85rem;padding:8px 12px;border-radius:6px"></div>
+                <div class="table-container" style="margin-top:1rem">
+                    <table id="sm-table" style="min-width:900px">
+                        <thead>
+                            <tr style="background:#f8f9fa">
+                                <th style="width:60px">ID</th>
+                                <th style="width:80px">分类</th>
+                                <th style="width:80px">子类</th>
+                                <th style="width:160px">标题</th>
+                                <th>英文内容（预览）</th>
+                                <th style="width:100px;text-align:center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sm-tbody"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--secondary-text-color)">加载中…</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div id="sm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;overflow-y:auto">
+                <div style="background:#fff;border-radius:12px;max-width:720px;margin:40px auto;padding:2rem;position:relative">
+                    <button onclick="smCloseModal()" style="position:absolute;top:1rem;right:1rem;border:none;background:none;font-size:1.4rem;cursor:pointer;color:#999">✕</button>
+                    <div style="font-weight:700;font-size:1.1rem;margin-bottom:1.25rem" id="sm-modal-title">新增话术</div>
+                    <input type="hidden" id="sm-edit-id">
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">ID <span style="color:red">*</span></label>
+                            <input id="sm-f-id" class="sm-input" placeholder="如 c4, my1" style="width:100%">
+                        </div>
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">分类 <span style="color:red">*</span></label>
+                            <select id="sm-f-cat" class="sm-input" style="width:100%">
+                                <option value="cold">❄️ 破冰</option>
+                                <option value="intro">🏢 公司介绍</option>
+                                <option value="product">🔧 产品切入</option>
+                                <option value="followup">📩 跟进</option>
+                                <option value="quote">💰 报价</option>
+                                <option value="closing">🤝 成交推进</option>
+                                <option value="objection">🛡️ 异议处理</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">子类标签</label>
+                            <input id="sm-f-sub" class="sm-input" placeholder="如 初次联系" style="width:100%">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:.75rem">
+                        <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">标题 <span style="color:red">*</span></label>
+                        <input id="sm-f-title" class="sm-input" placeholder="卡片标题" style="width:100%">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇬🇧 英文 <span style="color:red">*</span></label>
+                            <textarea id="sm-f-en" class="sm-input" rows="5" placeholder="英文话术内容" style="width:100%;resize:vertical"></textarea>
+                        </div>
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇪🇸 西班牙语</label>
+                            <textarea id="sm-f-es" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
+                        </div>
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇮🇩 印尼语</label>
+                            <textarea id="sm-f-idlang" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
+                        </div>
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇫🇷 法语</label>
+                            <textarea id="sm-f-fr" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">变量（逗号分隔）</label>
+                            <input id="sm-f-vars" class="sm-input" placeholder="如 name,city,company" style="width:100%">
+                        </div>
+                        <div>
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">标签（逗号分隔）</label>
+                            <input id="sm-f-tags" class="sm-input" placeholder="如 new,lead" style="width:100%">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:.75rem;justify-content:flex-end">
+                        <button class="btn" style="padding:8px 20px;background:#6c757d" onclick="smCloseModal()">取消</button>
+                        <button class="btn" style="padding:8px 20px" onclick="smSave()" id="sm-save-btn">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div><!-- end tab-scriptmgr -->
+
     </div>
 
     <script>
@@ -785,6 +885,7 @@
 
             // Role-based access control
             if (payload.role === 'admin') {
+                document.getElementById('nav-scriptmgr').style.display = '';
                 // Admin sees everything
                 document.getElementById('filter-apply-btn').addEventListener('click', applyFilters);
                 document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
@@ -1212,6 +1313,7 @@
         if (id === 'prospects') crmLoadSaved();
         if (id === 'salesplan') renderSalesPlan();
         if (id === 'scripts') scLoadScripts();
+        if (id === 'scriptmgr') smLoad();
     }
 
     // ── 城市数据 ───────────────────────────────────────────
@@ -2022,6 +2124,127 @@
                 }).join('')}
             </div>
         `).join('');
+    }
+
+    // ── 话术管理 ────────────────────────────────────────────────────────
+    const CAT_LABELS = { cold:'❄️ 破冰', intro:'🏢 公司介绍', product:'🔧 产品切入',
+                         followup:'📩 跟进', quote:'💰 报价', closing:'🤝 成交推进', objection:'🛡️ 异议处理' };
+    let smScripts = [];
+
+    function smShowStatus(msg, ok=true) {
+        const el = document.getElementById('sm-status');
+        el.style.display = 'block';
+        el.style.background = ok ? '#d4edda' : '#f8d7da';
+        el.style.color = ok ? '#155724' : '#721c24';
+        el.textContent = msg;
+        setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    async function smLoad() {
+        const tbody = document.getElementById('sm-tbody');
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--secondary-text-color)">加载中…</td></tr>`;
+        try {
+            const r = await fetch(SEO_API + '/api/scripts');
+            const data = await r.json();
+            smScripts = data.scripts || [];
+            smRenderTable();
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:red">加载失败: ${e.message}</td></tr>`;
+        }
+    }
+
+    function smRenderTable() {
+        const tbody = document.getElementById('sm-tbody');
+        if (!smScripts.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--secondary-text-color)">暂无话术</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = smScripts.map(s => `
+            <tr>
+                <td style="font-family:monospace;font-size:.8rem;color:var(--secondary-text-color)">${s.id}</td>
+                <td style="font-size:.82rem">${CAT_LABELS[s.cat] || s.cat}</td>
+                <td style="font-size:.82rem;color:var(--secondary-text-color)">${s.sub}</td>
+                <td style="font-size:.85rem;font-weight:600">${s.title}</td>
+                <td style="font-size:.82rem;color:#555;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.en || ''}</td>
+                <td style="text-align:center;white-space:nowrap">
+                    <button class="sm-edit-btn" onclick="smOpenModal('${s.id}')">✏️ 编辑</button>
+                    <button class="sm-del-btn" onclick="smDelete('${s.id}')">🗑 删除</button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function smOpenModal(editId) {
+        const modal = document.getElementById('sm-modal');
+        const s = editId ? smScripts.find(x => x.id === editId) : null;
+        document.getElementById('sm-modal-title').textContent = s ? '编辑话术' : '新增话术';
+        document.getElementById('sm-edit-id').value = s ? s.id : '';
+        document.getElementById('sm-f-id').value = s ? s.id : '';
+        document.getElementById('sm-f-id').disabled = !!s;
+        document.getElementById('sm-f-cat').value = s ? s.cat : 'cold';
+        document.getElementById('sm-f-sub').value = s ? s.sub : '';
+        document.getElementById('sm-f-title').value = s ? s.title : '';
+        document.getElementById('sm-f-en').value = s ? s.en : '';
+        document.getElementById('sm-f-es').value = s ? s.es : '';
+        document.getElementById('sm-f-idlang').value = s ? (s.id_lang || '') : '';
+        document.getElementById('sm-f-fr').value = s ? s.fr : '';
+        document.getElementById('sm-f-vars').value = s ? (Array.isArray(s.vars) ? s.vars.join(',') : s.vars) : '';
+        document.getElementById('sm-f-tags').value = s ? (Array.isArray(s.tags) ? s.tags.join(',') : s.tags) : '';
+        modal.style.display = 'block';
+    }
+
+    function smCloseModal() {
+        document.getElementById('sm-modal').style.display = 'none';
+    }
+
+    async function smSave() {
+        const editId = document.getElementById('sm-edit-id').value;
+        const script = {
+            id:      document.getElementById('sm-f-id').value.trim(),
+            cat:     document.getElementById('sm-f-cat').value,
+            sub:     document.getElementById('sm-f-sub').value.trim(),
+            title:   document.getElementById('sm-f-title').value.trim(),
+            en:      document.getElementById('sm-f-en').value.trim(),
+            es:      document.getElementById('sm-f-es').value.trim(),
+            id_lang: document.getElementById('sm-f-idlang').value.trim(),
+            fr:      document.getElementById('sm-f-fr').value.trim(),
+            vars:    document.getElementById('sm-f-vars').value.trim(),
+            tags:    document.getElementById('sm-f-tags').value.trim(),
+        };
+        if (!script.id || !script.title || !script.en) {
+            alert('ID、标题、英文内容为必填项');
+            return;
+        }
+        const btn = document.getElementById('sm-save-btn');
+        btn.textContent = '保存中…'; btn.disabled = true;
+        try {
+            const url = editId ? `${SEO_API}/api/scripts/${editId}` : `${SEO_API}/api/scripts`;
+            const method = editId ? 'PUT' : 'POST';
+            const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(script) });
+            const data = await r.json();
+            if (data.error) throw new Error(data.error);
+            smCloseModal();
+            smShowStatus(editId ? '✅ 已更新' : '✅ 已新增');
+            await smLoad();
+            scLoadScripts(); // refresh 话术模板 tab too
+        } catch(e) {
+            smShowStatus('❌ 失败: ' + e.message, false);
+        } finally {
+            btn.textContent = '保存'; btn.disabled = false;
+        }
+    }
+
+    async function smDelete(id) {
+        if (!confirm(`确认删除话术「${id}」？此操作不可撤销。`)) return;
+        try {
+            const r = await fetch(`${SEO_API}/api/scripts/${id}`, { method: 'DELETE' });
+            const data = await r.json();
+            if (data.error) throw new Error(data.error);
+            smShowStatus('✅ 已删除');
+            await smLoad();
+            scLoadScripts();
+        } catch(e) {
+            smShowStatus('❌ 删除失败: ' + e.message, false);
+        }
     }
 
     </script>
