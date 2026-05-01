@@ -1211,7 +1211,7 @@
         if (btn) btn.classList.add('active');
         if (id === 'prospects') crmLoadSaved();
         if (id === 'salesplan') renderSalesPlan();
-        if (id === 'scripts') scRender();
+        if (id === 'scripts') scLoadScripts();
     }
 
     // ── 城市数据 ───────────────────────────────────────────
@@ -1618,7 +1618,29 @@
     let scCombineMode = false;
     let scSelected = new Set();
 
-    const SC_SCRIPTS = [
+    // Loaded from Google Sheets; fallback to built-in if sheet empty
+    let SC_SCRIPTS = [];
+
+    async function scLoadScripts() {
+        const grid = document.getElementById('sc-cards-grid');
+        if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--secondary-text-color)">⏳ 加载话术库…</div>`;
+        try {
+            const r = await fetch(SEO_API + '/api/scripts');
+            const data = await r.json();
+            if (data.scripts && data.scripts.length > 0) {
+                // Normalize: sheet stores id_lang column (Indonesian), map to 'id' key
+                SC_SCRIPTS = data.scripts.map(s => ({ ...s, id: s.id }));
+            } else {
+                SC_SCRIPTS = SC_SCRIPTS_BUILTIN;
+            }
+        } catch(e) {
+            console.warn('话术库加载失败，使用内置数据', e);
+            SC_SCRIPTS = SC_SCRIPTS_BUILTIN;
+        }
+        scRender();
+    }
+
+    const SC_SCRIPTS_BUILTIN = [
         // ── Cold Opening ─────────────────────────────────────────────────
         { id:'c1', cat:'cold', sub:'初次联系', tags:['new','lead'],
           vars:['name','company','city'],
@@ -1794,6 +1816,8 @@
           id:`{{name}}, itu bagus — memiliki pemasok yang andal memang penting. Saya tidak ingin mengganggu hubungan yang baik. Tapi banyak klien kami menggunakan kami sebagai sumber kedua untuk menjaga harga tetap kompetitif. Apakah berguna untuk menyimpan spesifikasi kami sebagai referensi?`,
           fr:`{{name}}, c'est bien — avoir un fournisseur fiable est important. Je ne suis pas là pour perturber cette relation. Mais beaucoup de nos clients nous utilisent comme second fournisseur pour maintenir des prix compétitifs. Serait-il utile d'avoir nos specs en référence ?` },
     ];
+    // Initialize SC_SCRIPTS to builtin until Sheets loads
+    SC_SCRIPTS = SC_SCRIPTS_BUILTIN;
 
     const SC_PLAYBOOKS = [
         {
@@ -1819,6 +1843,13 @@
             ]
         }
     ];
+
+    // Get localized text for a script; handles builtin 'id' key vs Sheet 'id_lang' key
+    function scText(s) {
+        if (!s) return '';
+        if (scLang === 'id') return s.id_lang || s.id || s.en || '';
+        return s[scLang] || s.en || '';
+    }
 
     function scGetFavs() {
         try { return new Set(JSON.parse(localStorage.getItem(SC_FAV_KEY) || '[]')); }
@@ -1875,7 +1906,7 @@
         if (scSelected.size === 0) { preview.style.display = 'none'; return; }
         const parts = [...scSelected].map(id => {
             const s = SC_SCRIPTS.find(x => x.id === id);
-            return s ? s[scLang] : '';
+            return scText(s);
         }).filter(Boolean);
         preview.style.display = 'block';
         preview.textContent = parts.join('\n\n');
@@ -1884,7 +1915,7 @@
     function scComposeCopy() {
         const parts = [...scSelected].map(id => {
             const s = SC_SCRIPTS.find(x => x.id === id);
-            return s ? s[scLang] : '';
+            return scText(s);
         }).filter(Boolean);
         const text = parts.join('\n\n');
         navigator.clipboard.writeText(text).then(() => {
@@ -1900,10 +1931,18 @@
         scRender();
     }
 
+    function scCopyById(id, btn) {
+        const s = SC_SCRIPTS.find(x => x.id === id);
+        if (!s) return;
+        navigator.clipboard.writeText(scText(s)).then(() => {
+            btn.textContent = '✅ 已复制'; setTimeout(() => btn.textContent = '📋 复制', 1500);
+        });
+    }
+
     function scCopyScript(id, btn) {
         const s = SC_SCRIPTS.find(x => x.id === id);
         if (!s) return;
-        navigator.clipboard.writeText(s[scLang]).then(() => {
+        navigator.clipboard.writeText(scText(s)).then(() => {
             const flash = btn.closest('.sc-card').querySelector('.sc-copy-flash');
             if (flash) { flash.classList.add('show'); setTimeout(() => flash.classList.remove('show'), 1500); }
         });
@@ -1940,7 +1979,7 @@
         grid.innerHTML = list.map(s => {
             const isFav = favs.has(s.id);
             const isSel = scSelected.has(s.id);
-            const text = s[scLang] || s.en;
+            const text = scText(s);
             const preview = text.length > 80 ? text.slice(0, 80) + '…' : text;
             return `<div class="sc-card${isSel ? ' selected' : ''}" id="sc-card-${s.id}">
                 <div class="sc-copy-flash">✅ 已复制</div>
@@ -1970,14 +2009,14 @@
                 <div style="font-weight:700;font-size:1.05rem;margin-bottom:.75rem">${pb.title}</div>
                 ${pb.steps.map(step => {
                     const s = SC_SCRIPTS.find(x => x.id === step.scriptId);
-                    const text = s ? (s[scLang] || s.en) : '';
+                    const text = scText(s);
                     return `<div class="sc-playbook-step">
                         <div class="sc-step-num">${step.step}</div>
                         <div style="flex:1">
                             <div style="font-weight:600;font-size:.9rem">${step.label} <span style="font-weight:400;color:var(--secondary-text-color);font-size:.82rem">— ${step.desc}</span></div>
                             ${s ? `<div style="font-size:.82rem;color:#555;margin-top:.35rem;cursor:pointer" onclick="this.nextElementSibling.classList.toggle('expanded')">${text.slice(0,90)}… <span style="color:var(--primary-color)">展开</span></div>
                             <div class="sc-card-body" style="margin-top:.35rem">${text.replace(/\n/g,'<br>')}</div>
-                            <button class="sc-btn-copy" style="margin-top:.4rem" onclick="navigator.clipboard.writeText(SC_SCRIPTS.find(x=>x.id==='${step.scriptId}')[scLang]||SC_SCRIPTS.find(x=>x.id==='${step.scriptId}').en).then(()=>{this.textContent='✅ 已复制';setTimeout(()=>this.textContent='📋 复制',1500)})">📋 复制</button>` : ''}
+                            <button class="sc-btn-copy" style="margin-top:.4rem" onclick="scCopyById('${step.scriptId}', this)">📋 复制</button>` : ''}
                         </div>
                     </div>`;
                 }).join('')}
