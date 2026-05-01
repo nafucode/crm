@@ -803,6 +803,13 @@
                 localStorage.removeItem('token');
                 window.location.href = '/login.html';
             });
+
+            // Jump to tab requested from index.html
+            const initTab = sessionStorage.getItem('initTab');
+            if (initTab) {
+                sessionStorage.removeItem('initTab');
+                switchTab(initTab, null);
+            }
         });
 
         let currentFilteredData = []; // Store currently filtered data

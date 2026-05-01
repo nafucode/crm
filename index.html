@@ -30,22 +30,24 @@
         .navbar {
             background-color: var(--white);
             box-shadow: var(--shadow);
-            padding: 0 2rem;
+            padding: 0 2.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             height: 60px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
         }
-        .navbar-brand {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            text-decoration: none;
-        }
+        .navbar-brand img { height: 40px; width: auto; }
+        .nav-links { display: flex; align-items: center; }
         .nav-links a {
             color: var(--dark-gray);
             text-decoration: none;
             margin-left: 1.5rem;
+            font-size: 1rem;
             font-weight: 500;
             transition: color 0.2s;
         }
@@ -60,6 +62,7 @@
             font-family: inherit;
             font-size: 1rem;
             font-weight: 500;
+            margin-left: 1.5rem;
         }
 
         .main-content {
@@ -276,10 +279,14 @@
 </head>
 <body>
     <div class="navbar">
-        <a href="/dashboard.html" class="navbar-brand">数据看板系统</a>
+        <a href="/dashboard.html" class="navbar-brand"><img src="/xinfuji-logo.svg" alt="XINFUJI"></a>
         <div class="nav-links">
-            <a href="/index.html" class="active">提交反馈</a>
-            <a href="/dashboard.html">数据看板</a>
+            <a href="/index.html" class="active">提交表单</a>
+            <a href="/dashboard.html" onclick="sessionStorage.setItem('initTab','prospects');return true;">🌍 开发客户</a>
+            <a href="/dashboard.html" onclick="sessionStorage.setItem('initTab','dashboard');return true;">📊 数据看板</a>
+            <a href="/dashboard.html" onclick="sessionStorage.setItem('initTab','salesplan');return true;">🎯 销售计划</a>
+            <a href="/dashboard.html" onclick="sessionStorage.setItem('initTab','scripts');return true;">💬 话术模板</a>
+            <span id="username-display" style="margin-left:1.5rem;font-size:1rem;color:var(--dark-gray)"></span>
             <button id="logout-btn">退出登录</button>
         </div>
     </div>
@@ -421,11 +428,9 @@
         } else {
             const userPayload = parseJwt(token);
             if (userPayload) {
-                // 根据角色显示或隐藏看板链接
-                if (userPayload.role !== 'admin') {
-                    const dashboardLink = document.querySelector('a[href="/dashboard.html"]');
-                    if (dashboardLink) dashboardLink.style.display = 'none';
-                }
+                // 显示用户名
+                const udisp = document.getElementById('username-display');
+                if (udisp && userPayload.username) udisp.textContent = `Welcome, ${userPayload.username}`;
 
                 // 自动填充提交人
                 fetch('/api/user', { headers: { 'Authorization': `Bearer ${token}` } })
