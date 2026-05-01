@@ -1369,6 +1369,7 @@
         { name: '陈颢',   target: 40 },
         { name: '钱晨阳', target: 30 },
         { name: '李菲艳', target: 20 },
+        { name: '魏佳瑶', target: null },
     ];
     const TEAM_TARGET = 220;
     const MONTH_TARGET = 20;
@@ -1429,18 +1430,18 @@
                 </tr>`;
             }
 
-            const pct = Math.min(100, Math.round(done / p.target * 100));
-            const barColor = pct >= 100 ? '#28a745' : pct >= 60 ? '#007bff' : pct >= 30 ? '#fd7e14' : '#dc3545';
+            const pct = p.target ? Math.min(100, Math.round(done / p.target * 100)) : null;
+            const barColor = pct === null ? '#6c757d' : pct >= 100 ? '#28a745' : pct >= 60 ? '#007bff' : pct >= 30 ? '#fd7e14' : '#dc3545';
             return `<tr>
                 <td style="font-weight:600">${p.name}</td>
-                <td style="text-align:center;color:var(--secondary-text-color)">${p.target}</td>
+                <td style="text-align:center;color:var(--secondary-text-color)">${p.target ?? '待定'}</td>
                 <td style="text-align:center;font-weight:600;color:${barColor}">${done}</td>
                 <td>
                     <div style="display:flex;align-items:center;gap:6px">
                         <div style="flex:1;background:#e9ecef;border-radius:4px;height:8px;overflow:hidden">
-                            <div style="width:${pct}%;background:${barColor};height:100%;border-radius:4px;transition:width .3s"></div>
+                            <div style="width:${pct ?? 0}%;background:${barColor};height:100%;border-radius:4px;transition:width .3s"></div>
                         </div>
-                        <span style="font-size:0.8rem;color:${barColor};font-weight:600;min-width:34px">${pct}%</span>
+                        <span style="font-size:0.8rem;color:${barColor};font-weight:600;min-width:34px">${pct !== null ? pct + '%' : '—'}</span>
                     </div>
                 </td>
                 ${monthCells}
