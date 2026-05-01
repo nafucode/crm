@@ -334,6 +334,30 @@
         .prospect-loading{text-align:center;padding:50px;color:var(--secondary-text-color);}
         .prospect-empty{text-align:center;padding:50px;color:var(--secondary-text-color);}
         .saved-section{margin-top:2rem;}
+
+        /* ── 话术模板 ─────────────────────────────── */
+        .sc-lang,.sc-cat{border:1px solid var(--border-color);background:var(--white);color:var(--secondary-text-color);border-radius:6px;padding:4px 12px;font-size:.82rem;cursor:pointer;transition:all .2s}
+        .sc-lang:hover,.sc-cat:hover{border-color:var(--primary-color);color:var(--primary-color)}
+        .sc-lang.active,.sc-cat.active{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}
+        .sc-card{background:var(--white);border:1.5px solid var(--border-color);border-radius:10px;padding:1rem;display:flex;flex-direction:column;gap:.5rem;transition:box-shadow .2s,border-color .2s;position:relative}
+        .sc-card:hover{box-shadow:0 4px 16px rgba(0,123,255,.12);border-color:#c0d8ff}
+        .sc-card.selected{border-color:var(--primary-color);background:#f0f7ff}
+        .sc-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+        .sc-card-title{font-weight:700;font-size:.95rem;color:var(--text-color)}
+        .sc-card-sub{font-size:.75rem;color:var(--secondary-text-color);margin-top:2px}
+        .sc-card-body{font-size:.85rem;color:#444;line-height:1.6;display:none;margin-top:.25rem;white-space:pre-wrap}
+        .sc-card-body.expanded{display:block}
+        .sc-card-actions{display:flex;gap:.5rem;margin-top:.25rem;align-items:center}
+        .sc-btn-copy{border:none;background:#e8f0fe;color:var(--primary-color);border-radius:6px;padding:4px 12px;font-size:.8rem;cursor:pointer;font-weight:600;transition:background .2s}
+        .sc-btn-copy:hover{background:var(--primary-color);color:#fff}
+        .sc-btn-fav{border:none;background:transparent;font-size:1rem;cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .2s}
+        .sc-btn-fav:hover{background:#fff3cd}
+        .sc-check{width:16px;height:16px;cursor:pointer;accent-color:var(--primary-color)}
+        .sc-copy-flash{position:absolute;top:10px;right:10px;background:#28a745;color:#fff;font-size:.75rem;padding:3px 10px;border-radius:99px;opacity:0;transition:opacity .3s;pointer-events:none}
+        .sc-copy-flash.show{opacity:1}
+        .sc-var-badge{display:inline-block;background:#fff3cd;color:#856404;border-radius:4px;padding:1px 6px;font-size:.75rem;font-family:monospace;margin:2px 2px 0 0}
+        .sc-playbook-step{display:flex;align-items:flex-start;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border-color)}
+        .sc-step-num{width:28px;height:28px;border-radius:50%;background:var(--primary-color);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
     </style>
 </head>
 
@@ -345,6 +369,7 @@
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
+            <a href="#" class="nav-link" onclick="switchTab('scripts', null);return false;">💬 话术模板</a>
             <span id="username-display" class="nav-link"></span>
             <a href="#" id="logout" class="nav-link">退出登录</a>
         </div>
@@ -588,6 +613,59 @@
                 </div>
             </div>
         </div><!-- end tab-salesplan -->
+
+        <!-- TAB: 话术模板 -->
+        <div id="tab-scripts" class="tab-pane">
+            <div class="panel">
+                <div class="panel-title-container" style="flex-wrap:wrap;gap:.75rem">
+                    <div class="panel-title">💬 外贸话术模板库</div>
+                    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                        <!-- Language switcher -->
+                        <div id="sc-lang-btns" style="display:flex;gap:4px">
+                            <button class="sc-lang active" data-lang="en" onclick="scSetLang('en')">🇬🇧 EN</button>
+                            <button class="sc-lang" data-lang="es" onclick="scSetLang('es')">🇪🇸 ES</button>
+                            <button class="sc-lang" data-lang="id" onclick="scSetLang('id')">🇮🇩 ID</button>
+                            <button class="sc-lang" data-lang="fr" onclick="scSetLang('fr')">🇫🇷 FR</button>
+                        </div>
+                        <button class="btn" style="padding:5px 14px;font-size:0.82rem;background:var(--primary-color)" onclick="scToggleCombine()">
+                            <span id="sc-combine-label">✚ 组合发送</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category filter -->
+                <div id="sc-cat-btns" style="display:flex;flex-wrap:wrap;gap:6px;margin:1rem 0 .5rem">
+                    <button class="sc-cat active" data-cat="all" onclick="scSetCat('all')">全部</button>
+                    <button class="sc-cat" data-cat="cold" onclick="scSetCat('cold')">❄️ 破冰</button>
+                    <button class="sc-cat" data-cat="intro" onclick="scSetCat('intro')">🏢 公司介绍</button>
+                    <button class="sc-cat" data-cat="product" onclick="scSetCat('product')">🔧 产品切入</button>
+                    <button class="sc-cat" data-cat="followup" onclick="scSetCat('followup')">📩 跟进</button>
+                    <button class="sc-cat" data-cat="quote" onclick="scSetCat('quote')">💰 报价</button>
+                    <button class="sc-cat" data-cat="closing" onclick="scSetCat('closing')">🤝 成交推进</button>
+                    <button class="sc-cat" data-cat="objection" onclick="scSetCat('objection')">🛡️ 异议处理</button>
+                    <button class="sc-cat" data-cat="fav" onclick="scSetCat('fav')">⭐ 收藏</button>
+                    <button class="sc-cat" data-cat="playbook" onclick="scSetCat('playbook')">📋 Playbook</button>
+                </div>
+
+                <!-- Combine bar (hidden by default) -->
+                <div id="sc-combine-bar" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+                        <span style="font-size:.85rem;color:#856404">已选 <strong id="sc-selected-count">0</strong> 条话术 · 将自动拼接发送</span>
+                        <div style="display:flex;gap:.5rem">
+                            <button class="btn" style="padding:5px 14px;font-size:.82rem;background:#28a745" onclick="scComposeCopy()">📋 合并复制</button>
+                            <button class="btn" style="padding:5px 14px;font-size:.82rem;background:#6c757d" onclick="scClearSelected()">清空选择</button>
+                        </div>
+                    </div>
+                    <div id="sc-preview" style="display:none;margin-top:.75rem;background:#fff;border:1px solid #dee2e6;border-radius:6px;padding:.75rem;font-size:.85rem;white-space:pre-wrap;max-height:160px;overflow-y:auto"></div>
+                </div>
+
+                <!-- Cards grid -->
+                <div id="sc-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-top:.5rem"></div>
+
+                <!-- Playbook view (hidden unless playbook cat) -->
+                <div id="sc-playbook-view" style="display:none"></div>
+            </div>
+        </div><!-- end tab-scripts -->
 
     </div>
 
@@ -1126,6 +1204,7 @@
         if (btn) btn.classList.add('active');
         if (id === 'prospects') crmLoadSaved();
         if (id === 'salesplan') renderSalesPlan();
+        if (id === 'scripts') scRender();
     }
 
     // ── 城市数据 ───────────────────────────────────────────
@@ -1525,6 +1604,380 @@
         init['胡佳润']['3月'] = 4; // Frank/老莫 4台计入团队负责人名下
         spSave(init);
     })();
+    // ── 话术模板 ──────────────────────────────────────────────────────────
+    const SC_FAV_KEY = 'sc_favorites';
+    let scLang = 'en';
+    let scCat = 'all';
+    let scCombineMode = false;
+    let scSelected = new Set();
+
+    const SC_SCRIPTS = [
+        // ── Cold Opening ─────────────────────────────────────────────────
+        { id:'c1', cat:'cold', sub:'初次联系', tags:['new','lead'],
+          vars:['name','company','city'],
+          title:'初次联系 — LinkedIn/WhatsApp',
+          en:`Hi {{name}}, I'm reaching out from Xinfuji Elevator — we specialize in residential and commercial elevators and have completed projects in {{city}}. Would love to learn more about {{company}}'s current or upcoming projects. Would you be open to a quick chat?`,
+          es:`Hola {{name}}, me comunico desde Xinfuji Elevator. Nos especializamos en ascensores residenciales y comerciales con proyectos en {{city}}. Me gustaría conocer más sobre los proyectos de {{company}}. ¿Tendría unos minutos para conversar?`,
+          id:`Halo {{name}}, saya dari Xinfuji Elevator — kami spesialis lift hunian dan komersial dengan proyek di {{city}}. Boleh saya tahu lebih lanjut tentang proyek {{company}}?`,
+          fr:`Bonjour {{name}}, je vous contacte de la part de Xinfuji Elevator. Nous sommes spécialisés dans les ascenseurs résidentiels et commerciaux avec des projets à {{city}}. Puis-je en savoir plus sur les projets de {{company}} ?` },
+
+        { id:'c2', cat:'cold', sub:'展会后跟进', tags:['new','lead'],
+          vars:['name','event'],
+          title:'展会后跟进',
+          en:`Hi {{name}}, great meeting you at {{event}}! I wanted to follow up on our conversation about elevator solutions. I've put together some information I think would be relevant to your projects — shall I send it over?`,
+          es:`Hola {{name}}, fue un placer conocerte en {{event}}. Quería dar seguimiento a nuestra conversación sobre soluciones de ascensores. ¿Te puedo enviar información relevante?`,
+          id:`Halo {{name}}, senang bertemu di {{event}}! Saya ingin menindaklanjuti diskusi kita tentang solusi lift. Boleh saya kirimkan informasinya?`,
+          fr:`Bonjour {{name}}, ravi de vous avoir rencontré à {{event}} ! Je souhaitais faire suite à notre échange sur les ascenseurs. Puis-je vous envoyer quelques informations ?` },
+
+        { id:'c3', cat:'cold', sub:'推荐介绍', tags:['new','lead'],
+          vars:['name','referrer'],
+          title:'推荐介绍',
+          en:`Hi {{name}}, {{referrer}} suggested I reach out to you. We've been working together on elevator projects and I thought our solutions might also benefit your team. Would you be open to a quick introduction call?`,
+          es:`Hola {{name}}, {{referrer}} me sugirió contactarte. Hemos colaborado en proyectos de ascensores y creo que nuestras soluciones podrían ser útiles para tu equipo.`,
+          id:`Halo {{name}}, {{referrer}} menyarankan saya untuk menghubungi Anda. Kami telah bekerja sama dalam proyek lift — mungkin solusi kami juga bermanfaat untuk tim Anda.`,
+          fr:`Bonjour {{name}}, {{referrer}} m'a suggéré de vous contacter. Nous collaborons sur des projets d'ascenseurs et je pense que nos solutions pourraient vous intéresser.` },
+
+        // ── Company Intro ────────────────────────────────────────────────
+        { id:'i1', cat:'intro', sub:'简短版', tags:['new'],
+          vars:[],
+          title:'公司介绍 — 简短版',
+          en:`Xinfuji Elevator is a China-based manufacturer with 15+ years in residential, commercial, and industrial elevators. We serve dealers and contractors across Southeast Asia, Africa, and Latin America with competitive pricing and reliable after-sales support.`,
+          es:`Xinfuji Elevator es un fabricante chino con más de 15 años en ascensores residenciales, comerciales e industriales. Servimos a distribuidores y contratistas en Asia, África y América Latina.`,
+          id:`Xinfuji Elevator adalah produsen asal China dengan pengalaman 15+ tahun di bidang lift hunian, komersial, dan industri. Kami melayani dealer dan kontraktor di seluruh Asia Tenggara, Afrika, dan Amerika Latin.`,
+          fr:`Xinfuji Elevator est un fabricant chinois avec plus de 15 ans d'expérience dans les ascenseurs résidentiels, commerciaux et industriels. Nous servons distributeurs et entrepreneurs en Asie, Afrique et Amérique Latine.` },
+
+        { id:'i2', cat:'intro', sub:'标准版', tags:['new'],
+          vars:[],
+          title:'公司介绍 — 标准版',
+          en:`Xinfuji Elevator has been manufacturing elevators since 2008. Our product range covers passenger elevators (4–21 floors), cargo lifts, panoramic elevators, and home lifts. We hold ISO 9001 certification and comply with CE/SGS standards. Our factory covers 30,000 sqm with a capacity of 3,000+ units/year. We currently export to 50+ countries and have a dedicated after-sales team for technical support.`,
+          es:`Xinfuji Elevator fabrica ascensores desde 2008. Nuestra gama incluye ascensores de pasajeros (4–21 pisos), montacargas, ascensores panorámicos y domésticos. Contamos con certificación ISO 9001 y cumplimiento CE/SGS. Exportamos a más de 50 países.`,
+          id:`Xinfuji Elevator telah memproduksi lift sejak 2008. Produk kami mencakup lift penumpang (4–21 lantai), lift kargo, lift panoramik, dan home lift. Tersertifikasi ISO 9001, CE/SGS. Ekspor ke 50+ negara dengan tim after-sales dedicasi.`,
+          fr:`Xinfuji Elevator fabrique des ascenseurs depuis 2008. Notre gamme comprend des ascenseurs passagers (4–21 étages), monte-charges, ascenseurs panoramiques et ascenseurs privatifs. Certifié ISO 9001, CE/SGS. Export vers 50+ pays.` },
+
+        { id:'i3', cat:'intro', sub:'背书版', tags:['new','closing'],
+          vars:['city'],
+          title:'公司介绍 — 背书版（含案例）',
+          en:`We've recently completed projects in {{city}} including residential towers, shopping malls, and hospital buildings. Our clients include [project name] and [developer name]. I can share project photos and technical drawings if helpful — this gives a clearer picture of our installation quality.`,
+          es:`Recientemente completamos proyectos en {{city}} que incluyen torres residenciales, centros comerciales y hospitales. Puedo compartir fotos y planos técnicos si te resulta útil.`,
+          id:`Kami baru saja menyelesaikan proyek di {{city}} termasuk gedung apartemen, mal, dan rumah sakit. Saya bisa berbagi foto proyek dan gambar teknis jika dibutuhkan.`,
+          fr:`Nous avons récemment achevé des projets à {{city}} incluant des tours résidentielles, des centres commerciaux et des hôpitaux. Je peux partager des photos et plans techniques si cela vous est utile.` },
+
+        // ── Product Hook ─────────────────────────────────────────────────
+        { id:'p1', cat:'product', sub:'询问需求', tags:['new','lead'],
+          vars:['name'],
+          title:'询问需求 — 开放问题',
+          en:`Hi {{name}}, to make sure I send you the most relevant information — could you share a bit about your current projects? For example: how many floors, passenger capacity, and whether it's residential or commercial? That way I can give you a precise recommendation.`,
+          es:`Hola {{name}}, para enviarte la información más relevante, ¿podrías compartir detalles sobre tus proyectos actuales? Por ejemplo: número de pisos, capacidad y tipo de edificio.`,
+          id:`Halo {{name}}, agar saya bisa memberi rekomendasi yang tepat — boleh ceritakan sedikit tentang proyek Anda saat ini? Misalnya: berapa lantai, kapasitas, dan jenis bangunannya?`,
+          fr:`Bonjour {{name}}, pour vous envoyer les informations les plus pertinentes — pourriez-vous me donner quelques détails sur vos projets ? Par exemple : nombre d'étages, capacité passagers, et type de bâtiment ?` },
+
+        { id:'p2', cat:'product', sub:'引导项目', tags:['lead','quotation'],
+          vars:['name'],
+          title:'引导项目 — 技术参数切入',
+          en:`{{name}}, based on what you've described, I'd recommend our MRL (Machine Room Less) passenger elevator — it's our most popular model for mid-rise buildings (6–18 floors), supports 630–1000kg capacity, and runs at 1.0–1.75 m/s. It's compliant with EN81-20 and has been installed in 500+ buildings regionally. Would you like me to prepare a preliminary spec sheet?`,
+          es:`{{name}}, según lo descrito, te recomendaría nuestro ascensor de pasajeros MRL — el más popular para edificios de 6–18 pisos, 630–1000 kg, 1.0–1.75 m/s. ¿Preparo una hoja de especificaciones?`,
+          id:`{{name}}, berdasarkan yang Anda ceritakan, saya merekomendasikan lift penumpang MRL kami — paling populer untuk gedung 6–18 lantai, kapasitas 630–1000 kg, kecepatan 1.0–1.75 m/s. Mau saya siapkan lembar spesifikasi?`,
+          fr:`{{name}}, d'après ce que vous m'avez décrit, je vous recommande notre ascenseur passager MRL — le plus adapté aux immeubles de 6–18 étages, 630–1000 kg, 1,0–1,75 m/s. Puis-je préparer une fiche technique préliminaire ?` },
+
+        { id:'p3', cat:'product', sub:'技术切入', tags:['lead','quotation'],
+          vars:['name'],
+          title:'技术切入 — 差异化优势',
+          en:`{{name}}, one thing I'd like to highlight: our elevators use VVVF (Variable Voltage Variable Frequency) drive technology, which reduces energy consumption by up to 30% vs traditional hydraulic systems. For a building running 10+ hours/day, this translates to significant long-term savings. Happy to share a cost comparison if useful.`,
+          es:`{{name}}, me gustaría destacar que nuestros ascensores usan tecnología VVVF, que reduce el consumo energético hasta en un 30%. Puedo compartir una comparativa de costos si te interesa.`,
+          id:`{{name}}, satu hal yang ingin saya tekankan: lift kami menggunakan teknologi VVVF yang mengurangi konsumsi energi hingga 30%. Mau saya kirimkan perbandingan biaya?`,
+          fr:`{{name}}, je souhaite souligner que nos ascenseurs utilisent la technologie VVVF, réduisant la consommation d'énergie jusqu'à 30%. Puis-je vous envoyer une comparaison de coûts ?` },
+
+        // ── Follow-up ────────────────────────────────────────────────────
+        { id:'f1', cat:'followup', sub:'轻跟进', tags:['lead','quotation'],
+          vars:['name'],
+          title:'轻跟进 — 温和提醒',
+          en:`Hi {{name}}, just checking in — did you get a chance to review the information I sent? No pressure at all, just want to make sure it reached you and answer any questions you might have.`,
+          es:`Hola {{name}}, solo quería saber si tuviste la oportunidad de revisar la información que te envié. Sin prisa, solo quiero asegurarme de que llegó bien.`,
+          id:`Halo {{name}}, hanya ingin memastikan — apakah Anda sempat melihat informasi yang saya kirimkan? Tidak ada tekanan, hanya ingin memastikan sampai dan menjawab pertanyaan Anda.`,
+          fr:`Bonjour {{name}}, je voulais juste vérifier — avez-vous eu l'occasion de consulter les informations que je vous ai envoyées ? Pas de pression, je veux juste m'assurer que vous les avez reçues.` },
+
+        { id:'f2', cat:'followup', sub:'强跟进', tags:['quotation'],
+          vars:['name'],
+          title:'强跟进 — 推动决策',
+          en:`Hi {{name}}, I wanted to follow up more directly — we have a production slot opening up next month and I'd hate for you to miss the best pricing window. Is there anything holding you back from moving forward? I'm happy to address any concerns on specs, pricing, or delivery timeline.`,
+          es:`Hola {{name}}, quería hacer un seguimiento más directo — tenemos un espacio de producción disponible el próximo mes y no quisiera que perdieras la mejor oportunidad de precio. ¿Hay algo que te impida avanzar?`,
+          id:`Halo {{name}}, ingin menindaklanjuti secara langsung — kami memiliki slot produksi yang tersedia bulan depan dan saya tidak ingin Anda melewatkan harga terbaik. Adakah yang menghalangi Anda untuk melanjutkan?`,
+          fr:`Bonjour {{name}}, je souhaitais faire un suivi plus direct — nous avons un créneau de production disponible le mois prochain et je ne voudrais pas que vous manquiez la meilleure fenêtre tarifaire. Y a-t-il quelque chose qui vous freine ?` },
+
+        { id:'f3', cat:'followup', sub:'提供价值', tags:['lead','quotation'],
+          vars:['name','city'],
+          title:'跟进 — 附加价值',
+          en:`{{name}}, I came across a project in {{city}} similar to yours that used our elevator model — I thought the case study and installation photos might be helpful for your evaluation. Sharing the link here: [link]. Let me know if you'd like a technical comparison with your current shortlisted suppliers.`,
+          es:`{{name}}, encontré un proyecto en {{city}} similar al tuyo que usó nuestro modelo — creo que el caso de estudio podría ser útil. Comparto el enlace: [enlace]. ¿Te gustaría una comparación técnica?`,
+          id:`{{name}}, saya menemukan proyek di {{city}} yang mirip dengan proyek Anda menggunakan model lift kami. Saya rasa studi kasus ini bisa membantu evaluasi Anda: [tautan]. Mau perbandingan teknis?`,
+          fr:`{{name}}, j'ai trouvé un projet à {{city}} similaire au vôtre utilisant notre modèle — je pense que l'étude de cas pourrait vous aider. Voici le lien : [lien]. Souhaitez-vous une comparaison technique ?` },
+
+        // ── Quotation ────────────────────────────────────────────────────
+        { id:'q1', cat:'quote', sub:'发报价', tags:['quotation'],
+          vars:['name'],
+          title:'发报价 — 附说明',
+          en:`Hi {{name}}, please find the quotation attached. A few things to note:\n• Price is FOB Shanghai, valid for 30 days\n• Lead time: 45–60 days after deposit\n• Payment: 30% deposit + 70% before shipment\n• Warranty: 12 months on parts\n\nLet me know if you'd like any adjustments on spec or quantity.`,
+          es:`Hola {{name}}, adjunto la cotización. Puntos clave:\n• Precio FOB Shanghai, válido 30 días\n• Tiempo de entrega: 45–60 días tras depósito\n• Pago: 30% depósito + 70% antes del envío\n• Garantía: 12 meses en piezas\n\n¿Necesitas algún ajuste?`,
+          id:`Halo {{name}}, terlampir penawaran harga. Beberapa poin penting:\n• Harga FOB Shanghai, berlaku 30 hari\n• Lead time: 45–60 hari setelah deposit\n• Pembayaran: 30% deposit + 70% sebelum pengiriman\n• Garansi: 12 bulan suku cadang\n\nAda penyesuaian yang dibutuhkan?`,
+          fr:`Bonjour {{name}}, veuillez trouver le devis en pièce jointe. Points clés :\n• Prix FOB Shanghai, valable 30 jours\n• Délai : 45–60 jours après acompte\n• Paiement : 30 % acompte + 70 % avant expédition\n• Garantie : 12 mois pièces\n\nDes ajustements nécessaires ?` },
+
+        { id:'q2', cat:'quote', sub:'解释价格', tags:['quotation'],
+          vars:['name'],
+          title:'解释价格 — 价值拆解',
+          en:`{{name}}, I understand the price might seem higher than some alternatives. Here's what's included that others often charge extra for:\n✅ Full installation manual & wiring diagrams\n✅ Remote monitoring system (free for year 1)\n✅ Spare parts package\n✅ English/local language technical support\n\nWhen you factor these in, the total cost of ownership is very competitive.`,
+          es:`{{name}}, entiendo que el precio puede parecer alto. Esto es lo que incluye sin costo adicional:\n✅ Manual completo de instalación\n✅ Sistema de monitoreo remoto (gratis año 1)\n✅ Paquete de repuestos\n✅ Soporte técnico en español\n\nConsiderando todo, el costo total es muy competitivo.`,
+          id:`{{name}}, saya mengerti harganya mungkin terlihat lebih tinggi. Ini yang sudah termasuk:\n✅ Manual instalasi lengkap\n✅ Sistem pemantauan jarak jauh (gratis tahun 1)\n✅ Paket suku cadang\n✅ Dukungan teknis bahasa Indonesia\n\nJika diperhitungkan, total biaya kepemilikan sangat kompetitif.`,
+          fr:`{{name}}, je comprends que le prix puisse sembler élevé. Voici ce qui est inclus sans frais supplémentaires :\n✅ Manuel d'installation complet\n✅ Système de surveillance à distance (gratuit an 1)\n✅ Kit de pièces de rechange\n✅ Support technique en français\n\nEn tenant compte de tout cela, le coût total est très compétitif.` },
+
+        { id:'q3', cat:'quote', sub:'催回复', tags:['quotation'],
+          vars:['name'],
+          title:'催回复 — 报价期限提醒',
+          en:`Hi {{name}}, just a quick reminder that the quotation I sent on [date] will expire in 3 days. After that, I'll need to re-confirm pricing with our factory. If you have any questions or need adjustments, let's sort them out today — I want to make sure you lock in the best rate.`,
+          es:`Hola {{name}}, recordatorio rápido: la cotización que te envié el [fecha] vence en 3 días. Después necesitaré reconfirmar precios. Si tienes preguntas, resolvámoslas hoy.`,
+          id:`Halo {{name}}, pengingat singkat: penawaran yang saya kirimkan pada [tanggal] akan berakhir dalam 3 hari. Setelah itu saya perlu konfirmasi ulang harga ke pabrik. Ada pertanyaan? Mari selesaikan hari ini.`,
+          fr:`Bonjour {{name}}, rappel rapide : le devis que je vous ai envoyé le [date] expire dans 3 jours. Après cela, je devrai reconfirmer les prix. Des questions ? Réglons-les aujourd'hui.` },
+
+        // ── Closing ──────────────────────────────────────────────────────
+        { id:'cl1', cat:'closing', sub:'促单', tags:['closing'],
+          vars:['name'],
+          title:'促单 — 直接推进',
+          en:`{{name}}, I think we've covered all the key points and I'm confident this solution fits your project well. What would it take to move forward this week? I can prepare the PI (Proforma Invoice) today so we can get the production slot confirmed.`,
+          es:`{{name}}, creo que hemos cubierto todos los puntos clave y confío en que esta solución se adapta bien a tu proyecto. ¿Qué se necesitaría para avanzar esta semana? Puedo preparar la factura proforma hoy.`,
+          id:`{{name}}, saya rasa kita sudah membahas semua poin penting dan saya yakin solusi ini cocok untuk proyek Anda. Apa yang diperlukan untuk melanjutkan minggu ini? Saya bisa siapkan PI hari ini.`,
+          fr:`{{name}}, je pense que nous avons couvert tous les points clés et je suis convaincu que cette solution correspond bien à votre projet. Que faudrait-il pour avancer cette semaine ? Je peux préparer la facture pro forma aujourd'hui.` },
+
+        { id:'cl2', cat:'closing', sub:'首单优惠', tags:['closing','new'],
+          vars:['name'],
+          title:'首单优惠 — 新客专属',
+          en:`{{name}}, since this would be our first order together, I'd like to offer a first-order incentive: free remote monitoring system (normally $800) + priority production scheduling. This is something I can only offer for orders confirmed this month. Would you like me to include this in the updated PI?`,
+          es:`{{name}}, ya que sería nuestro primer pedido juntos, me gustaría ofrecer un incentivo especial: sistema de monitoreo remoto gratuito (normalmente $800) + programación prioritaria de producción. Solo puedo ofrecerlo para pedidos confirmados este mes.`,
+          id:`{{name}}, karena ini akan menjadi pesanan pertama kita, saya ingin menawarkan insentif khusus: sistem pemantauan jarak jauh gratis (biasanya $800) + penjadwalan produksi prioritas. Hanya untuk pesanan yang dikonfirmasi bulan ini.`,
+          fr:`{{name}}, comme ce serait notre première commande ensemble, j'aimerais vous offrir un avantage : système de surveillance à distance offert (normalement 800 $) + planification de production prioritaire. Valable uniquement ce mois-ci.` },
+
+        { id:'cl3', cat:'closing', sub:'紧迫感', tags:['closing'],
+          vars:['name'],
+          title:'制造紧迫感 — 产能限制',
+          en:`{{name}}, I wanted to let you know that our Q3 production schedule is filling up fast — we currently have 2 slots available for your spec. If we confirm by [date], I can guarantee on-time delivery for your project timeline. After that, the next available slot would push delivery to [later date]. Want me to reserve a slot for you now?`,
+          es:`{{name}}, nuestro calendario de producción del Q3 se está llenando rápidamente — solo quedan 2 espacios para tu especificación. Si confirmamos antes del [fecha], garantizo entrega a tiempo. ¿Reservo un espacio para ti?`,
+          id:`{{name}}, jadwal produksi Q3 kami sedang terisi cepat — saat ini hanya ada 2 slot untuk spesifikasi Anda. Jika dikonfirmasi sebelum [tanggal], saya dapat menjamin pengiriman tepat waktu. Mau saya reservasi slot untuk Anda?`,
+          fr:`{{name}}, notre calendrier de production Q3 se remplit rapidement — il ne reste que 2 créneaux pour votre spécification. Si nous confirmons avant le [date], je garantis une livraison dans les délais. Dois-je réserver un créneau pour vous ?` },
+
+        // ── Objection ────────────────────────────────────────────────────
+        { id:'o1', cat:'objection', sub:'太贵', tags:['quotation','closing'],
+          vars:['name'],
+          title:'异议处理 — 价格太贵',
+          en:`{{name}}, I hear you — price is always an important factor. Can I ask what budget range you're working with, and which specific features are most critical for your project? Sometimes we can adjust the spec to bring the price closer to your target while keeping the non-negotiables in place. I want to find a solution that works for both of us.`,
+          es:`{{name}}, entiendo — el precio siempre es importante. ¿Puedes decirme el rango presupuestario y qué características son más críticas? A veces podemos ajustar las especificaciones para acercarnos a tu objetivo.`,
+          id:`{{name}}, saya mengerti — harga selalu menjadi faktor penting. Boleh saya tahu kisaran anggaran Anda dan fitur mana yang paling kritis? Kadang kita bisa menyesuaikan spesifikasi agar lebih sesuai target.`,
+          fr:`{{name}}, je comprends — le prix est toujours un facteur important. Puis-je vous demander votre budget et quelles fonctionnalités sont les plus essentielles ? Parfois nous pouvons ajuster les spécifications pour se rapprocher de votre cible.` },
+
+        { id:'o2', cat:'objection', sub:'没需求', tags:['lead'],
+          vars:['name'],
+          title:'异议处理 — 暂时没需求',
+          en:`{{name}}, totally understand — timing is everything. Would it be alright if I stayed in touch for when the timing is right? In the meantime, I'll send you our updated product catalog and a case study from a project similar to what you typically handle — just so you have it on file. No obligation at all.`,
+          es:`{{name}}, lo entiendo completamente. ¿Estaría bien mantener el contacto para cuando el momento sea adecuado? Mientras tanto, te enviaré nuestro catálogo actualizado y un caso de estudio relevante.`,
+          id:`{{name}}, saya mengerti sepenuhnya. Bolehkah saya tetap menjalin kontak untuk saat yang tepat nanti? Sementara itu, saya akan mengirimkan katalog terbaru dan studi kasus yang relevan.`,
+          fr:`{{name}}, je comprends tout à fait. Serait-il possible de rester en contact pour le bon moment ? En attendant, je vous enverrai notre catalogue mis à jour et une étude de cas pertinente.` },
+
+        { id:'o3', cat:'objection', sub:'有供应商', tags:['lead','quotation'],
+          vars:['name'],
+          title:'异议处理 — 已有供应商',
+          en:`{{name}}, that's great — having a reliable supplier is important. I'm not here to disrupt a good relationship. But many of our clients actually work with us as a second source — it keeps pricing competitive and ensures supply continuity. Would it be useful to have our specs and pricing on file for comparison or backup purposes?`,
+          es:`{{name}}, tener un proveedor confiable es importante. No estoy aquí para interrumpir esa relación. Pero muchos de nuestros clientes nos usan como segunda fuente para mantener precios competitivos. ¿Te sería útil tener nuestras especificaciones como referencia?`,
+          id:`{{name}}, itu bagus — memiliki pemasok yang andal memang penting. Saya tidak ingin mengganggu hubungan yang baik. Tapi banyak klien kami menggunakan kami sebagai sumber kedua untuk menjaga harga tetap kompetitif. Apakah berguna untuk menyimpan spesifikasi kami sebagai referensi?`,
+          fr:`{{name}}, c'est bien — avoir un fournisseur fiable est important. Je ne suis pas là pour perturber cette relation. Mais beaucoup de nos clients nous utilisent comme second fournisseur pour maintenir des prix compétitifs. Serait-il utile d'avoir nos specs en référence ?` },
+    ];
+
+    const SC_PLAYBOOKS = [
+        {
+            title: '🚀 新客户开发流程',
+            steps: [
+                { step: 1, label: '破冰', desc: '初次联系或展会后跟进', scriptId: 'c1' },
+                { step: 2, label: '公司介绍', desc: '发送简短版公司介绍', scriptId: 'i1' },
+                { step: 3, label: '需求确认', desc: '询问项目参数和需求', scriptId: 'p1' },
+                { step: 4, label: '产品切入', desc: '基于需求推荐产品型号', scriptId: 'p2' },
+                { step: 5, label: '跟进', desc: '发送案例/价值跟进', scriptId: 'f3' },
+                { step: 6, label: '报价', desc: '发送正式报价并说明条款', scriptId: 'q1' },
+                { step: 7, label: '成交推进', desc: '处理异议并促单', scriptId: 'cl1' },
+            ]
+        },
+        {
+            title: '🔄 报价后转化流程',
+            steps: [
+                { step: 1, label: '轻跟进', desc: '确认报价已收到', scriptId: 'f1' },
+                { step: 2, label: '价值解释', desc: '解释价格构成', scriptId: 'q2' },
+                { step: 3, label: '催回复', desc: '报价到期提醒', scriptId: 'q3' },
+                { step: 4, label: '首单优惠', desc: '提供首单专属优惠', scriptId: 'cl2' },
+                { step: 5, label: '制造紧迫感', desc: '产能限制促决策', scriptId: 'cl3' },
+            ]
+        }
+    ];
+
+    function scGetFavs() {
+        try { return new Set(JSON.parse(localStorage.getItem(SC_FAV_KEY) || '[]')); }
+        catch { return new Set(); }
+    }
+    function scSaveFavs(set) { localStorage.setItem(SC_FAV_KEY, JSON.stringify([...set])); }
+    function scToggleFav(id) {
+        const favs = scGetFavs();
+        favs.has(id) ? favs.delete(id) : favs.add(id);
+        scSaveFavs(favs);
+        scRender();
+    }
+
+    function scSetLang(lang) {
+        scLang = lang;
+        document.querySelectorAll('.sc-lang').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+        scRender();
+    }
+
+    function scSetCat(cat) {
+        scCat = cat;
+        document.querySelectorAll('.sc-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+        const grid = document.getElementById('sc-cards-grid');
+        const playbook = document.getElementById('sc-playbook-view');
+        if (cat === 'playbook') {
+            grid.style.display = 'none';
+            playbook.style.display = 'block';
+            scRenderPlaybook();
+        } else {
+            grid.style.display = 'grid';
+            playbook.style.display = 'none';
+            scRender();
+        }
+    }
+
+    function scToggleCombine() {
+        scCombineMode = !scCombineMode;
+        document.getElementById('sc-combine-label').textContent = scCombineMode ? '✕ 退出组合' : '✚ 组合发送';
+        const bar = document.getElementById('sc-combine-bar');
+        bar.style.display = scCombineMode ? 'block' : 'none';
+        if (!scCombineMode) { scSelected.clear(); }
+        scRender();
+    }
+
+    function scToggleSelect(id) {
+        scSelected.has(id) ? scSelected.delete(id) : scSelected.add(id);
+        document.getElementById('sc-selected-count').textContent = scSelected.size;
+        scUpdatePreview();
+        scRender();
+    }
+
+    function scUpdatePreview() {
+        const preview = document.getElementById('sc-preview');
+        if (scSelected.size === 0) { preview.style.display = 'none'; return; }
+        const parts = [...scSelected].map(id => {
+            const s = SC_SCRIPTS.find(x => x.id === id);
+            return s ? s[scLang] : '';
+        }).filter(Boolean);
+        preview.style.display = 'block';
+        preview.textContent = parts.join('\n\n');
+    }
+
+    function scComposeCopy() {
+        const parts = [...scSelected].map(id => {
+            const s = SC_SCRIPTS.find(x => x.id === id);
+            return s ? s[scLang] : '';
+        }).filter(Boolean);
+        const text = parts.join('\n\n');
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('[onclick="scComposeCopy()"]');
+            if (btn) { btn.textContent = '✅ 已复制！'; setTimeout(() => btn.textContent = '📋 合并复制', 2000); }
+        });
+    }
+
+    function scClearSelected() {
+        scSelected.clear();
+        document.getElementById('sc-selected-count').textContent = '0';
+        document.getElementById('sc-preview').style.display = 'none';
+        scRender();
+    }
+
+    function scCopyScript(id, btn) {
+        const s = SC_SCRIPTS.find(x => x.id === id);
+        if (!s) return;
+        navigator.clipboard.writeText(s[scLang]).then(() => {
+            const flash = btn.closest('.sc-card').querySelector('.sc-copy-flash');
+            if (flash) { flash.classList.add('show'); setTimeout(() => flash.classList.remove('show'), 1500); }
+        });
+    }
+
+    function scExpandCard(id) {
+        const body = document.getElementById('sc-body-' + id);
+        if (body) body.classList.toggle('expanded');
+    }
+
+    function scReplaceVars(text) {
+        return text
+            .replace(/\{\{name\}\}/g, '<span class="sc-var-badge">{{name}}</span>')
+            .replace(/\{\{company\}\}/g, '<span class="sc-var-badge">{{company}}</span>')
+            .replace(/\{\{city\}\}/g, '<span class="sc-var-badge">{{city}}</span>')
+            .replace(/\{\{referrer\}\}/g, '<span class="sc-var-badge">{{referrer}}</span>')
+            .replace(/\{\{event\}\}/g, '<span class="sc-var-badge">{{event}}</span>');
+    }
+
+    function scRender() {
+        const favs = scGetFavs();
+        let list = SC_SCRIPTS;
+        if (scCat === 'fav') list = list.filter(s => favs.has(s.id));
+        else if (scCat !== 'all') list = list.filter(s => s.cat === scCat);
+
+        const grid = document.getElementById('sc-cards-grid');
+        if (list.length === 0) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--secondary-text-color)">暂无话术 — ${scCat === 'fav' ? '点击 ★ 收藏话术' : '请选择其他分类'}</div>`;
+            return;
+        }
+
+        const catLabels = { cold:'❄️ 破冰', intro:'🏢 公司介绍', product:'🔧 产品切入', followup:'📩 跟进', quote:'💰 报价', closing:'🤝 成交推进', objection:'🛡️ 异议处理' };
+
+        grid.innerHTML = list.map(s => {
+            const isFav = favs.has(s.id);
+            const isSel = scSelected.has(s.id);
+            const text = s[scLang] || s.en;
+            const preview = text.length > 80 ? text.slice(0, 80) + '…' : text;
+            return `<div class="sc-card${isSel ? ' selected' : ''}" id="sc-card-${s.id}">
+                <div class="sc-copy-flash">✅ 已复制</div>
+                <div class="sc-card-header">
+                    <div>
+                        <div class="sc-card-title">${s.title}</div>
+                        <div class="sc-card-sub">${catLabels[s.cat] || ''} · ${s.sub}</div>
+                    </div>
+                    ${scCombineMode ? `<input type="checkbox" class="sc-check" ${isSel ? 'checked' : ''} onchange="scToggleSelect('${s.id}')">` : ''}
+                </div>
+                <div style="font-size:.82rem;color:var(--secondary-text-color);cursor:pointer" onclick="scExpandCard('${s.id}')">${preview} <span style="color:var(--primary-color)">展开 ▾</span></div>
+                <div class="sc-card-body" id="sc-body-${s.id}">${scReplaceVars(text.replace(/\n/g, '<br>'))}</div>
+                ${s.vars && s.vars.length ? `<div style="margin-top:4px">${s.vars.map(v=>`<span class="sc-var-badge">{{${v}}}</span>`).join('')}</div>` : ''}
+                <div class="sc-card-actions">
+                    <button class="sc-btn-copy" onclick="scCopyScript('${s.id}', this)">📋 复制</button>
+                    <button class="sc-btn-fav" onclick="scToggleFav('${s.id}')" title="${isFav ? '取消收藏' : '收藏'}">${isFav ? '⭐' : '☆'}</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function scRenderPlaybook() {
+        const favs = scGetFavs();
+        const view = document.getElementById('sc-playbook-view');
+        view.innerHTML = SC_PLAYBOOKS.map(pb => `
+            <div style="margin-bottom:2rem">
+                <div style="font-weight:700;font-size:1.05rem;margin-bottom:.75rem">${pb.title}</div>
+                ${pb.steps.map(step => {
+                    const s = SC_SCRIPTS.find(x => x.id === step.scriptId);
+                    const text = s ? (s[scLang] || s.en) : '';
+                    return `<div class="sc-playbook-step">
+                        <div class="sc-step-num">${step.step}</div>
+                        <div style="flex:1">
+                            <div style="font-weight:600;font-size:.9rem">${step.label} <span style="font-weight:400;color:var(--secondary-text-color);font-size:.82rem">— ${step.desc}</span></div>
+                            ${s ? `<div style="font-size:.82rem;color:#555;margin-top:.35rem;cursor:pointer" onclick="this.nextElementSibling.classList.toggle('expanded')">${text.slice(0,90)}… <span style="color:var(--primary-color)">展开</span></div>
+                            <div class="sc-card-body" style="margin-top:.35rem">${text.replace(/\n/g,'<br>')}</div>
+                            <button class="sc-btn-copy" style="margin-top:.4rem" onclick="navigator.clipboard.writeText(SC_SCRIPTS.find(x=>x.id==='${step.scriptId}')[scLang]||SC_SCRIPTS.find(x=>x.id==='${step.scriptId}').en).then(()=>{this.textContent='✅ 已复制';setTimeout(()=>this.textContent='📋 复制',1500)})">📋 复制</button>` : ''}
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        `).join('');
+    }
+
     </script>
 </body>
 
