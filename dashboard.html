@@ -1363,6 +1363,7 @@
     const SP_KEY = 'salesplan_2026';
     const MONTHS = ['2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','1月'];
     const SP_PEOPLE = [
+        { name: '胡佳润', target: null, isLeader: true },  // 团队负责人，对整体220台负责
         { name: '张多加', target: 80 },
         { name: '李孟琪', target: 50 },
         { name: '陈颢',   target: 40 },
@@ -1396,9 +1397,7 @@
 
         tbody.innerHTML = SP_PEOPLE.map(p => {
             const done = MONTHS.reduce((s, m) => s + (data[p.name][m] || 0), 0);
-            const pct = Math.min(100, Math.round(done / p.target * 100));
             grandTotal += done;
-            const barColor = pct >= 100 ? '#28a745' : pct >= 60 ? '#007bff' : pct >= 30 ? '#fd7e14' : '#dc3545';
             const monthCells = MONTHS.map(m => {
                 monthTotals[m] += (data[p.name][m] || 0);
                 const val = data[p.name][m] || 0;
@@ -1407,6 +1406,20 @@
                         onclick="spEdit(this,'${p.name}','${m}')">${val || '—'}</span>
                 </td>`;
             }).join('');
+
+            if (p.isLeader) {
+                // 团队负责人行：对比团队总目标，显示团队总完成率（在团队合计渲染后更新，这里先占位）
+                return `<tr style="background:#f0f4ff;border-bottom:2px solid #c5d3ff">
+                    <td style="font-weight:700">👑 ${p.name}<br><span style="font-size:0.75rem;color:var(--secondary-text-color);font-weight:400">团队负责人</span></td>
+                    <td style="text-align:center;color:var(--secondary-text-color);font-size:0.8rem">220<br><span style="font-size:0.7rem">(团队总目标)</span></td>
+                    <td style="text-align:center;font-weight:600;color:#007bff">${done}</td>
+                    <td><span style="font-size:0.8rem;color:var(--secondary-text-color)">个人出单</span></td>
+                    ${monthCells}
+                </tr>`;
+            }
+
+            const pct = Math.min(100, Math.round(done / p.target * 100));
+            const barColor = pct >= 100 ? '#28a745' : pct >= 60 ? '#007bff' : pct >= 30 ? '#fd7e14' : '#dc3545';
             return `<tr>
                 <td style="font-weight:600">${p.name}</td>
                 <td style="text-align:center;color:var(--secondary-text-color)">${p.target}</td>
@@ -1497,7 +1510,7 @@
         SP_PEOPLE.forEach(p => { init[p.name] = {}; MONTHS.forEach(m => init[p.name][m] = 0); });
         init['张多加']['3月'] = 1;
         init['李孟琪']['4月'] = 1;
-        // Frank/老莫 counted in team but not individual — noted in 3月 team total
+        init['胡佳润']['3月'] = 4; // Frank/老莫 4台计入团队负责人名下
         spSave(init);
     })();
     </script>
