@@ -344,6 +344,7 @@
             <a href="/index.html" class="nav-link">返回提交表单</a>
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
+            <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
             <span id="username-display" class="nav-link"></span>
             <a href="#" id="logout" class="nav-link">退出登录</a>
         </div>
@@ -537,6 +538,56 @@
             </div>
 
         </div><!-- end tab-prospects -->
+
+        <!-- TAB: 销售计划 -->
+        <div id="tab-salesplan" class="tab-pane">
+            <div class="panel">
+                <div class="panel-title-container">
+                    <div class="panel-title">🎯 2026 年度销售计划完成情况</div>
+                    <span style="font-size:0.85rem;color:var(--secondary-text-color)">2026.2 — 2027.1 · 点击数字可修改</span>
+                </div>
+
+                <!-- 团队汇总 -->
+                <div class="summary-grid" style="margin-bottom:1.5rem" id="sp-summary-grid"></div>
+
+                <!-- 月度目标说明 -->
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;font-size:0.85rem;color:var(--secondary-text-color)">
+                    <span>月度团队目标：<strong style="color:var(--text-color)">20 台</strong></span>
+                    <span>·</span>
+                    <span>年度团队目标：<strong style="color:var(--text-color)">220 台</strong></span>
+                    <span>·</span>
+                    <button class="btn" style="padding:4px 12px;font-size:0.8rem;background:#28a745" onclick="exportSalesPlan()">📥 导出</button>
+                </div>
+
+                <!-- 明细表格 -->
+                <div class="table-container">
+                    <table id="sp-table" style="min-width:1100px">
+                        <thead>
+                            <tr style="background:#f8f9fa">
+                                <th style="width:90px">业务员</th>
+                                <th style="width:70px;text-align:center">年度目标</th>
+                                <th style="width:60px;text-align:center">已完成</th>
+                                <th style="width:120px">完成率</th>
+                                <th style="text-align:center;width:50px">2月</th>
+                                <th style="text-align:center;width:50px">3月</th>
+                                <th style="text-align:center;width:50px">4月</th>
+                                <th style="text-align:center;width:50px">5月</th>
+                                <th style="text-align:center;width:50px">6月</th>
+                                <th style="text-align:center;width:50px">7月</th>
+                                <th style="text-align:center;width:50px">8月</th>
+                                <th style="text-align:center;width:50px">9月</th>
+                                <th style="text-align:center;width:50px">10月</th>
+                                <th style="text-align:center;width:50px">11月</th>
+                                <th style="text-align:center;width:50px">12月</th>
+                                <th style="text-align:center;width:50px">1月</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sp-tbody"></tbody>
+                        <tfoot id="sp-tfoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div><!-- end tab-salesplan -->
 
     </div>
 
@@ -1070,10 +1121,11 @@
     // ── Tab 切换 ───────────────────────────────────────────
     function switchTab(id, btn) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => { if(b) b.classList.remove('active'); });
         document.getElementById('tab-' + id).classList.add('active');
-        btn.classList.add('active');
+        if (btn) btn.classList.add('active');
         if (id === 'prospects') crmLoadSaved();
+        if (id === 'salesplan') renderSalesPlan();
     }
 
     // ── 城市数据 ───────────────────────────────────────────
@@ -1306,6 +1358,148 @@
     function crmClearProspects() {
         alert('请直接在 Google Sheet 里清空数据');
     }
+
+    // ── 销售计划 ────────────────────────────────────────────────────
+    const SP_KEY = 'salesplan_2026';
+    const MONTHS = ['2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','1月'];
+    const SP_PEOPLE = [
+        { name: '张多加', target: 80 },
+        { name: '李孟琪', target: 50 },
+        { name: '陈颢',   target: 40 },
+        { name: '钱晨阳', target: 30 },
+        { name: '李菲艳', target: 20 },
+    ];
+    const TEAM_TARGET = 220;
+    const MONTH_TARGET = 20;
+
+    function spLoad() {
+        const saved = JSON.parse(localStorage.getItem(SP_KEY) || '{}');
+        // Initialize zeros if not set
+        SP_PEOPLE.forEach(p => {
+            if (!saved[p.name]) saved[p.name] = {};
+            MONTHS.forEach(m => { if (saved[p.name][m] === undefined) saved[p.name][m] = 0; });
+        });
+        return saved;
+    }
+    function spSave(data) { localStorage.setItem(SP_KEY, JSON.stringify(data)); }
+
+    function renderSalesPlan() {
+        const data = spLoad();
+        const tbody = document.getElementById('sp-tbody');
+        const tfoot = document.getElementById('sp-tfoot');
+        if (!tbody) return;
+
+        // Monthly totals across all people
+        const monthTotals = {};
+        MONTHS.forEach(m => monthTotals[m] = 0);
+        let grandTotal = 0;
+
+        tbody.innerHTML = SP_PEOPLE.map(p => {
+            const done = MONTHS.reduce((s, m) => s + (data[p.name][m] || 0), 0);
+            const pct = Math.min(100, Math.round(done / p.target * 100));
+            grandTotal += done;
+            const barColor = pct >= 100 ? '#28a745' : pct >= 60 ? '#007bff' : pct >= 30 ? '#fd7e14' : '#dc3545';
+            const monthCells = MONTHS.map(m => {
+                monthTotals[m] += (data[p.name][m] || 0);
+                const val = data[p.name][m] || 0;
+                return `<td style="text-align:center;padding:4px">
+                    <span class="sp-cell" style="display:inline-block;min-width:28px;padding:2px 6px;border-radius:4px;cursor:pointer;background:${val>0?'#e8f4fd':'transparent'};color:${val>0?'#007bff':'#aaa'};font-size:0.85rem"
+                        onclick="spEdit(this,'${p.name}','${m}')">${val || '—'}</span>
+                </td>`;
+            }).join('');
+            return `<tr>
+                <td style="font-weight:600">${p.name}</td>
+                <td style="text-align:center;color:var(--secondary-text-color)">${p.target}</td>
+                <td style="text-align:center;font-weight:600;color:${barColor}">${done}</td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <div style="flex:1;background:#e9ecef;border-radius:4px;height:8px;overflow:hidden">
+                            <div style="width:${pct}%;background:${barColor};height:100%;border-radius:4px;transition:width .3s"></div>
+                        </div>
+                        <span style="font-size:0.8rem;color:${barColor};font-weight:600;min-width:34px">${pct}%</span>
+                    </div>
+                </td>
+                ${monthCells}
+            </tr>`;
+        }).join('');
+
+        // Team total row
+        const teamPct = Math.min(100, Math.round(grandTotal / TEAM_TARGET * 100));
+        const teamColor = teamPct >= 100 ? '#28a745' : teamPct >= 60 ? '#007bff' : '#fd7e14';
+        const monthTotalCells = MONTHS.map(m => {
+            const v = monthTotals[m];
+            const bg = v >= MONTH_TARGET ? '#d4edda' : v > 0 ? '#fff3cd' : 'transparent';
+            const color = v >= MONTH_TARGET ? '#28a745' : v > 0 ? '#856404' : '#aaa';
+            return `<td style="text-align:center;font-weight:600;background:${bg};color:${color};font-size:0.85rem">${v || '—'}</td>`;
+        }).join('');
+
+        tfoot.innerHTML = `<tr style="background:#f8f9fa;border-top:2px solid var(--border-color)">
+            <td style="font-weight:700">团队合计</td>
+            <td style="text-align:center;font-weight:700">${TEAM_TARGET}</td>
+            <td style="text-align:center;font-weight:700;color:${teamColor}">${grandTotal}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:6px">
+                    <div style="flex:1;background:#e9ecef;border-radius:4px;height:8px;overflow:hidden">
+                        <div style="width:${teamPct}%;background:${teamColor};height:100%;border-radius:4px;transition:width .3s"></div>
+                    </div>
+                    <span style="font-size:0.8rem;color:${teamColor};font-weight:700;min-width:34px">${teamPct}%</span>
+                </div>
+            </td>
+            ${monthTotalCells}
+        </tr>`;
+
+        // Summary cards
+        const summaryGrid = document.getElementById('sp-summary-grid');
+        if (summaryGrid) {
+            const remaining = TEAM_TARGET - grandTotal;
+            const monthsPassed = MONTHS.filter(m => Object.values(data).some(d => d[m] > 0)).length;
+            const monthAvg = monthsPassed > 0 ? Math.round(grandTotal / monthsPassed) : 0;
+            summaryGrid.innerHTML = `
+                <div class="stat-card"><div class="stat-label">团队年度目标</div><div class="stat-value">${TEAM_TARGET}</div></div>
+                <div class="stat-card"><div class="stat-label">已完成台数</div><div class="stat-value" style="color:#007bff">${grandTotal}</div></div>
+                <div class="stat-card"><div class="stat-label">剩余台数</div><div class="stat-value" style="color:#fd7e14">${remaining}</div></div>
+                <div class="stat-card"><div class="stat-label">总体完成率</div><div class="stat-value" style="color:${teamColor}">${teamPct}%</div></div>
+                <div class="stat-card"><div class="stat-label">月均完成台数</div><div class="stat-value">${monthAvg}</div></div>
+            `;
+        }
+    }
+
+    function spEdit(el, person, month) {
+        const data = spLoad();
+        const cur = data[person][month] || 0;
+        const val = prompt(`${person} · ${month} 完成台数：`, cur);
+        if (val === null) return;
+        const num = parseInt(val) || 0;
+        data[person][month] = Math.max(0, num);
+        spSave(data);
+        renderSalesPlan();
+    }
+
+    function exportSalesPlan() {
+        const data = spLoad();
+        let csv = '业务员,年度目标,已完成,完成率,' + MONTHS.join(',') + '\n';
+        SP_PEOPLE.forEach(p => {
+            const done = MONTHS.reduce((s, m) => s + (data[p.name][m] || 0), 0);
+            const pct = Math.round(done / p.target * 100);
+            const months = MONTHS.map(m => data[p.name][m] || 0).join(',');
+            csv += `${p.name},${p.target},${done},${pct}%,${months}\n`;
+        });
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = '销售计划完成情况.csv'; a.click();
+    }
+
+    // ── 预填3月4月已知数据 ──────────────────────────────────────────
+    (function prefillInitialData() {
+        const existing = localStorage.getItem(SP_KEY);
+        if (existing) return; // don't overwrite if user already has data
+        const init = {};
+        SP_PEOPLE.forEach(p => { init[p.name] = {}; MONTHS.forEach(m => init[p.name][m] = 0); });
+        init['张多加']['3月'] = 1;
+        init['李孟琪']['4月'] = 1;
+        // Frank/老莫 counted in team but not individual — noted in 3月 team total
+        spSave(init);
+    })();
     </script>
 </body>
 
