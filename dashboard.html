@@ -353,6 +353,8 @@
         .sc-btn-fav{border:none;background:transparent;font-size:1rem;cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .2s}
         .sc-btn-fav:hover{background:#fff3cd}
         .sc-check{width:16px;height:16px;cursor:pointer;accent-color:var(--primary-color)}
+        .sc-var-input{border:1px solid #c0d8ff;border-radius:6px;padding:5px 10px;font-size:.83rem;font-family:inherit;outline:none;width:150px;background:#fff;transition:border-color .2s}
+        .sc-var-input:focus{border-color:var(--primary-color)}
         .sc-copy-flash{position:absolute;top:10px;right:10px;background:#28a745;color:#fff;font-size:.75rem;padding:3px 10px;border-radius:99px;opacity:0;transition:opacity .3s;pointer-events:none}
         .sc-copy-flash.show{opacity:1}
         .sc-var-badge{display:inline-block;background:#fff3cd;color:#856404;border-radius:4px;padding:1px 6px;font-size:.75rem;font-family:monospace;margin:2px 2px 0 0}
@@ -637,6 +639,34 @@
                         <button class="btn" style="padding:5px 14px;font-size:0.82rem;background:var(--primary-color)" onclick="scToggleCombine()">
                             <span id="sc-combine-label">✚ 组合发送</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- 收件人信息栏 -->
+                <div style="background:#f0f7ff;border:1px solid #c0d8ff;border-radius:10px;padding:.85rem 1rem;margin:.75rem 0 0">
+                    <div style="font-size:.8rem;font-weight:700;color:var(--primary-color);margin-bottom:.6rem">👤 收件人信息 — 填好后复制话术自动替换</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center">
+                        <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font-size:.72rem;color:var(--secondary-text-color)">姓名 {{name}}</label>
+                            <input id="sc-var-name" class="sc-var-input" placeholder="如 Ahmed" oninput="scSaveVars()">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font-size:.72rem;color:var(--secondary-text-color)">公司 {{company}}</label>
+                            <input id="sc-var-company" class="sc-var-input" placeholder="如 Al-Rashid Trading" oninput="scSaveVars()">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font-size:.72rem;color:var(--secondary-text-color)">城市 {{city}}</label>
+                            <input id="sc-var-city" class="sc-var-input" placeholder="如 Lagos" oninput="scSaveVars()">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font-size:.72rem;color:var(--secondary-text-color)">展会/来源 {{event}}</label>
+                            <input id="sc-var-event" class="sc-var-input" placeholder="如 Big 5 Dubai" oninput="scSaveVars()">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:3px">
+                            <label style="font-size:.72rem;color:var(--secondary-text-color)">介绍人 {{referrer}}</label>
+                            <input id="sc-var-referrer" class="sc-var-input" placeholder="如 Mr. Wang" oninput="scSaveVars()">
+                        </div>
+                        <button onclick="scClearVars()" style="align-self:flex-end;border:none;background:transparent;color:var(--secondary-text-color);font-size:.78rem;cursor:pointer;padding:4px 6px;border-radius:4px" title="清空">✕ 清空</button>
                     </div>
                 </div>
 
@@ -1312,7 +1342,7 @@
         if (btn) btn.classList.add('active');
         if (id === 'prospects') crmLoadSaved();
         if (id === 'salesplan') renderSalesPlan();
-        if (id === 'scripts') scLoadScripts();
+        if (id === 'scripts') { scLoadScripts(); scLoadVars(); }
         if (id === 'scriptmgr') smLoad();
     }
 
@@ -1946,6 +1976,44 @@
         }
     ];
 
+    const SC_VARS_KEY = 'sc_vars';
+    function scGetVars() {
+        try { return JSON.parse(sessionStorage.getItem(SC_VARS_KEY) || '{}'); } catch { return {}; }
+    }
+    function scSaveVars() {
+        const v = {
+            name:     document.getElementById('sc-var-name')?.value || '',
+            company:  document.getElementById('sc-var-company')?.value || '',
+            city:     document.getElementById('sc-var-city')?.value || '',
+            event:    document.getElementById('sc-var-event')?.value || '',
+            referrer: document.getElementById('sc-var-referrer')?.value || '',
+        };
+        sessionStorage.setItem(SC_VARS_KEY, JSON.stringify(v));
+    }
+    function scLoadVars() {
+        const v = scGetVars();
+        ['name','company','city','event','referrer'].forEach(k => {
+            const el = document.getElementById('sc-var-' + k);
+            if (el && v[k]) el.value = v[k];
+        });
+    }
+    function scClearVars() {
+        sessionStorage.removeItem(SC_VARS_KEY);
+        ['name','company','city','event','referrer'].forEach(k => {
+            const el = document.getElementById('sc-var-' + k);
+            if (el) el.value = '';
+        });
+    }
+    function scApplyVars(text) {
+        const v = scGetVars();
+        return text
+            .replace(/\{\{name\}\}/g,     v.name     || '{{name}}')
+            .replace(/\{\{company\}\}/g,  v.company  || '{{company}}')
+            .replace(/\{\{city\}\}/g,     v.city     || '{{city}}')
+            .replace(/\{\{event\}\}/g,    v.event    || '{{event}}')
+            .replace(/\{\{referrer\}\}/g, v.referrer || '{{referrer}}');
+    }
+
     // Get localized text for a script; handles builtin 'id' key vs Sheet 'id_lang' key
     function scText(s) {
         if (!s) return '';
@@ -2017,7 +2085,7 @@
     function scComposeCopy() {
         const parts = [...scSelected].map(id => {
             const s = SC_SCRIPTS.find(x => x.id === id);
-            return scText(s);
+            return scApplyVars(scText(s));
         }).filter(Boolean);
         const text = parts.join('\n\n');
         navigator.clipboard.writeText(text).then(() => {
@@ -2036,7 +2104,7 @@
     function scCopyById(id, btn) {
         const s = SC_SCRIPTS.find(x => x.id === id);
         if (!s) return;
-        navigator.clipboard.writeText(scText(s)).then(() => {
+        navigator.clipboard.writeText(scApplyVars(scText(s))).then(() => {
             btn.textContent = '✅ 已复制'; setTimeout(() => btn.textContent = '📋 复制', 1500);
         });
     }
@@ -2044,7 +2112,7 @@
     function scCopyScript(id, btn) {
         const s = SC_SCRIPTS.find(x => x.id === id);
         if (!s) return;
-        navigator.clipboard.writeText(scText(s)).then(() => {
+        navigator.clipboard.writeText(scApplyVars(scText(s))).then(() => {
             const flash = btn.closest('.sc-card').querySelector('.sc-copy-flash');
             if (flash) { flash.classList.add('show'); setTimeout(() => flash.classList.remove('show'), 1500); }
         });
