@@ -565,7 +565,7 @@
                 </div>
                 <div class="table-container">
                     <table class="prospect-table">
-                        <thead><tr><th>#</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th><th>操作</th></tr></thead>
+                        <thead><tr><th>#</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th><th>邮件</th><th>操作</th></tr></thead>
                         <tbody id="p-saved-body"></tbody>
                     </table>
                 </div>
@@ -1507,6 +1507,9 @@
 
         const rows = dealers.map((d, i) => {
             const alreadySaved = !isNew[i];
+            const emailCell = d.email
+                ? `<a href="mailto:${d.email}" style="color:var(--primary-color);font-size:.82rem">${d.email}</a>`
+                : `<span style="color:#ccc;font-size:.8rem">—</span>`;
             return `<tr style="${alreadySaved ? 'opacity:0.45' : ''}">
                 <td style="font-size:.75rem;color:${alreadySaved ? 'var(--secondary-text-color)' : 'var(--primary-color)'}">
                     ${alreadySaved ? '已保存' : '✓ 新增'}
@@ -1517,7 +1520,8 @@
                 <td class="prospect-phone">${d.phone||'-'}</td>
                 <td class="prospect-phone wa-num">${d.whatsapp||d.phone||'-'}</td>
                 <td style="font-size:.82rem">${d.website?`<a href="${d.website.startsWith('http')?d.website:'https://'+d.website}" target="_blank" style="color:var(--primary-color)">${d.website.replace(/^https?:\/\//,'').split('/')[0]}</a>`:'-'}</td>
-                <td style="font-size:.82rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.address||''}</td>
+                <td style="font-size:.82rem;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.address||''}</td>
+                <td>${emailCell}</td>
             </tr>`;
         }).join('');
 
@@ -1537,7 +1541,7 @@
                 <div id="p-sheet-status" style="font-size:.8rem;margin-bottom:10px;color:var(--secondary-text-color)">⏳ 正在同步到 Google Sheet...</div>
                 <div class="table-container">
                     <table class="prospect-table">
-                        <thead><tr><th>状态</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th></tr></thead>
+                        <thead><tr><th>状态</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th><th>邮件</th></tr></thead>
                         <tbody>${rows}</tbody>
                     </table>
                 </div>`;
@@ -1549,8 +1553,13 @@
         if (!list.length) { sec.style.display='none'; return; }
         sec.style.display = 'block';
         document.getElementById('p-saved-count').textContent = `(${list.length})`;
-        document.getElementById('p-saved-body').innerHTML = list.map((p,i) => `
-            <tr>
+        document.getElementById('p-saved-body').innerHTML = list.map((p,i) => {
+            const emailDisplay = p.email
+                ? `<a href="mailto:${p.email}" style="color:var(--primary-color);font-size:.82rem">${p.email}</a>`
+                : `<button class="btn" style="padding:3px 8px;font-size:.75rem;background:#f0f4ff;color:var(--primary-color);border:1px solid #c5d8ff"
+                     onclick="crmEnrichEmail(this,'${p.id}','${(p.company||'').replace(/'/g,"\\'")}','${(p.city||'').replace(/'/g,"\\'")}','${(p.country||'').replace(/'/g,"\\'")}','${(p.website||'').replace(/'/g,"\\'")}')">
+                     📧 获取邮件</button>`;
+            return `<tr id="prospect-row-${p.id}">
                 <td style="color:var(--secondary-text-color);font-size:.8rem">${i+1}</td>
                 <td><span class="prospect-tag">${p.country||''}</span></td>
                 <td>${p.city||''}</td>
@@ -1559,8 +1568,46 @@
                 <td class="prospect-phone wa-num">${p.whatsapp||p.phone||'-'}</td>
                 <td style="font-size:.82rem">${p.website?`<a href="${p.website.startsWith('http')?p.website:'https://'+p.website}" target="_blank" style="color:var(--primary-color)">${p.website.replace(/^https?:\/\//,'').split('/')[0]}</a>`:'-'}</td>
                 <td style="font-size:.8rem;color:var(--secondary-text-color)">${p.saved_at||''}</td>
+                <td id="email-cell-${p.id}">${emailDisplay}</td>
                 <td><button class="btn btn-delete" onclick="crmDeleteProspect('${p.id}')">删除</button></td>
-            </tr>`).join('');
+            </tr>`;
+        }).join('');
+    }
+
+    async function crmEnrichEmail(btn, id, company, city, country, website) {
+        btn.disabled = true;
+        btn.textContent = '⏳ 搜索中…';
+        try {
+            const r = await fetch(SEO_API + '/api/enrich-email', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id, company, city, country, website})
+            });
+            const d = await r.json();
+            if (d.error) throw new Error(d.error);
+            const email = d.email || '';
+
+            // Update the cell in the UI
+            const cell = document.getElementById(`email-cell-${id}`);
+            if (cell) {
+                cell.innerHTML = email
+                    ? `<a href="mailto:${email}" style="color:var(--primary-color);font-size:.82rem">${email}</a>`
+                    : `<span style="color:#aaa;font-size:.8rem">未找到</span>`;
+            }
+
+            // Write back to Google Sheet
+            if (email) {
+                await fetch(SEO_API + '/api/prospects/update-email', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id, email})
+                });
+            }
+        } catch(e) {
+            btn.disabled = false;
+            btn.textContent = '📧 获取邮件';
+            alert('获取邮件失败: ' + e.message);
+        }
     }
 
     async function crmLoadSaved() {
