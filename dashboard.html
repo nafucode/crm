@@ -561,7 +561,11 @@
             <div class="panel saved-section" id="p-saved-section" style="display:none">
                 <div class="panel-title-container">
                     <div class="panel-title">已保存的潜在客户 <span id="p-saved-count" style="font-size:1rem;color:var(--secondary-text-color)"></span></div>
-                    <button class="btn" style="background:var(--danger-color)" onclick="crmClearProspects()">清空</button>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <span id="p-batch-status" style="font-size:.8rem;color:var(--secondary-text-color)"></span>
+                        <button id="p-batch-email-btn" class="btn" style="background:#0d6efd" onclick="crmBatchEnrichEmail()">📧 一键获取邮件</button>
+                        <button class="btn" style="background:var(--danger-color)" onclick="crmClearProspects()">清空</button>
+                    </div>
                 </div>
                 <div class="table-container">
                     <table class="prospect-table">
@@ -1619,6 +1623,66 @@
     async function crmDeleteProspect(id) {
         await fetch(SEO_API + '/api/prospects/' + id, {method: 'DELETE'});
         crmLoadSaved();
+    }
+
+    async function crmBatchEnrichEmail() {
+        const list = _savedProspects || [];
+        const todo = list.filter(p => !p.email);
+        if (!todo.length) {
+            alert('所有经销商已有邮件地址，无需获取。');
+            return;
+        }
+
+        const btn    = document.getElementById('p-batch-email-btn');
+        const status = document.getElementById('p-batch-status');
+        btn.disabled = true;
+
+        let done = 0, found = 0;
+        for (const p of todo) {
+            status.textContent = `${done}/${todo.length} 完成，找到 ${found} 个…`;
+            try {
+                const r = await fetch(SEO_API + '/api/enrich-email', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        id: p.id,
+                        company: p.company || '',
+                        city: p.city || '',
+                        country: p.country || '',
+                        website: p.website || ''
+                    })
+                });
+                const d = await r.json();
+                const email = (!d.error && d.email) ? d.email : '';
+
+                // Update in-memory cache
+                p.email = email;
+
+                // Update UI cell
+                const cell = document.getElementById(`email-cell-${p.id}`);
+                if (cell) {
+                    cell.innerHTML = email
+                        ? `<a href="mailto:${email}" style="color:var(--primary-color);font-size:.82rem">${email}</a>`
+                        : `<span style="color:#aaa;font-size:.8rem">未找到</span>`;
+                }
+
+                // Save to Sheet
+                if (email) {
+                    found++;
+                    await fetch(SEO_API + '/api/prospects/update-email', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({id: p.id, email})
+                    });
+                }
+            } catch(e) {
+                console.warn('enrich failed for', p.company, e.message);
+            }
+            done++;
+        }
+
+        status.textContent = `✅ 完成：${done} 条处理，找到 ${found} 个邮件`;
+        btn.disabled = false;
     }
 
     function crmClearProspects() {
