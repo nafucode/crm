@@ -34,6 +34,9 @@ app.get('/login.html', (req, res) => {
 app.get('/dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
+app.get('/africa.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'africa.html'));
+});
 
 // API: 用户登录
 app.post('/api/login', async (req, res) => {
@@ -159,6 +162,57 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
     }
 });
 
+async function submitCustomerRecords(req, res, redisKey, label) {
+    const submissions = req.body;
+
+    if (!Array.isArray(submissions) || submissions.length === 0) {
+        return res.status(400).send('提交数据格式不正确或为空');
+    }
+
+    try {
+        const allRecords = await kv.lrange(redisKey, 0, -1);
+        const recordMap = new Map();
+        allRecords.forEach((item, index) => {
+            if (item.country && item.phone) {
+                recordMap.set(`${item.country}:${item.phone}`, { ...item, originalIndex: index });
+            }
+        });
+
+        const pipeline = kv.pipeline();
+        for (const submission of submissions) {
+            if (submission.country && submission.phone) {
+                const key = `${submission.country}:${submission.phone}`;
+                const existingRecord = recordMap.get(key);
+
+                if (existingRecord) {
+                    const mergedRecord = {
+                        ...existingRecord,
+                        customerId: submission.customerId,
+                        summary: `${submission.summary || ''} (更新于 ${new Date(submission.Timestamp).toLocaleString()})\n${existingRecord.summary || ''}`.trim(),
+                        salesperson: submission.salesperson,
+                        Timestamp: submission.Timestamp,
+                    };
+                    delete mergedRecord.originalIndex;
+                    pipeline.lset(redisKey, existingRecord.originalIndex, mergedRecord);
+                    continue;
+                }
+            }
+
+            pipeline.lpush(redisKey, submission);
+        }
+
+        await pipeline.exec();
+        res.status(200).send(`${label}提交成功，重复记录已智能合并。`);
+    } catch (error) {
+        console.error(`向 Redis 写入${label}数据时出错:`, error);
+        res.status(500).send('服务器内部错误');
+    }
+}
+
+app.post('/api/africa-submit', authenticateToken, async (req, res) => {
+    submitCustomerRecords(req, res, 'africa_feedback', '非洲客户');
+});
+
 // API 路由：读取并返回所有反馈数据
 app.get('/api/data', authenticateAdmin, async (req, res) => {
     try {
@@ -166,6 +220,16 @@ app.get('/api/data', authenticateAdmin, async (req, res) => {
         res.json(feedback); // Keep original order for client-side reversal
     } catch (error) {
         console.error('从 Redis 读取数据时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
+});
+
+app.get('/api/africa-data', authenticateAdmin, async (req, res) => {
+    try {
+        const feedback = await kv.lrange('africa_feedback', 0, -1);
+        res.json(feedback);
+    } catch (error) {
+        console.error('从 Redis 读取非洲客户数据时出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
@@ -218,6 +282,17 @@ app.get('/api/my-submissions', authenticateToken, async (req, res) => {
         res.json(userSubmissions.reverse()); // 返回倒序，让最新的在前面
     } catch (error) {
         console.error('从 Redis 读取用户提交历史时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
+});
+
+app.get('/api/africa-my-submissions', authenticateToken, async (req, res) => {
+    try {
+        const allFeedback = await kv.lrange('africa_feedback', 0, -1);
+        const userSubmissions = allFeedback.filter(item => item.salesperson === req.user.realName);
+        res.json(userSubmissions.reverse());
+    } catch (error) {
+        console.error('从 Redis 读取用户非洲客户提交历史时出错:', error);
         res.status(500).send('服务器内部错误');
     }
 });
@@ -286,6 +361,39 @@ app.post('/api/update', authenticateToken, async (req, res) => {
     }
 });
 
+async function updateCustomerRecord(req, res, redisKey, label) {
+    const { timestamp, customerId, phone, summary } = req.body;
+
+    if (!timestamp) {
+        return res.status(400).send('缺少时间戳标识');
+    }
+
+    try {
+        const allFeedback = await kv.lrange(redisKey, 0, -1);
+        const index = allFeedback.findIndex(item => (item.Timestamp || item.timestamp) === timestamp);
+
+        if (index === -1) {
+            return res.status(404).send('未找到要更新的数据行');
+        }
+
+        const oldRecord = allFeedback[index];
+        if (req.user.role !== 'admin' && req.user.realName !== oldRecord.salesperson) {
+            return res.status(403).send('权限不足：您只能修改自己的提交记录。');
+        }
+
+        const newRecord = { ...oldRecord, customerId, phone, summary };
+        await kv.lset(redisKey, index, newRecord);
+        res.status(200).json({ message: `${label}数据更新成功`, updatedRecord: newRecord });
+    } catch (error) {
+        console.error(`更新 Redis ${label}数据时出错:`, error);
+        res.status(500).send('服务器内部错误');
+    }
+}
+
+app.post('/api/africa-update', authenticateToken, async (req, res) => {
+    updateCustomerRecord(req, res, 'africa_feedback', '非洲客户');
+});
+
 // API 路由：删除一行数据
 app.post('/api/delete', authenticateAdmin, async (req, res) => {
     const { Timestamp, timestamp } = req.body;
@@ -309,6 +417,34 @@ app.post('/api/delete', authenticateAdmin, async (req, res) => {
         console.error('删除 Redis 数据时出错:', error);
         res.status(500).send('服务器内部错误');
     }
+});
+
+async function deleteCustomerRecord(req, res, redisKey, label) {
+    const { Timestamp, timestamp } = req.body;
+    const ts = Timestamp || timestamp;
+
+    if (!ts) {
+        return res.status(400).send('缺少时间戳标识');
+    }
+
+    try {
+        const allFeedback = await redis.lrange(redisKey, 0, -1);
+        const itemToDelete = allFeedback.find(item => (item.timestamp || item.Timestamp) === ts);
+
+        if (!itemToDelete) {
+            return res.status(404).send('未找到要删除的数据行');
+        }
+
+        await redis.lrem(redisKey, 1, itemToDelete);
+        res.status(200).send(`${label}数据删除成功`);
+    } catch (error) {
+        console.error(`删除 Redis ${label}数据时出错:`, error);
+        res.status(500).send('服务器内部错误');
+    }
+}
+
+app.post('/api/africa-delete', authenticateAdmin, async (req, res) => {
+    deleteCustomerRecord(req, res, 'africa_feedback', '非洲客户');
 });
 
 // 导出 app 实例以供 Vercel 使用

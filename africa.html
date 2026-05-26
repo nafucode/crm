@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>非洲开发客户提交</title>
+    <link rel="icon" type="image/png" href="/logo-crm.png">
+    <link rel="apple-touch-icon" href="/logo-crm.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-color-hover: #0056b3;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #6c757d;
+            --text-color: #212529;
+            --white: #ffffff;
+            --border-color: #ced4da;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 0.375rem;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            padding: 0 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .navbar-brand img { height: 40px; width: auto; }
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a {
+            color: var(--dark-gray);
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-color); }
+        #logout-btn {
+            background: none;
+            border: none;
+            color: var(--dark-gray);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-left: 1.5rem;
+        }
+
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 80px 2rem 2rem;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 640px;
+            padding: 2.5rem;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            color: var(--text-color);
+            text-align: center;
+            margin: 0 0 0.5rem;
+            font-weight: 600;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: var(--dark-gray);
+            margin: 0 0 2rem;
+            font-size: 0.95rem;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .customer-form-instance {
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            background: #fff;
+        }
+        .customer-form-instance h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            align-items: start;
+            gap: 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--dark-gray);
+            text-align: right;
+            padding-top: 0.75rem;
+        }
+
+        input[type="text"], textarea, select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .choices { width: 100%; margin-bottom: 0; }
+        .choices__inner {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--white);
+            min-height: 44px;
+        }
+
+        #add-customer-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px dashed var(--primary-color);
+            border-radius: var(--border-radius);
+            background-color: transparent;
+            color: var(--primary-color);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        button[type="submit"]:hover { background-color: var(--primary-color-hover); }
+
+        .delete-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .delete-btn:hover {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .history-container {
+            width: 100%;
+            padding: 0 4rem 2rem;
+            box-sizing: border-box;
+        }
+        .history-container h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        .table-container {
+            overflow-x: auto;
+            max-height: 420px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        thead th {
+            background-color: var(--light-gray);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+        }
+        td[data-field="customerId"], td[data-field="summary"] {
+            white-space: normal;
+            min-width: 220px;
+        }
+        .btn-save {
+            padding: 4px 8px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 760px) {
+            .navbar { padding: 0 1rem; }
+            .nav-links a, #logout-btn, #username-display { margin-left: 0.75rem; font-size: 0.88rem; }
+            .main-content { padding: 80px 1rem 1rem; }
+            .container { padding: 1.5rem; }
+            .form-group { grid-template-columns: 1fr; }
+            label { text-align: left; padding-top: 0; margin-bottom: 0.4rem; }
+            .history-container { padding: 0 1rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/dashboard.html" class="navbar-brand"><img src="/xinfuji-logo.svg" alt="XINFUJI"></a>
+        <div class="nav-links">
+            <a href="/index.html">提交表单</a>
+            <a href="/africa.html" class="active">非洲开发客户</a>
+            <a href="/dashboard.html" onclick="sessionStorage.setItem('initTab','africa');return true;">非洲数据</a>
+            <a href="/dashboard.html" onclick="sessionStorage.setItem('initTab','prospects');return true;">开发客户</a>
+            <a href="/dashboard.html" onclick="sessionStorage.setItem('initTab','dashboard');return true;">数据看板</a>
+            <span id="username-display" style="margin-left:1.5rem;font-size:1rem;color:var(--dark-gray)"></span>
+            <button id="logout-btn">退出登录</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <h1>非洲开发客户提交</h1>
+            <p class="page-subtitle">只记录非洲国家客户，用于单独跟进和后台统计。</p>
+            <form id="africaForm">
+                <div class="form-group">
+                    <label for="submitter">提交人</label>
+                    <input type="text" id="submitter" name="submitter" required>
+                </div>
+
+                <div id="customer-forms-container"></div>
+
+                <button type="button" id="add-customer-btn">+ 增加非洲客户</button>
+                <button type="submit">提交非洲客户信息</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="history-container">
+        <h2>我的非洲客户提交历史</h2>
+        <div class="table-container">
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>国家</th>
+                        <th>客户信息</th>
+                        <th>电话</th>
+                        <th>其他描述</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const africaCountries = [
+            { value: "Algeria", label: "Algeria 阿尔及利亚" },
+            { value: "Angola", label: "Angola 安哥拉" },
+            { value: "Benin", label: "Benin 贝宁" },
+            { value: "Botswana", label: "Botswana 博茨瓦纳" },
+            { value: "Burkina Faso", label: "Burkina Faso 布基纳法索" },
+            { value: "Burundi", label: "Burundi 布隆迪" },
+            { value: "Cameroon", label: "Cameroon 喀麦隆" },
+            { value: "Cape Verde", label: "Cape Verde 佛得角" },
+            { value: "Central African Republic", label: "Central African Republic 中非共和国" },
+            { value: "Chad", label: "Chad 乍得" },
+            { value: "Comoros", label: "Comoros 科摩罗" },
+            { value: "Congo", label: "Congo 刚果共和国" },
+            { value: "Cote d'Ivoire", label: "Cote d'Ivoire 科特迪瓦" },
+            { value: "Democratic Republic of the Congo", label: "Democratic Republic of the Congo 刚果民主共和国" },
+            { value: "Djibouti", label: "Djibouti 吉布提" },
+            { value: "Egypt", label: "Egypt 埃及" },
+            { value: "Equatorial Guinea", label: "Equatorial Guinea 赤道几内亚" },
+            { value: "Eritrea", label: "Eritrea 厄立特里亚" },
+            { value: "Eswatini", label: "Eswatini 斯威士兰" },
+            { value: "Ethiopia", label: "Ethiopia 埃塞俄比亚" },
+            { value: "Gabon", label: "Gabon 加蓬" },
+            { value: "Gambia", label: "Gambia 冈比亚" },
+            { value: "Ghana", label: "Ghana 加纳" },
+            { value: "Guinea", label: "Guinea 几内亚" },
+            { value: "Guinea-Bissau", label: "Guinea-Bissau 几内亚比绍" },
+            { value: "Kenya", label: "Kenya 肯尼亚" },
+            { value: "Lesotho", label: "Lesotho 莱索托" },
+            { value: "Liberia", label: "Liberia 利比里亚" },
+            { value: "Libya", label: "Libya 利比亚" },
+            { value: "Madagascar", label: "Madagascar 马达加斯加" },
+            { value: "Malawi", label: "Malawi 马拉维" },
+            { value: "Mali", label: "Mali 马里" },
+            { value: "Mauritania", label: "Mauritania 毛里塔尼亚" },
+            { value: "Mauritius", label: "Mauritius 毛里求斯" },
+            { value: "Morocco", label: "Morocco 摩洛哥" },
+            { value: "Mozambique", label: "Mozambique 莫桑比克" },
+            { value: "Namibia", label: "Namibia 纳米比亚" },
+            { value: "Niger", label: "Niger 尼日尔" },
+            { value: "Nigeria", label: "Nigeria 尼日利亚" },
+            { value: "Rwanda", label: "Rwanda 卢旺达" },
+            { value: "Sao Tome and Principe", label: "Sao Tome and Principe 圣多美和普林西比" },
+            { value: "Senegal", label: "Senegal 塞内加尔" },
+            { value: "Seychelles", label: "Seychelles 塞舌尔" },
+            { value: "Sierra Leone", label: "Sierra Leone 塞拉利昂" },
+            { value: "Somalia", label: "Somalia 索马里" },
+            { value: "South Africa", label: "South Africa 南非" },
+            { value: "South Sudan", label: "South Sudan 南苏丹" },
+            { value: "Sudan", label: "Sudan 苏丹" },
+            { value: "Tanzania", label: "Tanzania 坦桑尼亚" },
+            { value: "Togo", label: "Togo 多哥" },
+            { value: "Tunisia", label: "Tunisia 突尼斯" },
+            { value: "Uganda", label: "Uganda 乌干达" },
+            { value: "Zambia", label: "Zambia 赞比亚" },
+            { value: "Zimbabwe", label: "Zimbabwe 津巴布韦" },
+        ];
+
+        function parseJwt(token) {
+            try { return JSON.parse(atob(token.split('.')[1])); }
+            catch { return null; }
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        const userPayload = parseJwt(token);
+        if (!userPayload) {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+
+        const usernameDisplay = document.getElementById('username-display');
+        if (usernameDisplay && userPayload?.username) usernameDisplay.textContent = `Welcome, ${userPayload.username}`;
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        fetch('/api/user', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(response => {
+                if (!response.ok) throw new Error('认证失败');
+                return response.json();
+            })
+            .then(user => {
+                const submitterInput = document.getElementById('submitter');
+                submitterInput.value = user.realName;
+                submitterInput.readOnly = true;
+                submitterInput.style.backgroundColor = '#e9ecef';
+            })
+            .catch(() => {
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            });
+
+        window.updateAfricaHistoryRow = function(button) {
+            const row = button.closest('tr');
+            const timestamp = row.dataset.timestamp;
+            const customerId = row.querySelector('[data-field="customerId"]').textContent;
+            const phone = row.querySelector('[data-field="phone"]').textContent;
+            const summary = row.querySelector('[data-field="summary"]').textContent;
+
+            fetch('/api/africa-update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ timestamp, customerId, phone, summary })
+            })
+            .then(response => {
+                if (!response.ok) return response.text().then(text => { throw new Error(text || '更新失败') });
+                return response.json();
+            })
+            .then(() => alert('非洲客户记录更新成功！'))
+            .catch(error => alert(`更新失败: ${error.message}`));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const addCustomerBtn = document.getElementById('add-customer-btn');
+            const container = document.getElementById('customer-forms-container');
+            const form = document.getElementById('africaForm');
+            let nextCustomerId = 1;
+
+            function renumberVisualHeaders() {
+                container.querySelectorAll('.customer-form-instance').forEach((formNode, index) => {
+                    formNode.querySelector('h2').textContent = `非洲客户 #${index + 1}`;
+                });
+            }
+
+            function addCustomerForm() {
+                const customerId = nextCustomerId++;
+                const formInstance = document.createElement('div');
+                formInstance.className = 'customer-form-instance';
+                formInstance.innerHTML = `
+                    <button type="button" class="delete-btn" title="删除此客户">&times;</button>
+                    <h2>非洲客户</h2>
+                    <div class="form-group">
+                        <label for="country-${customerId}">国家</label>
+                        <select id="country-${customerId}" name="country" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerInfo-${customerId}">客户信息</label>
+                        <textarea id="customerInfo-${customerId}" name="customerInfo" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-${customerId}">电话</label>
+                        <input type="text" id="phone-${customerId}" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="description-${customerId}">其他描述</label>
+                        <textarea id="description-${customerId}" name="description" rows="3"></textarea>
+                    </div>
+                `;
+
+                const countrySelect = formInstance.querySelector(`#country-${customerId}`);
+                const choices = new Choices(countrySelect, {
+                    shouldSort: false,
+                    searchEnabled: true,
+                    searchPlaceholderValue: '输入字母搜索非洲国家...',
+                    placeholder: true,
+                    placeholderValue: '输入或选择非洲国家',
+                    itemSelectText: '',
+                    noResultsText: '没有找到匹配的非洲国家',
+                    noChoicesText: '没有可选国家',
+                });
+                choices.setChoices(africaCountries, 'value', 'label', true);
+
+                formInstance.querySelector('.delete-btn').addEventListener('click', function() {
+                    if (container.querySelectorAll('.customer-form-instance').length > 1) {
+                        formInstance.remove();
+                        renumberVisualHeaders();
+                    } else {
+                        alert('至少需要保留一个客户信息表单。');
+                    }
+                });
+
+                container.appendChild(formInstance);
+                renumberVisualHeaders();
+            }
+
+            function fetchAndRenderHistory() {
+                fetch('/api/africa-my-submissions', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('获取非洲客户历史记录失败');
+                    return response.json();
+                })
+                .then(data => {
+                    const historyTableBody = document.querySelector('#history-table tbody');
+                    historyTableBody.innerHTML = '';
+                    data.forEach(item => {
+                        const row = historyTableBody.insertRow();
+                        const timestamp = item.Timestamp || item.timestamp;
+                        row.dataset.timestamp = timestamp;
+                        row.innerHTML = `
+                            <td>${new Date(timestamp).toLocaleString()}</td>
+                            <td>${item.country}</td>
+                            <td data-field="customerId" contenteditable="true">${item.customerId || ''}</td>
+                            <td data-field="phone" contenteditable="true">${item.phone || '-'}</td>
+                            <td data-field="summary" contenteditable="true">${item.summary || '-'}</td>
+                            <td><button class="btn-save" onclick="updateAfricaHistoryRow(this)">保存</button></td>
+                        `;
+                    });
+                })
+                .catch(error => console.error('Error fetching Africa history:', error));
+            }
+
+            addCustomerBtn.addEventListener('click', addCustomerForm);
+            addCustomerForm();
+            fetchAndRenderHistory();
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const submitter = document.getElementById('submitter').value;
+                const allCustomersData = [];
+                const customerForms = container.querySelectorAll('.customer-form-instance');
+
+                for (const customerForm of customerForms) {
+                    const country = customerForm.querySelector(`[name="country"]`).value;
+                    if (!country) {
+                        alert('所有非洲客户都必须选择一个国家。');
+                        return;
+                    }
+                    allCustomersData.push({
+                        country,
+                        customerId: customerForm.querySelector(`[name="customerInfo"]`).value,
+                        phone: customerForm.querySelector(`[name="phone"]`).value,
+                        summary: customerForm.querySelector(`[name="description"]`).value,
+                        salesperson: submitter,
+                        source: 'Africa Development',
+                        Timestamp: new Date().toISOString()
+                    });
+                }
+
+                fetch('/api/africa-submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(allCustomersData),
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('提交失败，请重新登录或联系管理员');
+                    return response.text();
+                })
+                .then(() => {
+                    alert('非洲客户提交成功！');
+                    container.innerHTML = '';
+                    addCustomerForm();
+                    fetchAndRenderHistory();
+                })
+                .catch(error => alert(error.message));
+            });
+        });
+    </script>
+</body>
+</html>

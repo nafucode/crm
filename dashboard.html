@@ -376,7 +376,9 @@
         <a href="/dashboard.html" class="navbar-brand"><img src="/xinfuji-logo.svg" alt="XINFUJI Logo" class="logo-img"></a>
         <div class="navbar-nav">
             <a href="/index.html" class="nav-link">返回提交表单</a>
+            <a href="/africa.html" class="nav-link">非洲开发客户</a>
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
+            <a href="#" class="nav-link" onclick="switchTab('africa', null);return false;">非洲数据</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
             <a href="#" class="nav-link" onclick="switchTab('scripts', null);return false;">💬 话术模板</a>
@@ -468,6 +470,72 @@
         </div>
 
         </div><!-- end tab-dashboard -->
+
+        <!-- TAB: 非洲数据 -->
+        <div id="tab-africa" class="tab-pane">
+            <div class="summary-grid" id="africa-summary-grid">
+                <div class="stat-card">
+                    <div class="stat-label">非洲客户总数</div>
+                    <div class="stat-value" id="africa-stat-total">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">今日新增</div>
+                    <div class="stat-value" id="africa-stat-today">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">本周新增</div>
+                    <div class="stat-value" id="africa-stat-week">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">本月新增</div>
+                    <div class="stat-value" id="africa-stat-month">—</div>
+                </div>
+            </div>
+
+            <div class="panel filter-panel">
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="africa-filter-start-date">开始日期</label>
+                        <input type="date" id="africa-filter-start-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="africa-filter-end-date">结束日期</label>
+                        <input type="date" id="africa-filter-end-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="africa-filter-country">国家</label>
+                        <input type="text" id="africa-filter-country" placeholder="输入非洲国家..." class="form-control">
+                    </div>
+                    <div class="form-group-buttons">
+                        <button id="africa-filter-apply-btn" class="btn">应用筛选</button>
+                        <button id="africa-filter-reset-btn" class="btn btn-secondary">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel table-panel">
+                <div class="panel-title-container">
+                    <div class="panel-title">非洲开发客户数据</div>
+                    <button id="africa-export-excel-btn" class="btn">导出 Excel</button>
+                </div>
+                <div class="table-container">
+                    <table id="africa-data-table">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>国家</th>
+                                <th>客户信息</th>
+                                <th>电话</th>
+                                <th>其他描述</th>
+                                <th>提交人</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div><!-- end tab-africa -->
 
         <!-- TAB: 代理商开发 -->
         <div id="tab-prospects" class="tab-pane">
@@ -813,29 +881,53 @@
                 { value: "Angola", label: "Angola 安哥拉" },
                 { value: "Benin", label: "Benin 贝宁" },
                 { value: "Botswana", label: "Botswana 博茨瓦纳" },
+                { value: "Burkina Faso", label: "Burkina Faso 布基纳法索" },
+                { value: "Burundi", label: "Burundi 布隆迪" },
                 { value: "Cameroon", label: "Cameroon 喀麦隆" },
+                { value: "Cape Verde", label: "Cape Verde 佛得角" },
+                { value: "Central African Republic", label: "Central African Republic 中非共和国" },
+                { value: "Chad", label: "Chad 乍得" },
+                { value: "Comoros", label: "Comoros 科摩罗" },
+                { value: "Congo", label: "Congo 刚果共和国" },
                 { value: "Cote d'Ivoire", label: "Cote d'Ivoire 科特迪瓦" },
                 { value: "Djibouti", label: "Djibouti 吉布提" },
                 { value: "Democratic Republic of the Congo", label: "Democratic Republic of the Congo 刚果金" },
                 { value: "Egypt", label: "Egypt 埃及" },
+                { value: "Equatorial Guinea", label: "Equatorial Guinea 赤道几内亚" },
+                { value: "Eritrea", label: "Eritrea 厄立特里亚" },
+                { value: "Eswatini", label: "Eswatini 斯威士兰" },
                 { value: "Ethiopia", label: "Ethiopia 埃塞俄比亚" },
+                { value: "Gabon", label: "Gabon 加蓬" },
+                { value: "Gambia", label: "Gambia 冈比亚" },
                 { value: "Ghana", label: "Ghana 加纳" },
                 { value: "Guinea", label: "Guinea 几内亚" },
+                { value: "Guinea-Bissau", label: "Guinea-Bissau 几内亚比绍" },
                 { value: "Kenya", label: "Kenya 肯尼亚" },
+                { value: "Lesotho", label: "Lesotho 莱索托" },
+                { value: "Liberia", label: "Liberia 利比里亚" },
                 { value: "Libya", label: "Libya 利比亚" },
+                { value: "Madagascar", label: "Madagascar 马达加斯加" },
+                { value: "Malawi", label: "Malawi 马拉维" },
                 { value: "Mali", label: "Mali 马里" },
+                { value: "Mauritania", label: "Mauritania 毛里塔尼亚" },
                 { value: "Mauritius", label: "Mauritius 毛里求斯" },
                 { value: "Morocco", label: "Morocco 摩洛哥" },
                 { value: "Mozambique", label: "Mozambique 莫桑比克" },
                 { value: "Namibia", label: "Namibia 纳米比亚" },
+                { value: "Niger", label: "Niger 尼日尔" },
                 { value: "Nigeria", label: "Nigeria 尼日利亚" },
                 { value: "Rwanda", label: "Rwanda 卢旺达" },
+                { value: "Sao Tome and Principe", label: "Sao Tome and Principe 圣多美和普林西比" },
                 { value: "Senegal", label: "Senegal 塞内加尔" },
                 { value: "Seychelles", label: "Seychelles 塞舌尔" },
                 { value: "Sierra Leone", label: "Sierra Leone 塞拉利昂" },
                 { value: "Somalia", label: "Somalia 索马里" },
                 { value: "South Africa", label: "South Africa 南非" },
+                { value: "South Sudan", label: "South Sudan 南苏丹" },
+                { value: "Sudan", label: "Sudan 苏丹" },
                 { value: "Tanzania", label: "Tanzania 坦桑尼亚" },
+                { value: "Togo", label: "Togo 多哥" },
+                { value: "Tunisia", label: "Tunisia 突尼斯" },
                 { value: "Uganda", label: "Uganda 乌干达" },
                 { value: "Zambia", label: "Zambia 赞比亚" },
                 { value: "Zimbabwe", label: "Zimbabwe 津巴布韦" },
@@ -930,6 +1022,9 @@
                 document.getElementById('filter-apply-btn').addEventListener('click', applyFilters);
                 document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
                 document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
+                document.getElementById('africa-filter-apply-btn').addEventListener('click', applyAfricaFilters);
+                document.getElementById('africa-filter-reset-btn').addEventListener('click', resetAfricaFilters);
+                document.getElementById('africa-export-excel-btn').addEventListener('click', exportAfricaToExcel);
                 fetchInitialDataForAdmin();
             } else {
                 // Salesperson sees only the map and the trend chart
@@ -954,6 +1049,8 @@
         });
 
         let currentFilteredData = []; // Store currently filtered data
+        let allAfricaData = [];
+        let currentFilteredAfricaData = [];
 
         function fetchInitialDataForAdmin() {
             fetch('/api/data', {
@@ -966,6 +1063,21 @@
                 renderAll(currentFilteredData);
             })
             .catch(error => console.error('Error fetching admin data:', error));
+        }
+
+        function fetchAfricaDataAndRender() {
+            fetch('/api/africa-data', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('获取非洲数据失败');
+                return response.json();
+            })
+            .then(data => {
+                allAfricaData = data;
+                renderAfricaAll(allAfricaData);
+            })
+            .catch(error => console.error('Error fetching Africa data:', error));
         }
 
         function fetchDataForSalesperson() {
@@ -1017,6 +1129,27 @@
 
             // 3. Trigger download
             XLSX.writeFile(wb, "customer_data.xlsx");
+        }
+
+        function exportAfricaToExcel() {
+            if (currentFilteredAfricaData.length === 0) {
+                alert('没有可导出的非洲客户数据。');
+                return;
+            }
+
+            const dataToExport = currentFilteredAfricaData.map(item => ({
+                '日期': new Date(item.Timestamp || item.timestamp).toLocaleString(),
+                '国家': getChineseCountryName(item.country),
+                '客户信息': item.customerId,
+                '电话': item.phone || '',
+                '其他描述': item.summary || '',
+                '提交人': item.salesperson
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "非洲客户数据");
+            XLSX.writeFile(wb, "africa_customer_data.xlsx");
         }
 
         function renderDailySubmissionChart(data) {
@@ -1145,6 +1278,38 @@
             renderAll(allData);
         }
 
+        function applyAfricaFilters() {
+            const startDate = document.getElementById('africa-filter-start-date').value;
+            const endDate = document.getElementById('africa-filter-end-date').value;
+            const country = document.getElementById('africa-filter-country').value.toLowerCase();
+
+            const filteredData = allAfricaData.filter(item => {
+                const itemDate = new Date(item.Timestamp || item.timestamp);
+                const itemCountry = item.country ? item.country.toLowerCase() : '';
+                const translatedCountry = translateCountry(item.country).toLowerCase();
+
+                let dateMatch = true;
+                if (startDate) dateMatch = itemDate >= new Date(startDate);
+                if (endDate) {
+                    const endOfDay = new Date(endDate);
+                    endOfDay.setDate(endOfDay.getDate() + 1);
+                    dateMatch = dateMatch && itemDate < endOfDay;
+                }
+
+                const countryMatch = country ? itemCountry.includes(country) || translatedCountry.includes(country) : true;
+                return dateMatch && countryMatch;
+            });
+
+            renderAfricaAll(filteredData);
+        }
+
+        function resetAfricaFilters() {
+            document.getElementById('africa-filter-start-date').value = '';
+            document.getElementById('africa-filter-end-date').value = '';
+            document.getElementById('africa-filter-country').value = '';
+            renderAfricaAll(allAfricaData);
+        }
+
         function renderMap(mapData) {
             const mapChart = echarts.init(document.getElementById('world-map'));
             const option = {
@@ -1227,6 +1392,53 @@
             });
         }
 
+        function renderAfricaAll(data) {
+            currentFilteredAfricaData = data;
+            renderAfricaTable(data);
+            updateAfricaSummary(data);
+        }
+
+        function renderAfricaTable(data) {
+            const tableBody = document.querySelector('#africa-data-table tbody');
+            tableBody.innerHTML = '';
+            const sortedData = [...data].sort((a, b) => {
+                const dateA = new Date(a.Timestamp || a.timestamp);
+                const dateB = new Date(b.Timestamp || b.timestamp);
+                return dateB - dateA;
+            });
+
+            sortedData.forEach(item => {
+                const row = tableBody.insertRow();
+                const timestamp = item.Timestamp || item.timestamp;
+                row.innerHTML = `
+                    <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
+                    <td data-field="country">${getChineseCountryName(item.country)}</td>
+                    <td data-field="customerId" contenteditable="true">${item.customerId || ''}</td>
+                    <td data-field="phone" contenteditable="true">${item.phone || ''}</td>
+                    <td data-field="summary" contenteditable="true">${item.summary || ''}</td>
+                    <td data-field="salesperson">${item.salesperson || ''}</td>
+                    <td>
+                        <button class="btn btn-save" onclick="updateAfricaRow(this)">Save</button>
+                        <button class="btn btn-delete" onclick="deleteAfricaRow(this)">Delete</button>
+                    </td>
+                `;
+                row.dataset.timestamp = timestamp;
+            });
+        }
+
+        function updateAfricaSummary(data) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            document.getElementById('africa-stat-total').textContent = data.length;
+            document.getElementById('africa-stat-today').textContent = data.filter(item => new Date(item.Timestamp || item.timestamp) >= today).length;
+            document.getElementById('africa-stat-week').textContent = data.filter(item => new Date(item.Timestamp || item.timestamp) >= startOfWeek).length;
+            document.getElementById('africa-stat-month').textContent = data.filter(item => new Date(item.Timestamp || item.timestamp) >= startOfMonth).length;
+        }
+
         function updateSummary(data) {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -1299,6 +1511,62 @@
                 });
         }
 
+        window.updateAfricaRow = function (button) {
+            const row = button.closest('tr');
+            const timestamp = row.dataset.timestamp;
+            const customerId = row.querySelector('[data-field="customerId"]').textContent;
+            const phone = row.querySelector('[data-field="phone"]').textContent;
+            const summary = row.querySelector('[data-field="summary"]').textContent;
+
+            fetch('/api/africa-update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ timestamp, customerId, phone, summary })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Update failed');
+                    return response.json();
+                })
+                .then(() => {
+                    alert('Africa record updated successfully!');
+                    fetchAfricaDataAndRender();
+                })
+                .catch(error => {
+                    console.error('Error updating Africa row:', error);
+                    alert('Failed to update Africa record.');
+                });
+        }
+
+        window.deleteAfricaRow = function (button) {
+            const row = button.closest('tr');
+            const timestamp = row.dataset.timestamp;
+
+            if (!confirm('Are you sure you want to delete this Africa record?')) {
+                return;
+            }
+
+            fetch('/api/africa-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ timestamp })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Delete failed');
+                    row.remove();
+                    fetchAfricaDataAndRender();
+                })
+                .catch(error => {
+                    console.error('Error deleting Africa row:', error);
+                    alert(`Failed to delete Africa record: ${error.message}`);
+                });
+        }
+
         window.deleteRow = function (button) {
             const row = button.closest('tr');
             const timestamp = row.dataset.timestamp;
@@ -1351,6 +1619,7 @@
         document.getElementById('tab-' + id).classList.add('active');
         if (btn) btn.classList.add('active');
         if (id === 'prospects') crmLoadSaved();
+        if (id === 'africa') fetchAfricaDataAndRender();
         if (id === 'salesplan') renderSalesPlan();
         if (id === 'scripts') { scLoadScripts(); scLoadVars(); }
         if (id === 'scriptmgr') smLoad();
