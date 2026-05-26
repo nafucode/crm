@@ -1423,12 +1423,24 @@
     // In-memory cache of saved prospects (loaded from API)
     let _savedProspects = null;
 
+    function prospectSavedTime(prospect) {
+        const idTime = Number(String(prospect?.id || '').match(/^\d{10,}/)?.[0]);
+        if (Number.isFinite(idTime)) return idTime;
+
+        const savedTime = Date.parse(prospect?.saved_at || prospect?.created_at || '');
+        return Number.isFinite(savedTime) ? savedTime : 0;
+    }
+
+    function sortProspectsNewestFirst(list) {
+        return [...(list || [])].sort((a, b) => prospectSavedTime(b) - prospectSavedTime(a));
+    }
+
     async function getSavedProspects() {
         if (_savedProspects !== null) return _savedProspects;
         try {
             const r = await fetch(SEO_API + '/api/prospects');
             const d = await r.json();
-            _savedProspects = d.prospects || [];
+            _savedProspects = sortProspectsNewestFirst(d.prospects || []);
         } catch { _savedProspects = []; }
         return _savedProspects;
     }
@@ -1488,12 +1500,12 @@
             const rec = {...d, country, city, id: String(Date.now()) + String(Math.random()).slice(2,6),
                          saved_at: new Date().toLocaleDateString('zh-CN')};
             toAdd.push(rec);
-            _savedProspects.push(rec);
             return true;
         });
 
         // Render saved list immediately from in-memory data
         if (toAdd.length) {
+            _savedProspects = [...toAdd, ...(_savedProspects || [])];
             renderSavedList(_savedProspects);
             // Then write to Google Sheets in background
             fetch(SEO_API + '/api/prospects', {
@@ -1561,9 +1573,10 @@
     function renderSavedList(list) {
         const sec = document.getElementById('p-saved-section');
         if (!list.length) { sec.style.display='none'; return; }
+        const sortedList = sortProspectsNewestFirst(list);
         sec.style.display = 'block';
-        document.getElementById('p-saved-count').textContent = `(${list.length})`;
-        document.getElementById('p-saved-body').innerHTML = list.map((p,i) => {
+        document.getElementById('p-saved-count').textContent = `(${sortedList.length})`;
+        document.getElementById('p-saved-body').innerHTML = sortedList.map((p,i) => {
             const emailDisplay = p.email
                 ? `<a href="mailto:${p.email}" style="color:var(--primary-color);font-size:.82rem">${p.email}</a>`
                 : `<button class="btn" style="padding:3px 8px;font-size:.75rem;background:#f0f4ff;color:var(--primary-color);border:1px solid #c5d8ff"
