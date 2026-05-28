@@ -328,8 +328,19 @@
         .prospect-search-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:1.5rem;}
         .prospect-field label{display:block;font-size:0.8rem;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
         .prospect-field select,.prospect-field input{padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--white);color:var(--text-color);min-width:160px;}
+        .prospect-table{table-layout:fixed;min-width:1040px;}
         .prospect-table th{font-size:0.78rem;font-weight:600;color:var(--secondary-text-color);text-transform:uppercase;letter-spacing:.04em;background:var(--bg-color);}
         .prospect-table td{font-size:0.88rem;vertical-align:middle;}
+        .prospect-table th:nth-child(1),.prospect-table td:nth-child(1){width:72px;}
+        .prospect-table th:nth-child(2),.prospect-table td:nth-child(2){width:96px;}
+        .prospect-table th:nth-child(3),.prospect-table td:nth-child(3){width:96px;}
+        .prospect-table th:nth-child(4),.prospect-table td:nth-child(4){width:220px;max-width:220px;white-space:normal;overflow:visible;text-overflow:clip;word-break:break-word;line-height:1.35;}
+        .prospect-table th:nth-child(5),.prospect-table td:nth-child(5){width:130px;}
+        .prospect-table th:nth-child(6),.prospect-table td:nth-child(6){width:130px;}
+        .prospect-table th:nth-child(7),.prospect-table td:nth-child(7){width:150px;}
+        .prospect-table th:nth-child(8),.prospect-table td:nth-child(8){width:150px;}
+        .prospect-table th:nth-child(9),.prospect-table td:nth-child(9){width:150px;}
+        .prospect-table th:nth-child(10),.prospect-table td:nth-child(10){width:76px;}
         .prospect-tag{display:inline-block;font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:#e7f0ff;color:var(--primary-color);}
         .prospect-phone{font-family:'SF Mono',Menlo,monospace;font-size:0.82rem;}
         .wa-num{color:#25d366;}
@@ -1687,7 +1698,9 @@
     }
 
     // ── 搜索逻辑 ───────────────────────────────────────────
-    const SEO_API = 'https://elevator-seo-production.up.railway.app';
+    // Use same-origin CRM APIs so the dashboard keeps working even if the old
+    // external Railway search service is unavailable.
+    const SEO_API = '';
 
     // In-memory cache of saved prospects (loaded from API)
     let _savedProspects = null;
@@ -1743,7 +1756,7 @@
             });
             const d = await r.json();
             if (d.error) throw new Error(d.error);
-            await crmRenderResults(d.dealers || [], country, city, loadMore);
+            await crmRenderResults(d.dealers || [], country, city, loadMore, d);
         } catch(e) {
             document.getElementById('p-results').innerHTML =
                 `<div class="prospect-empty">❌ 搜索失败: ${e.message}</div>`;
@@ -1753,7 +1766,7 @@
         }
     }
 
-    async function crmRenderResults(dealers, country, city, append = false) {
+    async function crmRenderResults(dealers, country, city, append = false, meta = {}) {
         if (!dealers.length) {
             if (!append) document.getElementById('p-results').innerHTML = '<div class="prospect-empty">未找到结果，换个城市试试</div>';
             return;
@@ -1762,13 +1775,14 @@
         const saved = await getSavedProspects();
         const existingKeys = new Set(saved.map(p => (p.company||'').toLowerCase() + '|' + (p.city||'').toLowerCase()));
         const toAdd = [];
+        const shouldAutoSave = !meta.fallback;
         const isNew = dealers.map(d => {
             const key = (d.company||'').toLowerCase() + '|' + city.toLowerCase();
             if (existingKeys.has(key)) return false;
             existingKeys.add(key);
             const rec = {...d, country, city, id: String(Date.now()) + String(Math.random()).slice(2,6),
                          saved_at: new Date().toLocaleDateString('zh-CN')};
-            toAdd.push(rec);
+            if (shouldAutoSave) toAdd.push(rec);
             return true;
         });
 
@@ -1776,7 +1790,7 @@
         if (toAdd.length) {
             _savedProspects = [...toAdd, ...(_savedProspects || [])];
             renderSavedList(_savedProspects);
-            // Then write to Google Sheets in background
+            // Then write to the CRM database in background
             fetch(SEO_API + '/api/prospects', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -1785,10 +1799,10 @@
                 const d = await r.json();
                 if (d.error) {
                     const el = document.getElementById('p-sheet-status');
-                    if (el) el.innerHTML = `<span style="color:#dc3545">⚠️ Sheet 同步失败: ${d.error}</span>`;
+                    if (el) el.innerHTML = `<span style="color:#dc3545">⚠️ CRM 同步失败: ${d.error}</span>`;
                 } else {
                     const el = document.getElementById('p-sheet-status');
-                    if (el) el.innerHTML = `<span style="color:green">✓ 已同步到 Google Sheet</span>`;
+                    if (el) el.innerHTML = `<span style="color:green">✓ 已保存到 CRM</span>`;
                 }
             }).catch(e => {
                 const el = document.getElementById('p-sheet-status');
@@ -1798,12 +1812,13 @@
 
         const rows = dealers.map((d, i) => {
             const alreadySaved = !isNew[i];
+            const statusLabel = meta.fallback ? '核实入口' : (alreadySaved ? '已保存' : '✓ 新增');
             const emailCell = d.email
                 ? `<a href="mailto:${d.email}" style="color:var(--primary-color);font-size:.82rem">${d.email}</a>`
                 : `<span style="color:#ccc;font-size:.8rem">—</span>`;
             return `<tr style="${alreadySaved ? 'opacity:0.45' : ''}">
                 <td style="font-size:.75rem;color:${alreadySaved ? 'var(--secondary-text-color)' : 'var(--primary-color)'}">
-                    ${alreadySaved ? '已保存' : '✓ 新增'}
+                    ${statusLabel}
                 </td>
                 <td><span class="prospect-tag">${country}</span></td>
                 <td>${city}</td>
@@ -1824,12 +1839,15 @@
             const summary = document.getElementById('p-results-summary');
             if (summary) summary.textContent = `已保存 ${savedCount} 家 · ${city}, ${country}`;
         } else {
+            const statusLine = meta.fallback
+                ? `<span style="color:#b26a00">⚠️ 实时接口暂不可用，下面是 Google 核实入口；点击“网站”继续查，不会自动保存到 CRM。</span>`
+                : `⏳ 正在保存到 CRM...`;
             document.getElementById('p-results').innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                    <span id="p-results-summary" style="font-weight:600">已保存 ${savedCount} 家 · ${city}, ${country}</span>
+                    <span id="p-results-summary" style="font-weight:600">${meta.fallback ? '搜索入口' : '已保存 ' + savedCount + ' 家'} · ${city}, ${country}</span>
                     <button id="p-more-btn" class="btn btn-secondary" onclick="crmSearchProspects(true)" style="padding:6px 16px">🔍 搜索更多</button>
                 </div>
-                <div id="p-sheet-status" style="font-size:.8rem;margin-bottom:10px;color:var(--secondary-text-color)">⏳ 正在同步到 Google Sheet...</div>
+                <div id="p-sheet-status" style="font-size:.8rem;margin-bottom:10px;color:var(--secondary-text-color)">${statusLine}</div>
                 <div class="table-container">
                     <table class="prospect-table">
                         <thead><tr><th>状态</th><th>国家</th><th>城市</th><th>公司名称</th><th>电话</th><th>WhatsApp</th><th>网站</th><th>地址</th><th>邮件</th></tr></thead>
@@ -1887,7 +1905,7 @@
                     : `<span style="color:#aaa;font-size:.8rem">未找到</span>`;
             }
 
-            // Write back to Google Sheet
+            // Write back to the CRM database
             if (email) {
                 await fetch(SEO_API + '/api/prospects/update-email', {
                     method: 'POST',
@@ -1903,7 +1921,7 @@
     }
 
     async function crmLoadSaved() {
-        _savedProspects = null; // force fresh fetch from Sheet
+        _savedProspects = null; // force fresh fetch from CRM
         const list = await getSavedProspects();
         renderSavedList(list);
     }
@@ -1954,7 +1972,7 @@
                         : `<span style="color:#aaa;font-size:.8rem">未找到</span>`;
                 }
 
-                // Save to Sheet
+                // Save to the CRM database
                 if (email) {
                     found++;
                     await fetch(SEO_API + '/api/prospects/update-email', {
@@ -1974,7 +1992,7 @@
     }
 
     function crmClearProspects() {
-        alert('请直接在 Google Sheet 里清空数据');
+        alert('请在已保存列表里逐条删除，或联系我帮你批量清空 CRM 数据。');
     }
 
     // ── 销售计划 ────────────────────────────────────────────────────
@@ -2150,7 +2168,7 @@
     let scCombineMode = false;
     let scSelected = new Set();
 
-    // Loaded from Google Sheets; fallback to built-in if sheet empty
+    // Loaded from the CRM database; fallback to built-in if empty
     let SC_SCRIPTS = [];
 
     async function scLoadScripts() {
@@ -2160,7 +2178,7 @@
             const r = await fetch(SEO_API + '/api/scripts');
             const data = await r.json();
             if (data.scripts && data.scripts.length > 0) {
-                // Normalize: sheet stores id_lang column (Indonesian), map to 'id' key
+                // Normalize older records that used id_lang for Indonesian text.
                 SC_SCRIPTS = data.scripts.map(s => ({ ...s, id: s.id }));
             } else {
                 SC_SCRIPTS = SC_SCRIPTS_BUILTIN;
@@ -2348,7 +2366,7 @@
           id:`{{name}}, itu bagus — memiliki pemasok yang andal memang penting. Saya tidak ingin mengganggu hubungan yang baik. Tapi banyak klien kami menggunakan kami sebagai sumber kedua untuk menjaga harga tetap kompetitif. Apakah berguna untuk menyimpan spesifikasi kami sebagai referensi?`,
           fr:`{{name}}, c'est bien — avoir un fournisseur fiable est important. Je ne suis pas là pour perturber cette relation. Mais beaucoup de nos clients nous utilisent comme second fournisseur pour maintenir des prix compétitifs. Serait-il utile d'avoir nos specs en référence ?` },
     ];
-    // Initialize SC_SCRIPTS to builtin until Sheets loads
+    // Initialize SC_SCRIPTS to builtin until CRM records load
     SC_SCRIPTS = SC_SCRIPTS_BUILTIN;
 
     const SC_PLAYBOOKS = [
@@ -2414,7 +2432,7 @@
             .replace(/\{\{referrer\}\}/g, v.referrer || '{{referrer}}');
     }
 
-    // Get localized text for a script; handles builtin 'id' key vs Sheet 'id_lang' key
+    // Get localized text for a script; handles builtin 'id' key vs older id_lang records.
     function scText(s) {
         if (!s) return '';
         if (scLang === 'id') return s.id_lang || s.id || s.en || '';
