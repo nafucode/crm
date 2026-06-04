@@ -379,6 +379,13 @@
         .sm-del-btn:hover{background:var(--danger-color);color:#fff}
         .sm-edit-btn{border:none;background:#e8f0fe;color:var(--primary-color);border-radius:6px;padding:4px 10px;font-size:.8rem;cursor:pointer;font-weight:600;margin-right:4px}
         .sm-edit-btn:hover{background:var(--primary-color);color:#fff}
+        .africa-group-panel{display:grid;grid-template-columns:1.1fr .9fr;gap:1rem;margin-bottom:1.5rem}
+        .africa-group-note{background:#f7fbff;border:1px solid #dbeafe;border-radius:8px;padding:1rem;color:#475569;font-size:.88rem;line-height:1.7}
+        .africa-group-note strong{color:var(--text-color)}
+        .africa-group-table{width:100%;border-collapse:collapse}
+        .africa-group-table th,.africa-group-table td{white-space:normal;font-size:.84rem;vertical-align:top}
+        .africa-group-badge{display:inline-block;background:#e7f0ff;color:var(--primary-color);border-radius:99px;padding:2px 8px;font-weight:700;font-size:.75rem;margin-right:4px}
+        @media (max-width: 900px){.africa-group-panel{grid-template-columns:1fr}}
     </style>
 </head>
 
@@ -503,6 +510,33 @@
                 </div>
             </div>
 
+            <div class="africa-group-panel">
+                <div class="panel" style="margin-bottom:0">
+                    <div class="panel-title-container">
+                        <div class="panel-title">非洲市场分组方案（2026）</div>
+                    </div>
+                    <div class="table-container" style="max-height:360px">
+                        <table class="africa-group-table">
+                            <thead>
+                                <tr>
+                                    <th>分组</th>
+                                    <th>负责人</th>
+                                    <th>主要国家</th>
+                                    <th>备注</th>
+                                </tr>
+                            </thead>
+                            <tbody id="africa-group-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="africa-group-note">
+                    <strong>分组目的</strong><br>
+                    明确市场归属，提高客户开发效率，避免内部重复开发；兼顾市场潜力与开发难度，实现资源均衡分配。<br><br>
+                    <strong>共享市场</strong><br>
+                    尼日利亚、肯尼亚、埃塞俄比亚、加纳、埃及：所有业务员均可开发，遵循先登记、先跟进原则。
+                </div>
+            </div>
+
             <div class="panel filter-panel">
                 <div class="filter-controls">
                     <div class="form-group">
@@ -516,6 +550,12 @@
                     <div class="form-group">
                         <label for="africa-filter-country">国家</label>
                         <input type="text" id="africa-filter-country" placeholder="输入非洲国家..." class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="africa-filter-group">分组</label>
+                        <select id="africa-filter-group" class="form-control">
+                            <option value="">全部分组</option>
+                        </select>
                     </div>
                     <div class="form-group-buttons">
                         <button id="africa-filter-apply-btn" class="btn">应用筛选</button>
@@ -535,6 +575,8 @@
                             <tr>
                                 <th>日期</th>
                                 <th>国家</th>
+                                <th>分组</th>
+                                <th>负责人</th>
                                 <th>客户信息</th>
                                 <th>电话</th>
                                 <th>其他描述</th>
@@ -940,6 +982,7 @@
                 { value: "Togo", label: "Togo 多哥" },
                 { value: "Tunisia", label: "Tunisia 突尼斯" },
                 { value: "Uganda", label: "Uganda 乌干达" },
+                { value: "Western Sahara", label: "Western Sahara 西撒哈拉" },
                 { value: "Zambia", label: "Zambia 赞比亚" },
                 { value: "Zimbabwe", label: "Zimbabwe 津巴布韦" },
             ],
@@ -1008,9 +1051,82 @@
             acc[country.value] = match ? match.join('') : country.value;
             return acc;
         }, {});
+        Object.assign(countryChineseNameMap, {
+            "Myanmar": "缅甸",
+            "Poland": "波兰",
+            "United Arab Emirates": "阿联酋",
+        });
 
         function getChineseCountryName(englishName) {
             return countryChineseNameMap[englishName] || englishName;
+        }
+
+        const AFRICA_MARKET_GROUPS = [
+            {
+                code: "共享市场",
+                name: "共享市场（所有业务员均可开发）",
+                owner: "所有业务员",
+                note: "共享市场，先登记、先跟进",
+                countries: ["Nigeria", "Kenya", "Ethiopia", "Ghana", "Egypt"]
+            },
+            {
+                code: "A组",
+                name: "A组（法语西非）",
+                owner: "张多加",
+                note: "法语市场",
+                countries: ["Cote d'Ivoire", "Senegal", "Benin", "Togo", "Burkina Faso", "Niger", "Guinea", "Guinea-Bissau", "Gambia", "Cape Verde"]
+            },
+            {
+                code: "B组",
+                name: "B组（中非法语区）",
+                owner: "李菲艳",
+                note: "资源型市场",
+                countries: ["Cameroon", "Gabon", "Congo", "Equatorial Guinea", "Chad", "Central African Republic", "Sao Tome and Principe"]
+            },
+            {
+                code: "C组",
+                name: "C组（南部非洲）",
+                owner: "李孟琪",
+                note: "葡语及英语市场",
+                countries: ["Angola", "Zambia", "Zimbabwe", "Botswana", "Namibia", "Malawi", "Lesotho", "Eswatini"]
+            },
+            {
+                code: "D组",
+                name: "D组（北非）",
+                owner: "陈颢",
+                note: "阿拉伯语及法语市场",
+                countries: ["Morocco", "Tunisia", "Algeria", "Libya", "Mauritania", "Western Sahara"]
+            },
+            {
+                code: "E组",
+                name: "E组（东非）",
+                owner: "钱晨阳",
+                note: "英语市场",
+                countries: ["Tanzania", "Uganda", "Rwanda", "Burundi", "South Sudan", "Djibouti", "Eritrea", "Somalia"]
+            },
+            {
+                code: "F组",
+                name: "F组（印度洋及特殊市场）",
+                owner: "魏佳瑶",
+                note: "成长型市场",
+                countries: ["Democratic Republic of the Congo", "Mozambique", "Madagascar", "Mauritius", "Seychelles", "Comoros"]
+            }
+        ];
+
+        const africaMarketIndex = AFRICA_MARKET_GROUPS.reduce((acc, group) => {
+            group.countries.forEach(country => {
+                acc[country] = group;
+            });
+            return acc;
+        }, {});
+
+        function getAfricaMarketInfo(country) {
+            return africaMarketIndex[country] || {
+                code: "未分组",
+                name: "未分组",
+                owner: "待分配",
+                note: "待确认负责人"
+            };
         }
 
         let allData = []; // Store all data globally
@@ -1036,6 +1152,8 @@
                 document.getElementById('africa-filter-apply-btn').addEventListener('click', applyAfricaFilters);
                 document.getElementById('africa-filter-reset-btn').addEventListener('click', resetAfricaFilters);
                 document.getElementById('africa-export-excel-btn').addEventListener('click', exportAfricaToExcel);
+                renderAfricaGroupBoard();
+                populateAfricaGroupFilter();
                 fetchInitialDataForAdmin();
             } else {
                 // Salesperson sees only the map and the trend chart
@@ -1151,9 +1269,12 @@
             const dataToExport = currentFilteredAfricaData.map(item => ({
                 '日期': new Date(item.Timestamp || item.timestamp).toLocaleString(),
                 '国家': getChineseCountryName(item.country),
+                '分组': item.marketGroup || getAfricaMarketInfo(item.country).name,
+                '负责人': item.groupOwner || getAfricaMarketInfo(item.country).owner,
                 '客户信息': item.customerId,
                 '电话': item.phone || '',
                 '其他描述': item.summary || '',
+                '备注': item.groupNote || getAfricaMarketInfo(item.country).note,
                 '提交人': item.salesperson
             }));
 
@@ -1293,11 +1414,14 @@
             const startDate = document.getElementById('africa-filter-start-date').value;
             const endDate = document.getElementById('africa-filter-end-date').value;
             const country = document.getElementById('africa-filter-country').value.toLowerCase();
+            const group = document.getElementById('africa-filter-group').value;
 
             const filteredData = allAfricaData.filter(item => {
                 const itemDate = new Date(item.Timestamp || item.timestamp);
                 const itemCountry = item.country ? item.country.toLowerCase() : '';
                 const translatedCountry = translateCountry(item.country).toLowerCase();
+                const marketInfo = getAfricaMarketInfo(item.country);
+                const itemGroup = item.marketGroup || marketInfo.name;
 
                 let dateMatch = true;
                 if (startDate) dateMatch = itemDate >= new Date(startDate);
@@ -1308,7 +1432,8 @@
                 }
 
                 const countryMatch = country ? itemCountry.includes(country) || translatedCountry.includes(country) : true;
-                return dateMatch && countryMatch;
+                const groupMatch = group ? itemGroup === group : true;
+                return dateMatch && countryMatch && groupMatch;
             });
 
             renderAfricaAll(filteredData);
@@ -1318,7 +1443,29 @@
             document.getElementById('africa-filter-start-date').value = '';
             document.getElementById('africa-filter-end-date').value = '';
             document.getElementById('africa-filter-country').value = '';
+            document.getElementById('africa-filter-group').value = '';
             renderAfricaAll(allAfricaData);
+        }
+
+        function renderAfricaGroupBoard() {
+            const body = document.getElementById('africa-group-body');
+            if (!body) return;
+            body.innerHTML = AFRICA_MARKET_GROUPS.map(group => `
+                <tr>
+                    <td><span class="africa-group-badge">${group.code}</span>${group.name.replace(group.code, '').trim()}</td>
+                    <td>${group.owner}</td>
+                    <td>${group.countries.map(getChineseCountryName).join('、')}</td>
+                    <td>${group.note}</td>
+                </tr>
+            `).join('');
+        }
+
+        function populateAfricaGroupFilter() {
+            const select = document.getElementById('africa-filter-group');
+            if (!select) return;
+            select.innerHTML = '<option value="">全部分组</option>' + AFRICA_MARKET_GROUPS
+                .map(group => `<option value="${group.name}">${group.name} · ${group.owner}</option>`)
+                .join('') + '<option value="未分组">未分组 · 待分配</option>';
         }
 
         function renderMap(mapData) {
@@ -1421,9 +1568,12 @@
             sortedData.forEach(item => {
                 const row = tableBody.insertRow();
                 const timestamp = item.Timestamp || item.timestamp;
+                const marketInfo = getAfricaMarketInfo(item.country);
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
                     <td data-field="country">${getChineseCountryName(item.country)}</td>
+                    <td data-field="marketGroup">${item.marketGroup || marketInfo.name}</td>
+                    <td data-field="groupOwner">${item.groupOwner || marketInfo.owner}</td>
                     <td data-field="customerId" contenteditable="true">${item.customerId || ''}</td>
                     <td data-field="phone" contenteditable="true">${item.phone || ''}</td>
                     <td data-field="summary" contenteditable="true">${item.summary || ''}</td>
@@ -1528,6 +1678,8 @@
             const customerId = row.querySelector('[data-field="customerId"]').textContent;
             const phone = row.querySelector('[data-field="phone"]').textContent;
             const summary = row.querySelector('[data-field="summary"]').textContent;
+            const marketGroup = row.querySelector('[data-field="marketGroup"]').textContent;
+            const groupOwner = row.querySelector('[data-field="groupOwner"]').textContent;
 
             fetch('/api/africa-update', {
                 method: 'POST',
@@ -1535,7 +1687,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ timestamp, customerId, phone, summary })
+                body: JSON.stringify({ timestamp, customerId, phone, summary, marketGroup, groupOwner })
             })
                 .then(response => {
                     if (!response.ok) throw new Error('Update failed');
@@ -1717,6 +1869,21 @@
         return [...(list || [])].sort((a, b) => prospectSavedTime(b) - prospectSavedTime(a));
     }
 
+    function sortProspectsByCountryAlpha(list) {
+        return [...(list || [])].sort((a, b) => {
+            const countryCompare = String(a.country || '').localeCompare(String(b.country || ''), 'en', { sensitivity: 'base' });
+            if (countryCompare !== 0) return countryCompare;
+
+            const cityCompare = String(a.city || '').localeCompare(String(b.city || ''), 'en', { sensitivity: 'base' });
+            if (cityCompare !== 0) return cityCompare;
+
+            const companyCompare = String(a.company || '').localeCompare(String(b.company || ''), 'en', { sensitivity: 'base' });
+            if (companyCompare !== 0) return companyCompare;
+
+            return prospectSavedTime(b) - prospectSavedTime(a);
+        });
+    }
+
     async function getSavedProspects() {
         if (_savedProspects !== null) return _savedProspects;
         try {
@@ -1746,7 +1913,7 @@
 
         if (!loadMore) {
             document.getElementById('p-results').innerHTML =
-                `<div class="prospect-loading">⏳ AI 正在用 Google 搜索 ${city}, ${country} 的电梯经销商...</div>`;
+                `<div class="prospect-loading">⏳ AI 正在用 Google 搜索 ${city}, ${getChineseCountryName(country)} 的电梯经销商...</div>`;
         }
         try {
             const r = await fetch(SEO_API + '/api/search-dealers', {
@@ -1820,7 +1987,7 @@
                 <td style="font-size:.75rem;color:${alreadySaved ? 'var(--secondary-text-color)' : 'var(--primary-color)'}">
                     ${statusLabel}
                 </td>
-                <td><span class="prospect-tag">${country}</span></td>
+                <td><span class="prospect-tag">${getChineseCountryName(country)}</span></td>
                 <td>${city}</td>
                 <td style="font-weight:500">${d.company||'-'}</td>
                 <td class="prospect-phone">${d.phone||'-'}</td>
@@ -1837,14 +2004,14 @@
             const tbody = document.querySelector('#p-results .prospect-table tbody');
             if (tbody) tbody.insertAdjacentHTML('beforeend', rows);
             const summary = document.getElementById('p-results-summary');
-            if (summary) summary.textContent = `已保存 ${savedCount} 家 · ${city}, ${country}`;
+            if (summary) summary.textContent = `已保存 ${savedCount} 家 · ${city}, ${getChineseCountryName(country)}`;
         } else {
             const statusLine = meta.fallback
                 ? `<span style="color:#b26a00">⚠️ 实时接口暂不可用，下面是 Google 核实入口；点击“网站”继续查，不会自动保存到 CRM。</span>`
                 : `⏳ 正在保存到 CRM...`;
             document.getElementById('p-results').innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                    <span id="p-results-summary" style="font-weight:600">${meta.fallback ? '搜索入口' : '已保存 ' + savedCount + ' 家'} · ${city}, ${country}</span>
+                    <span id="p-results-summary" style="font-weight:600">${meta.fallback ? '搜索入口' : '已保存 ' + savedCount + ' 家'} · ${city}, ${getChineseCountryName(country)}</span>
                     <button id="p-more-btn" class="btn btn-secondary" onclick="crmSearchProspects(true)" style="padding:6px 16px">🔍 搜索更多</button>
                 </div>
                 <div id="p-sheet-status" style="font-size:.8rem;margin-bottom:10px;color:var(--secondary-text-color)">${statusLine}</div>
@@ -1860,7 +2027,7 @@
     function renderSavedList(list) {
         const sec = document.getElementById('p-saved-section');
         if (!list.length) { sec.style.display='none'; return; }
-        const sortedList = sortProspectsNewestFirst(list);
+        const sortedList = sortProspectsByCountryAlpha(list);
         sec.style.display = 'block';
         document.getElementById('p-saved-count').textContent = `(${sortedList.length})`;
         document.getElementById('p-saved-body').innerHTML = sortedList.map((p,i) => {
@@ -1871,7 +2038,7 @@
                      📧 获取邮件</button>`;
             return `<tr id="prospect-row-${p.id}">
                 <td style="color:var(--secondary-text-color);font-size:.8rem">${i+1}</td>
-                <td><span class="prospect-tag">${p.country||''}</span></td>
+                <td><span class="prospect-tag">${getChineseCountryName(p.country)||''}</span></td>
                 <td>${p.city||''}</td>
                 <td style="font-weight:500">${p.company||'-'}</td>
                 <td class="prospect-phone">${p.phone||'-'}</td>

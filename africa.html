@@ -310,6 +310,8 @@
                     <tr>
                         <th>日期</th>
                         <th>国家</th>
+                        <th>分组</th>
+                        <th>负责人</th>
                         <th>客户信息</th>
                         <th>电话</th>
                         <th>其他描述</th>
@@ -375,9 +377,78 @@
             { value: "Togo", label: "Togo 多哥" },
             { value: "Tunisia", label: "Tunisia 突尼斯" },
             { value: "Uganda", label: "Uganda 乌干达" },
+            { value: "Western Sahara", label: "Western Sahara 西撒哈拉" },
             { value: "Zambia", label: "Zambia 赞比亚" },
             { value: "Zimbabwe", label: "Zimbabwe 津巴布韦" },
         ];
+
+        const AFRICA_MARKET_GROUPS = [
+            {
+                code: "共享市场",
+                name: "共享市场（所有业务员均可开发）",
+                owner: "所有业务员",
+                note: "共享市场，先登记、先跟进",
+                countries: ["Nigeria", "Kenya", "Ethiopia", "Ghana", "Egypt"]
+            },
+            {
+                code: "A组",
+                name: "A组（法语西非）",
+                owner: "张多加",
+                note: "法语市场",
+                countries: ["Cote d'Ivoire", "Senegal", "Benin", "Togo", "Burkina Faso", "Niger", "Guinea", "Guinea-Bissau", "Gambia", "Cape Verde"]
+            },
+            {
+                code: "B组",
+                name: "B组（中非法语区）",
+                owner: "李菲艳",
+                note: "资源型市场",
+                countries: ["Cameroon", "Gabon", "Congo", "Equatorial Guinea", "Chad", "Central African Republic", "Sao Tome and Principe"]
+            },
+            {
+                code: "C组",
+                name: "C组（南部非洲）",
+                owner: "李孟琪",
+                note: "葡语及英语市场",
+                countries: ["Angola", "Zambia", "Zimbabwe", "Botswana", "Namibia", "Malawi", "Lesotho", "Eswatini"]
+            },
+            {
+                code: "D组",
+                name: "D组（北非）",
+                owner: "陈颢",
+                note: "阿拉伯语及法语市场",
+                countries: ["Morocco", "Tunisia", "Algeria", "Libya", "Mauritania", "Western Sahara"]
+            },
+            {
+                code: "E组",
+                name: "E组（东非）",
+                owner: "钱晨阳",
+                note: "英语市场",
+                countries: ["Tanzania", "Uganda", "Rwanda", "Burundi", "South Sudan", "Djibouti", "Eritrea", "Somalia"]
+            },
+            {
+                code: "F组",
+                name: "F组（印度洋及特殊市场）",
+                owner: "魏佳瑶",
+                note: "成长型市场",
+                countries: ["Democratic Republic of the Congo", "Mozambique", "Madagascar", "Mauritius", "Seychelles", "Comoros"]
+            }
+        ];
+
+        const africaMarketIndex = AFRICA_MARKET_GROUPS.reduce((acc, group) => {
+            group.countries.forEach(country => {
+                acc[country] = group;
+            });
+            return acc;
+        }, {});
+
+        function getAfricaMarketInfo(country) {
+            return africaMarketIndex[country] || {
+                code: "未分组",
+                name: "未分组",
+                owner: "待分配",
+                note: "待确认负责人"
+            };
+        }
 
         function parseJwt(token) {
             try { return JSON.parse(atob(token.split('.')[1])); }
@@ -466,6 +537,14 @@
                         <select id="country-${customerId}" name="country" required></select>
                     </div>
                     <div class="form-group">
+                        <label for="marketGroup-${customerId}">分组</label>
+                        <input type="text" id="marketGroup-${customerId}" name="marketGroup" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="groupOwner-${customerId}">负责人</label>
+                        <input type="text" id="groupOwner-${customerId}" name="groupOwner" readonly>
+                    </div>
+                    <div class="form-group">
                         <label for="customerInfo-${customerId}">客户信息</label>
                         <textarea id="customerInfo-${customerId}" name="customerInfo" rows="3" required></textarea>
                     </div>
@@ -491,6 +570,14 @@
                     noChoicesText: '没有可选国家',
                 });
                 choices.setChoices(africaCountries, 'value', 'label', true);
+
+                function updateMarketFields() {
+                    const info = getAfricaMarketInfo(countrySelect.value);
+                    formInstance.querySelector(`[name="marketGroup"]`).value = info.name;
+                    formInstance.querySelector(`[name="groupOwner"]`).value = info.owner;
+                }
+                countrySelect.addEventListener('change', updateMarketFields);
+                updateMarketFields();
 
                 formInstance.querySelector('.delete-btn').addEventListener('click', function() {
                     if (container.querySelectorAll('.customer-form-instance').length > 1) {
@@ -519,10 +606,13 @@
                     data.forEach(item => {
                         const row = historyTableBody.insertRow();
                         const timestamp = item.Timestamp || item.timestamp;
+                        const marketInfo = getAfricaMarketInfo(item.country);
                         row.dataset.timestamp = timestamp;
                         row.innerHTML = `
                             <td>${new Date(timestamp).toLocaleString()}</td>
                             <td>${item.country}</td>
+                            <td>${item.marketGroup || marketInfo.name}</td>
+                            <td>${item.groupOwner || marketInfo.owner}</td>
                             <td data-field="customerId" contenteditable="true">${item.customerId || ''}</td>
                             <td data-field="phone" contenteditable="true">${item.phone || '-'}</td>
                             <td data-field="summary" contenteditable="true">${item.summary || '-'}</td>
@@ -549,8 +639,12 @@
                         alert('所有非洲客户都必须选择一个国家。');
                         return;
                     }
+                    const marketInfo = getAfricaMarketInfo(country);
                     allCustomersData.push({
                         country,
+                        marketGroup: marketInfo.name,
+                        groupOwner: marketInfo.owner,
+                        groupNote: marketInfo.note,
                         customerId: customerForm.querySelector(`[name="customerInfo"]`).value,
                         phone: customerForm.querySelector(`[name="phone"]`).value,
                         summary: customerForm.querySelector(`[name="description"]`).value,

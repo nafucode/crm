@@ -190,6 +190,9 @@ async function submitCustomerRecords(req, res, redisKey, label) {
                         customerId: submission.customerId,
                         summary: `${submission.summary || ''} (更新于 ${new Date(submission.Timestamp).toLocaleString()})\n${existingRecord.summary || ''}`.trim(),
                         salesperson: submission.salesperson,
+                        marketGroup: submission.marketGroup || existingRecord.marketGroup,
+                        groupOwner: submission.groupOwner || existingRecord.groupOwner,
+                        groupNote: submission.groupNote || existingRecord.groupNote,
                         Timestamp: submission.Timestamp,
                     };
                     delete mergedRecord.originalIndex;
@@ -362,7 +365,7 @@ app.post('/api/update', authenticateToken, async (req, res) => {
 });
 
 async function updateCustomerRecord(req, res, redisKey, label) {
-    const { timestamp, customerId, phone, summary } = req.body;
+    const { timestamp, customerId, phone, summary, marketGroup, groupOwner, groupNote } = req.body;
 
     if (!timestamp) {
         return res.status(400).send('缺少时间戳标识');
@@ -381,7 +384,15 @@ async function updateCustomerRecord(req, res, redisKey, label) {
             return res.status(403).send('权限不足：您只能修改自己的提交记录。');
         }
 
-        const newRecord = { ...oldRecord, customerId, phone, summary };
+        const newRecord = {
+            ...oldRecord,
+            customerId,
+            phone,
+            summary,
+            ...(marketGroup !== undefined && { marketGroup }),
+            ...(groupOwner !== undefined && { groupOwner }),
+            ...(groupNote !== undefined && { groupNote }),
+        };
         await kv.lset(redisKey, index, newRecord);
         res.status(200).json({ message: `${label}数据更新成功`, updatedRecord: newRecord });
     } catch (error) {
