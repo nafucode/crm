@@ -1853,9 +1853,10 @@
     }
 
     // ── 搜索逻辑 ───────────────────────────────────────────
-    // Use same-origin CRM APIs so the dashboard keeps working even if the old
-    // external Railway search service is unavailable.
+    // Keep CRM data on same-origin APIs, while long-running Google AI searches
+    // call the Railway service directly to avoid serverless proxy timeouts.
     const SEO_API = '';
+    const SEO_AI_API = 'https://elevator-seo-production.up.railway.app';
 
     // In-memory cache of saved prospects (loaded from API)
     let _savedProspects = null;
@@ -1919,7 +1920,7 @@
                 `<div class="prospect-loading">⏳ AI 正在用 Google 搜索 ${city}, ${getChineseCountryName(country)} 的电梯经销商...</div>`;
         }
         try {
-            const r = await fetch(SEO_API + '/api/search-dealers', {
+            const r = await fetch(SEO_AI_API + '/api/search-dealers', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({country, city, type, exclude})
@@ -2058,7 +2059,7 @@
         btn.disabled = true;
         btn.textContent = '⏳ 搜索中…';
         try {
-            const r = await fetch(SEO_API + '/api/enrich-email', {
+            const r = await fetch(SEO_AI_API + '/api/enrich-email', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({id, company, city, country, website})
@@ -2117,7 +2118,7 @@
         for (const p of todo) {
             status.textContent = `${done}/${todo.length} 完成，找到 ${found} 个…`;
             try {
-                const r = await fetch(SEO_API + '/api/enrich-email', {
+                const r = await fetch(SEO_AI_API + '/api/enrich-email', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
