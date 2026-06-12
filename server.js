@@ -481,6 +481,9 @@ app.post('/api/africa-delete', authenticateAdmin, async (req, res) => {
 const PROSPECTS_KEY = 'crm:prospects';
 const SCRIPTS_KEY = 'crm:scripts';
 const SEO_UPSTREAM = process.env.SEO_API_UPSTREAM_URL || '';
+const PROSPECT_SHEET_UPSTREAM = process.env.PROSPECT_SHEET_UPSTREAM_URL
+    || process.env.SEO_API_UPSTREAM_URL
+    || 'https://elevator-seo-production.up.railway.app';
 
 function parseStoredValue(value) {
     if (typeof value !== 'string') return value;
@@ -577,6 +580,24 @@ function buildFallbackDealers({ country, city, type, exclude = [] }) {
     return entries.filter(item => !excludeSet.has(item.company.toLowerCase()));
 }
 
+async function syncProspectsToSheet(rows) {
+    if (!PROSPECT_SHEET_UPSTREAM || !rows.length) {
+        return { ok: true, skipped: true };
+    }
+
+    try {
+        const data = await fetchJsonWithTimeout(`${PROSPECT_SHEET_UPSTREAM}/api/prospects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rows })
+        }, 15000);
+        return { ok: true, count: data.count || rows.length, source: PROSPECT_SHEET_UPSTREAM };
+    } catch (error) {
+        console.warn('同步潜在客户到 Google Sheet 失败:', error.message);
+        return { ok: false, error: error.message, source: PROSPECT_SHEET_UPSTREAM };
+    }
+}
+
 app.get('/api/prospects', async (req, res) => {
     try {
         const prospects = await readProspects();
@@ -597,6 +618,7 @@ app.post('/api/prospects', async (req, res) => {
         const existing = await readProspects();
         const existingKeys = new Set(existing.map(p => `${p.company}|${p.city}|${p.country}`.toLowerCase()));
         const pipeline = kv.pipeline();
+        const insertedRows = [];
         let inserted = 0;
 
         rows.map(normalizeProspect).forEach(row => {
@@ -604,11 +626,13 @@ app.post('/api/prospects', async (req, res) => {
             if (!row.company || existingKeys.has(key)) return;
             existingKeys.add(key);
             pipeline.lpush(PROSPECTS_KEY, row);
+            insertedRows.push(row);
             inserted++;
         });
 
         if (inserted) await pipeline.exec();
-        res.json({ ok: true, inserted });
+        const sheetSync = inserted ? await syncProspectsToSheet(insertedRows) : { ok: true, skipped: true };
+        res.json({ ok: true, inserted, sheetSync });
     } catch (error) {
         console.error('保存 CRM 潜在客户失败:', error);
         res.status(500).json({ error: '保存潜在客户失败' });
