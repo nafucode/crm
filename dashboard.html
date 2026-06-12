@@ -348,6 +348,21 @@
         .prospect-empty{text-align:center;padding:50px;color:var(--secondary-text-color);}
         .saved-section{margin-top:2rem;}
 
+        /* ── Dashboard report generator ── */
+        .report-panel{display:none;border-color:#cfe1ff;background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%)}
+        .report-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem}
+        .report-subtitle{margin-top:.35rem;color:var(--secondary-text-color);font-size:.9rem}
+        .report-controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;margin-bottom:1rem}
+        .report-actions{display:flex;gap:.5rem;align-items:center}
+        .report-custom-dates{display:none;gap:1rem;flex-wrap:wrap}
+        .report-custom-dates.active{display:flex}
+        .report-output{width:100%;min-height:360px;box-sizing:border-box;border:1px solid #cfe1ff;border-radius:8px;background:#fff;color:var(--text-color);font-size:.95rem;line-height:1.7;padding:1rem;resize:vertical;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+        .report-status{font-size:.85rem;color:var(--secondary-text-color);min-height:1.2rem}
+        .report-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1rem}
+        .report-kpi{border:1px solid #dbe8ff;border-radius:8px;background:#fff;padding:.85rem}
+        .report-kpi-label{font-size:.78rem;color:var(--secondary-text-color);margin-bottom:.35rem}
+        .report-kpi-value{font-size:1.45rem;font-weight:700;color:var(--primary-color)}
+
         /* ── 话术模板 ─────────────────────────────── */
         .sc-lang,.sc-cat{border:1px solid var(--border-color);background:var(--white);color:var(--secondary-text-color);border-radius:6px;padding:4px 12px;font-size:.82rem;cursor:pointer;transition:all .2s}
         .sc-lang:hover,.sc-cat:hover{border-color:var(--primary-color);color:var(--primary-color)}
@@ -428,6 +443,43 @@
                 <div class="stat-label">本月新增</div>
                 <div class="stat-value" id="stat-month">—</div>
             </div>
+        </div>
+
+        <div class="panel report-panel" id="report-panel">
+            <div class="report-header">
+                <div>
+                    <div class="panel-title">生成汇报材料</div>
+                    <div class="report-subtitle">按时间范围汇总全员客户反馈、趋势分布和重点信息，生成周报或双周报。</div>
+                </div>
+                <div class="report-actions">
+                    <button id="report-generate-btn" class="btn">生成汇报</button>
+                    <button id="report-copy-btn" class="btn btn-secondary">复制</button>
+                </div>
+            </div>
+            <div class="report-controls">
+                <div class="form-group">
+                    <label for="report-period">汇报周期</label>
+                    <select id="report-period" class="form-control">
+                        <option value="7">近一周</option>
+                        <option value="14">近两周</option>
+                        <option value="30">近一个月</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div class="report-custom-dates" id="report-custom-dates">
+                    <div class="form-group">
+                        <label for="report-start-date">开始日期</label>
+                        <input type="date" id="report-start-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="report-end-date">结束日期</label>
+                        <input type="date" id="report-end-date" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="report-kpis" id="report-kpis"></div>
+            <textarea id="report-output" class="report-output" readonly placeholder="选择时间后点击“生成汇报”，这里会生成可复制的周报材料。"></textarea>
+            <div id="report-status" class="report-status"></div>
         </div>
 
         <div class="panel map-panel">
@@ -1144,6 +1196,10 @@
             const username = payload.username;
             document.getElementById('username-display').textContent = `Welcome, ${username}`;
 
+            if (username === 'naf') {
+                setupReportGenerator();
+            }
+
             // Role-based access control
             if (payload.role === 'admin') {
                 document.getElementById('nav-scriptmgr').style.display = '';
@@ -1260,6 +1316,214 @@
 
             // 3. Trigger download
             XLSX.writeFile(wb, "customer_data.xlsx");
+        }
+
+        function setupReportGenerator() {
+            const panel = document.getElementById('report-panel');
+            const period = document.getElementById('report-period');
+            const customDates = document.getElementById('report-custom-dates');
+            const generateBtn = document.getElementById('report-generate-btn');
+            const copyBtn = document.getElementById('report-copy-btn');
+            if (!panel || !period || !generateBtn || !copyBtn) return;
+
+            panel.style.display = 'block';
+            period.addEventListener('change', () => {
+                customDates.classList.toggle('active', period.value === 'custom');
+            });
+            generateBtn.addEventListener('click', generateReportMaterial);
+            copyBtn.addEventListener('click', copyReportMaterial);
+        }
+
+        async function getReportSourceData() {
+            if (Array.isArray(allData) && allData.length) return allData;
+            const response = await fetch('/api/report-data', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (!response.ok) throw new Error('无法读取汇报数据');
+            const data = await response.json();
+            allData = data;
+            return data;
+        }
+
+        function getReportRange() {
+            const period = document.getElementById('report-period').value;
+            const now = new Date();
+            let end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+            let start;
+            let title = '';
+
+            if (period === 'custom') {
+                const startValue = document.getElementById('report-start-date').value;
+                const endValue = document.getElementById('report-end-date').value;
+                if (!startValue || !endValue) throw new Error('请选择自定义开始和结束日期');
+                start = parseReportDateInput(startValue);
+                end = parseReportDateInput(endValue);
+                end.setHours(23, 59, 59, 999);
+                title = '阶段汇报';
+            } else {
+                const days = Number(period);
+                start = new Date(end);
+                start.setDate(end.getDate() - days + 1);
+                start.setHours(0, 0, 0, 0);
+                title = days === 7 ? '周报' : (days === 14 ? '双周报' : '月度简报');
+            }
+
+            if (start > end) throw new Error('开始日期不能晚于结束日期');
+            return { start, end, title };
+        }
+
+        function parseReportDateInput(value) {
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        function getLocalDateKey(date) {
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${date.getFullYear()}-${month}-${day}`;
+        }
+
+        function formatReportDate(date) {
+            return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+        }
+
+        function getRecordDate(item) {
+            const raw = item.Timestamp || item.timestamp;
+            const date = raw ? new Date(raw) : null;
+            return date && !Number.isNaN(date.getTime()) ? date : null;
+        }
+
+        function countBy(items, getter) {
+            return items.reduce((acc, item) => {
+                const key = getter(item) || '未填写';
+                acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {});
+        }
+
+        function topEntries(counts, limit = 5) {
+            return Object.entries(counts)
+                .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), 'zh-CN'))
+                .slice(0, limit);
+        }
+
+        function buildDailyTrend(items, start, end) {
+            const days = [];
+            const cursor = new Date(start);
+            cursor.setHours(0, 0, 0, 0);
+            while (cursor <= end) {
+                const key = getLocalDateKey(cursor);
+                days.push({ key, label: `${cursor.getMonth() + 1}/${cursor.getDate()}`, value: 0 });
+                cursor.setDate(cursor.getDate() + 1);
+            }
+
+            items.forEach(item => {
+                const date = getRecordDate(item);
+                if (!date) return;
+                const key = getLocalDateKey(date);
+                const found = days.find(day => day.key === key);
+                if (found) found.value++;
+            });
+
+            return days;
+        }
+
+        function summarizeFeedback(items) {
+            return items
+                .filter(item => item.summary || item.customerId)
+                .slice(0, 8)
+                .map(item => {
+                    const country = getChineseCountryName(item.country || '');
+                    const owner = item.salesperson || '未填写';
+                    const customer = String(item.customerId || '').replace(/\s+/g, ' ').trim();
+                    const summary = String(item.summary || '').replace(/\s+/g, ' ').trim();
+                    const text = summary || customer || '无描述';
+                    return `- ${owner}｜${country}｜${text.slice(0, 90)}${text.length > 90 ? '...' : ''}`;
+                });
+        }
+
+        async function generateReportMaterial() {
+            const status = document.getElementById('report-status');
+            const output = document.getElementById('report-output');
+            const kpis = document.getElementById('report-kpis');
+            status.textContent = '正在统计数据...';
+
+            try {
+                const source = await getReportSourceData();
+                const { start, end, title } = getReportRange();
+                const scoped = source
+                    .map(item => ({ ...item, _date: getRecordDate(item) }))
+                    .filter(item => item._date && item._date >= start && item._date <= end)
+                    .sort((a, b) => b._date - a._date);
+
+                const dealerCount = scoped.filter(item => item.isDealer).length;
+                const salespersonCounts = countBy(scoped, item => item.salesperson || '未填写');
+                const countryCounts = countBy(scoped, item => getChineseCountryName(item.country || ''));
+                const dailyTrend = buildDailyTrend(scoped, start, end);
+                const topSalespeople = topEntries(salespersonCounts, 8);
+                const topCountries = topEntries(countryCounts, 8);
+                const peakDay = [...dailyTrend].sort((a, b) => b.value - a.value)[0] || { label: '-', value: 0 };
+                const activePeople = Object.keys(salespersonCounts).length;
+                const averagePerDay = dailyTrend.length ? (scoped.length / dailyTrend.length).toFixed(1) : '0.0';
+                const feedbackLines = summarizeFeedback(scoped);
+
+                kpis.innerHTML = `
+                    <div class="report-kpi"><div class="report-kpi-label">反馈总数</div><div class="report-kpi-value">${scoped.length}</div></div>
+                    <div class="report-kpi"><div class="report-kpi-label">参与业务员</div><div class="report-kpi-value">${activePeople}</div></div>
+                    <div class="report-kpi"><div class="report-kpi-label">涉及国家</div><div class="report-kpi-value">${Object.keys(countryCounts).length}</div></div>
+                    <div class="report-kpi"><div class="report-kpi-label">经销商标记</div><div class="report-kpi-value">${dealerCount}</div></div>
+                `;
+
+                const trendText = dailyTrend.map(day => `${day.label}: ${day.value}`).join('，');
+                const report = [
+                    `欣富机海外客户开发${title}`,
+                    `统计周期：${formatReportDate(start)} - ${formatReportDate(end)}`,
+                    '',
+                    '一、整体概况',
+                    `本周期共收到客户反馈 ${scoped.length} 条，覆盖 ${Object.keys(countryCounts).length} 个国家/地区，参与反馈业务员 ${activePeople} 人。已标记为经销商或重点代理线索 ${dealerCount} 条，日均新增 ${averagePerDay} 条。`,
+                    '',
+                    '二、趋势分布',
+                    `每日反馈趋势：${trendText || '暂无数据'}。`,
+                    `峰值日期为 ${peakDay.label}，当天新增 ${peakDay.value} 条。`,
+                    '',
+                    '三、业务员反馈统计',
+                    topSalespeople.length ? topSalespeople.map(([name, count], index) => `${index + 1}. ${name}：${count} 条`).join('\n') : '暂无业务员反馈数据。',
+                    '',
+                    '四、国家/市场分布',
+                    topCountries.length ? topCountries.map(([name, count], index) => `${index + 1}. ${name}：${count} 条`).join('\n') : '暂无国家分布数据。',
+                    '',
+                    '五、重点反馈摘录',
+                    feedbackLines.length ? feedbackLines.join('\n') : '暂无可摘录的客户描述。',
+                    '',
+                    '六、下阶段建议',
+                    '1. 对本周期高频国家和已标记经销商线索优先复盘，明确跟进负责人和下一步动作。',
+                    '2. 对缺少电话、国家或客户描述的反馈进行补全，提高后续筛选和复盘效率。',
+                    '3. 对反馈量较高的业务员沉淀有效话术和客户来源，便于团队复用。'
+                ].join('\n');
+
+                output.value = report;
+                status.textContent = `已生成 ${scoped.length} 条数据的${title}。`;
+            } catch (error) {
+                status.textContent = error.message || '生成失败';
+            }
+        }
+
+        async function copyReportMaterial() {
+            const output = document.getElementById('report-output');
+            const status = document.getElementById('report-status');
+            if (!output.value.trim()) {
+                status.textContent = '请先生成汇报材料。';
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(output.value);
+                status.textContent = '已复制到剪贴板。';
+            } catch {
+                output.select();
+                document.execCommand('copy');
+                status.textContent = '已复制到剪贴板。';
+            }
         }
 
         function exportAfricaToExcel() {

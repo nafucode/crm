@@ -277,6 +277,20 @@ app.get('/api/chart-data', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/report-data', authenticateToken, async (req, res) => {
+    if (req.user.username !== 'naf' && req.user.role !== 'admin') {
+        return res.sendStatus(403);
+    }
+
+    try {
+        const allFeedback = await kv.lrange('feedback', 0, -1);
+        res.json(allFeedback);
+    } catch (error) {
+        console.error('读取汇报材料数据时出错:', error);
+        res.status(500).send('服务器内部错误');
+    }
+});
+
 // API 路由：获取当前用户的提交历史
 app.get('/api/my-submissions', authenticateToken, async (req, res) => {
     try {
