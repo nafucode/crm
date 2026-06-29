@@ -804,6 +804,36 @@
                     </table>
                 </div>
             </div>
+
+            <div class="panel">
+                <div class="panel-title-container" style="flex-wrap:wrap;gap:.75rem">
+                    <div>
+                        <div class="panel-title">📦 订单状态表</div>
+                        <div style="font-size:0.85rem;color:var(--secondary-text-color);margin-top:.35rem">记录客户订单进度，客户、台量、国家、订单编号和状态均可编辑。</div>
+                    </div>
+                    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                        <button class="btn" style="padding:5px 14px;font-size:.82rem;background:#28a745" onclick="addOrderStatusRow()">+ 新增订单</button>
+                        <button class="btn btn-secondary" style="padding:5px 14px;font-size:.82rem" onclick="exportOrderStatus()">导出</button>
+                        <span id="order-status-sync" style="font-size:.8rem;color:var(--secondary-text-color)"></span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="order-status-table" style="min-width:980px">
+                        <thead>
+                            <tr>
+                                <th style="width:190px">客户</th>
+                                <th style="width:80px;text-align:center">台量</th>
+                                <th style="width:140px">国家</th>
+                                <th style="width:170px">订单编号</th>
+                                <th style="width:150px">订单状态</th>
+                                <th>备注</th>
+                                <th style="width:90px;text-align:center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-status-body"></tbody>
+                    </table>
+                </div>
+            </div>
         </div><!-- end tab-salesplan -->
 
         <!-- TAB: 话术模板 -->
@@ -2052,7 +2082,10 @@
         if (btn) btn.classList.add('active');
         if (id === 'prospects') crmLoadSaved();
         if (id === 'africa') fetchAfricaDataAndRender();
-        if (id === 'salesplan') renderSalesPlan();
+        if (id === 'salesplan') {
+            renderSalesPlan();
+            renderOrderStatusTable();
+        }
         if (id === 'scripts') { scLoadScripts(); scLoadVars(); }
         if (id === 'scriptmgr') smLoad();
     }
@@ -2611,6 +2644,171 @@
         init['胡佳润']['3月'] = 4; // Frank/老莫 4台计入团队负责人名下
         spSave(init);
     })();
+
+    // ── 订单状态表 ───────────────────────────────────────────────────
+    const ORDER_STATUS_KEY = 'sales_order_status_2026';
+    const ORDER_STATUSES = ['订单收款', '已收款', '生产中', '待发货', '已发货', '已完成', '暂停'];
+    let orderStatusRows = [];
+    let orderStatusSaveTimer = null;
+
+    function loadCachedOrderStatusRows() {
+        try {
+            return JSON.parse(localStorage.getItem(ORDER_STATUS_KEY) || '[]');
+        } catch {
+            return [];
+        }
+    }
+
+    function saveOrderStatusRows(rows) {
+        localStorage.setItem(ORDER_STATUS_KEY, JSON.stringify(rows));
+    }
+
+    function setOrderStatusMessage(text, color = 'var(--secondary-text-color)') {
+        const el = document.getElementById('order-status-sync');
+        if (!el) return;
+        el.textContent = text;
+        el.style.color = color;
+    }
+
+    async function fetchOrderStatusRows() {
+        const response = await fetch('/api/order-status', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!response.ok) throw new Error('读取订单状态失败');
+        const data = await response.json();
+        orderStatusRows = Array.isArray(data.rows) ? data.rows : [];
+        saveOrderStatusRows(orderStatusRows);
+        setOrderStatusMessage('已同步');
+    }
+
+    async function persistOrderStatusRows() {
+        saveOrderStatusRows(orderStatusRows);
+        setOrderStatusMessage('保存中...');
+        try {
+            const response = await fetch('/api/order-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ rows: orderStatusRows })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || '保存失败');
+            orderStatusRows = Array.isArray(data.rows) ? data.rows : orderStatusRows;
+            saveOrderStatusRows(orderStatusRows);
+            setOrderStatusMessage('已保存', 'green');
+        } catch (error) {
+            setOrderStatusMessage(`本地已保存，云端失败: ${error.message}`, '#b26a00');
+        }
+    }
+
+    function scheduleOrderStatusSave() {
+        clearTimeout(orderStatusSaveTimer);
+        orderStatusSaveTimer = setTimeout(persistOrderStatusRows, 500);
+    }
+
+    function escapeOrderHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[char]));
+    }
+
+    async function renderOrderStatusTable() {
+        const tbody = document.getElementById('order-status-body');
+        if (!tbody) return;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--secondary-text-color);padding:2rem">正在读取订单状态...</td></tr>`;
+        try {
+            await fetchOrderStatusRows();
+        } catch (error) {
+            orderStatusRows = loadCachedOrderStatusRows();
+            setOrderStatusMessage('读取失败，显示本地缓存', '#b26a00');
+        }
+        drawOrderStatusTable();
+    }
+
+    function drawOrderStatusTable() {
+        const tbody = document.getElementById('order-status-body');
+        if (!tbody) return;
+        if (!orderStatusRows.length) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--secondary-text-color);padding:2rem">暂无订单，点击“新增订单”开始记录。</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = orderStatusRows.map((row, index) => {
+            const statusOptions = ORDER_STATUSES.map(status => (
+                `<option value="${status}" ${row.status === status ? 'selected' : ''}>${status}</option>`
+            )).join('');
+            return `<tr>
+                <td><input class="form-control" value="${escapeOrderHtml(row.customer)}" placeholder="客户名称" oninput="updateOrderStatusRow(${index}, 'customer', this.value)"></td>
+                <td><input class="form-control" type="number" min="0" value="${Number(row.quantity) || 0}" style="text-align:center" oninput="updateOrderStatusRow(${index}, 'quantity', this.value)"></td>
+                <td><input class="form-control" value="${escapeOrderHtml(row.country)}" placeholder="国家" oninput="updateOrderStatusRow(${index}, 'country', this.value)"></td>
+                <td><input class="form-control" value="${escapeOrderHtml(row.orderNo)}" placeholder="订单编号" oninput="updateOrderStatusRow(${index}, 'orderNo', this.value)"></td>
+                <td>
+                    <select class="form-control" onchange="updateOrderStatusRow(${index}, 'status', this.value)">
+                        ${statusOptions}
+                    </select>
+                </td>
+                <td><input class="form-control" value="${escapeOrderHtml(row.note)}" placeholder="备注" oninput="updateOrderStatusRow(${index}, 'note', this.value)"></td>
+                <td style="text-align:center"><button class="btn btn-delete" onclick="deleteOrderStatusRow(${index})">删除</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function addOrderStatusRow() {
+        orderStatusRows.unshift({
+            id: String(Date.now()),
+            customer: '',
+            quantity: 0,
+            country: '',
+            orderNo: '',
+            status: '订单收款',
+            note: ''
+        });
+        saveOrderStatusRows(orderStatusRows);
+        drawOrderStatusTable();
+        persistOrderStatusRows();
+    }
+
+    function updateOrderStatusRow(index, field, value) {
+        if (!orderStatusRows[index]) return;
+        orderStatusRows[index][field] = field === 'quantity' ? Math.max(0, parseInt(value) || 0) : value;
+        saveOrderStatusRows(orderStatusRows);
+        scheduleOrderStatusSave();
+    }
+
+    function deleteOrderStatusRow(index) {
+        if (!confirm('确定删除这条订单状态吗？')) return;
+        orderStatusRows.splice(index, 1);
+        saveOrderStatusRows(orderStatusRows);
+        drawOrderStatusTable();
+        persistOrderStatusRows();
+    }
+
+    function exportOrderStatus() {
+        if (!orderStatusRows.length) {
+            alert('暂无订单可导出。');
+            return;
+        }
+        const headers = ['客户', '台量', '国家', '订单编号', '订单状态', '备注'];
+        const csvRows = orderStatusRows.map(row => [
+            row.customer || '',
+            row.quantity || 0,
+            row.country || '',
+            row.orderNo || '',
+            row.status || '',
+            row.note || ''
+        ].map(value => `"${String(value).replace(/"/g, '""')}"`).join(','));
+        const blob = new Blob(['﻿' + [headers.join(','), ...csvRows].join('\n')], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = '订单状态表.csv';
+        a.click();
+    }
     // ── 话术模板 ──────────────────────────────────────────────────────────
     const SC_FAV_KEY = 'sc_favorites';
     let scLang = 'en';

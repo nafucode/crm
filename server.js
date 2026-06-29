@@ -291,6 +291,45 @@ app.get('/api/report-data', authenticateToken, async (req, res) => {
     }
 });
 
+const ORDER_STATUS_KEY = 'crm:order-status';
+
+function normalizeOrderStatusRow(row = {}) {
+    return {
+        id: row.id || makeId('o_'),
+        customer: row.customer || '',
+        quantity: Math.max(0, parseInt(row.quantity, 10) || 0),
+        country: row.country || '',
+        orderNo: row.orderNo || '',
+        status: row.status || '订单收款',
+        note: row.note || '',
+        updatedAt: row.updatedAt || new Date().toISOString()
+    };
+}
+
+app.get('/api/order-status', authenticateToken, async (req, res) => {
+    try {
+        const rows = await kv.get(ORDER_STATUS_KEY);
+        res.json({ rows: Array.isArray(rows) ? rows.map(normalizeOrderStatusRow) : [] });
+    } catch (error) {
+        console.error('读取订单状态表失败:', error);
+        res.status(500).json({ error: '读取订单状态表失败' });
+    }
+});
+
+app.post('/api/order-status', authenticateToken, async (req, res) => {
+    try {
+        const rows = Array.isArray(req.body.rows) ? req.body.rows.map(row => ({
+            ...normalizeOrderStatusRow(row),
+            updatedAt: new Date().toISOString()
+        })) : [];
+        await kv.set(ORDER_STATUS_KEY, rows);
+        res.json({ ok: true, rows });
+    } catch (error) {
+        console.error('保存订单状态表失败:', error);
+        res.status(500).json({ error: '保存订单状态表失败' });
+    }
+});
+
 // API 路由：获取当前用户的提交历史
 app.get('/api/my-submissions', authenticateToken, async (req, res) => {
     try {
