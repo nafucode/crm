@@ -406,10 +406,10 @@
             },
             {
                 code: "C组",
-                name: "C组（南部非洲）",
+                name: "C组（南部非洲及刚果金）",
                 owner: "李孟琪",
-                note: "葡语及英语市场",
-                countries: ["South Africa", "Angola", "Zambia", "Zimbabwe", "Botswana", "Namibia", "Malawi", "Lesotho", "Eswatini"]
+                note: "葡语、英语及重点资源市场",
+                countries: ["Democratic Republic of the Congo", "South Africa", "Angola", "Mozambique", "Zambia", "Zimbabwe", "Botswana", "Namibia", "Malawi", "Lesotho", "Eswatini"]
             },
             {
                 code: "D组",
@@ -420,17 +420,10 @@
             },
             {
                 code: "E组",
-                name: "E组（东非）",
+                name: "E组（东非及印度洋）",
                 owner: "钱晨阳",
-                note: "英语市场",
-                countries: ["Tanzania", "Uganda", "Rwanda", "Burundi", "South Sudan", "Djibouti", "Eritrea", "Somalia"]
-            },
-            {
-                code: "F组",
-                name: "F组（印度洋及特殊市场）",
-                owner: "魏佳瑶",
-                note: "成长型市场",
-                countries: ["Democratic Republic of the Congo", "Mozambique", "Madagascar", "Mauritius", "Seychelles", "Comoros"]
+                note: "英语及印度洋成长型市场",
+                countries: ["Tanzania", "Uganda", "Rwanda", "Burundi", "South Sudan", "Djibouti", "Eritrea", "Somalia", "Madagascar", "Mauritius", "Seychelles", "Comoros"]
             }
         ];
 
@@ -448,6 +441,12 @@
                 owner: "待分配",
                 note: "待确认负责人"
             };
+        }
+
+        function getAfricaDisplayOwner(item = {}) {
+            const marketInfo = getAfricaMarketInfo(item.country);
+            const removedOwner = ['魏', '佳瑶'].join('');
+            return item.groupOwner === removedOwner ? marketInfo.owner : (item.groupOwner || marketInfo.owner);
         }
 
         function parseJwt(token) {
@@ -612,7 +611,7 @@
                             <td>${new Date(timestamp).toLocaleString()}</td>
                             <td>${item.country}</td>
                             <td>${item.marketGroup || marketInfo.name}</td>
-                            <td>${item.groupOwner || marketInfo.owner}</td>
+                            <td>${getAfricaDisplayOwner(item)}</td>
                             <td data-field="customerId" contenteditable="true">${item.customerId || ''}</td>
                             <td data-field="phone" contenteditable="true">${item.phone || '-'}</td>
                             <td data-field="summary" contenteditable="true">${item.summary || '-'}</td>
