@@ -335,7 +335,8 @@ app.get('/api/my-submissions', authenticateToken, async (req, res) => {
     try {
         const allFeedback = await kv.lrange('feedback', 0, -1);
         const userSubmissions = allFeedback.filter(item => item.salesperson === req.user.realName);
-        res.json(userSubmissions.reverse()); // 返回倒序，让最新的在前面
+        userSubmissions.sort((a, b) => new Date(b.Timestamp || b.timestamp || 0) - new Date(a.Timestamp || a.timestamp || 0));
+        res.json(userSubmissions);
     } catch (error) {
         console.error('从 Redis 读取用户提交历史时出错:', error);
         res.status(500).send('服务器内部错误');
@@ -346,7 +347,8 @@ app.get('/api/africa-my-submissions', authenticateToken, async (req, res) => {
     try {
         const allFeedback = await kv.lrange('africa_feedback', 0, -1);
         const userSubmissions = allFeedback.filter(item => item.salesperson === req.user.realName);
-        res.json(userSubmissions.reverse());
+        userSubmissions.sort((a, b) => new Date(b.Timestamp || b.timestamp || 0) - new Date(a.Timestamp || a.timestamp || 0));
+        res.json(userSubmissions);
     } catch (error) {
         console.error('从 Redis 读取用户非洲客户提交历史时出错:', error);
         res.status(500).send('服务器内部错误');
