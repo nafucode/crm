@@ -363,6 +363,38 @@
         .report-kpi-label{font-size:.78rem;color:var(--secondary-text-color);margin-bottom:.35rem}
         .report-kpi-value{font-size:1.45rem;font-weight:700;color:var(--primary-color)}
 
+        /* ── Sales plan motion snapshot ── */
+        .sales-viz{border:1px solid #dbe8ff;border-radius:8px;background:#f8fbff;padding:1rem;margin:0 0 1.25rem;overflow:hidden}
+        .sales-viz-top{display:grid;grid-template-columns:minmax(160px,220px) 1fr auto;gap:1rem;align-items:center}
+        .sales-viz-eyebrow{font-size:.72rem;color:var(--secondary-text-color);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.25rem}
+        .sales-viz-title{font-size:1.05rem;font-weight:700;color:var(--text-color)}
+        .sales-viz-metric{display:flex;align-items:baseline;gap:.45rem;margin-top:.45rem}
+        .sales-viz-number{font-size:2rem;font-weight:800;color:var(--primary-color);line-height:1}
+        .sales-viz-muted{font-size:.8rem;color:var(--secondary-text-color)}
+        .sales-viz-track-wrap{min-width:0}
+        .sales-viz-track-meta{display:flex;justify-content:space-between;gap:.75rem;color:var(--secondary-text-color);font-size:.78rem;margin-bottom:.45rem}
+        .sales-viz-track{height:12px;background:#e9eef6;border-radius:99px;overflow:hidden;position:relative}
+        .sales-viz-fill{height:100%;width:0;background:linear-gradient(90deg,#007bff,#25a7ff,#28a745);border-radius:99px;transition:width .42s cubic-bezier(.22,1,.36,1)}
+        .sales-viz-months{display:grid;grid-template-columns:repeat(12,minmax(34px,1fr));gap:.4rem;align-items:end;margin-top:.75rem}
+        .sales-viz-month{display:flex;flex-direction:column;align-items:center;gap:.25rem;min-width:0}
+        .sales-viz-bar-shell{height:42px;width:100%;max-width:42px;background:#edf2f8;border-radius:6px;display:flex;align-items:flex-end;overflow:hidden}
+        .sales-viz-bar{width:100%;height:0;background:#dce8f7;border-radius:6px 6px 0 0;transition:height .35s ease,background .2s ease}
+        .sales-viz-month.done .sales-viz-bar{background:#8dccff}
+        .sales-viz-month.active .sales-viz-bar{background:#007bff}
+        .sales-viz-month-label{font-size:.72rem;color:var(--secondary-text-color);white-space:nowrap}
+        .sales-viz-month-value{font-size:.72rem;font-weight:700;color:#9aa4ad;min-height:1em}
+        .sales-viz-month.done .sales-viz-month-value,.sales-viz-month.active .sales-viz-month-value{color:var(--primary-color)}
+        .sales-viz-replay{border:1px solid #bfd6ff;background:#fff;color:var(--primary-color);border-radius:6px;padding:6px 12px;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .2s,border-color .2s}
+        .sales-viz-replay:hover{background:#eef6ff;border-color:var(--primary-color)}
+        @media (max-width: 760px){
+            .sales-viz-top{grid-template-columns:1fr;gap:.85rem}
+            .sales-viz-months{grid-template-columns:repeat(6,1fr)}
+            .sales-viz-replay{justify-self:start}
+        }
+        @media (prefers-reduced-motion: reduce){
+            .sales-viz-fill,.sales-viz-bar{transition:none}
+        }
+
         /* ── 话术模板 ─────────────────────────────── */
         .sc-lang,.sc-cat{border:1px solid var(--border-color);background:var(--white);color:var(--secondary-text-color);border-radius:6px;padding:4px 12px;font-size:.82rem;cursor:pointer;transition:all .2s}
         .sc-lang:hover,.sc-cat:hover{border-color:var(--primary-color);color:var(--primary-color)}
@@ -767,6 +799,8 @@
 
                 <!-- 团队汇总 -->
                 <div class="summary-grid" style="margin-bottom:1.5rem" id="sp-summary-grid"></div>
+
+                <div class="sales-viz" id="sp-visualizer" aria-label="销售计划动态完成情况"></div>
 
                 <!-- 月度目标说明 -->
                 <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;font-size:0.85rem;color:var(--secondary-text-color)">
@@ -2505,6 +2539,7 @@
     let salesPlanData = normalizeSalesPlanData(loadCachedSalesPlan());
     let salesPlanSaveTimer = null;
     let salesPlanLoadedFromServer = false;
+    let salesVizTimers = [];
 
     function normalizeSalesPlanData(data = {}) {
         const normalized = {};
@@ -2585,6 +2620,102 @@
         salesPlanData = normalizeSalesPlanData(data);
         cacheSalesPlan(salesPlanData);
         scheduleSalesPlanSave();
+    }
+
+    function getSalesPlanMonthTotals(data) {
+        return MONTHS.map(month => SP_PEOPLE.reduce((sum, person) => sum + (data[person.name]?.[month] || 0), 0));
+    }
+
+    function clearSalesVizTimers() {
+        salesVizTimers.forEach(timer => clearTimeout(timer));
+        salesVizTimers = [];
+    }
+
+    function setSalesVizFrame(index, cumulative, monthTotals) {
+        const currentTotal = cumulative[index] || 0;
+        const currentPct = Math.min(100, Math.round(currentTotal / TEAM_TARGET * 100));
+        const progress = document.getElementById('sp-viz-fill');
+        const count = document.getElementById('sp-viz-count');
+        const pct = document.getElementById('sp-viz-pct');
+        const monthLabel = document.getElementById('sp-viz-current-month');
+        if (progress) progress.style.width = `${currentPct}%`;
+        if (count) count.textContent = currentTotal;
+        if (pct) pct.textContent = `${currentPct}%`;
+        if (monthLabel) monthLabel.textContent = MONTHS[index] || MONTHS[MONTHS.length - 1];
+
+        MONTHS.forEach((month, monthIndex) => {
+            const item = document.querySelector(`[data-sp-viz-month="${month}"]`);
+            if (!item) return;
+            item.classList.toggle('done', monthIndex < index);
+            item.classList.toggle('active', monthIndex === index);
+            const value = item.querySelector('.sales-viz-month-value');
+            if (value) value.textContent = monthIndex <= index && monthTotals[monthIndex] > 0 ? monthTotals[monthIndex] : '—';
+        });
+    }
+
+    function playSalesPlanViz(monthTotals) {
+        clearSalesVizTimers();
+        const cumulative = [];
+        monthTotals.reduce((sum, value, index) => {
+            cumulative[index] = sum + value;
+            return cumulative[index];
+        }, 0);
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            setSalesVizFrame(MONTHS.length - 1, cumulative, monthTotals);
+            return;
+        }
+
+        setSalesVizFrame(0, cumulative, monthTotals);
+        MONTHS.forEach((month, index) => {
+            const timer = setTimeout(() => setSalesVizFrame(index, cumulative, monthTotals), index * 240);
+            salesVizTimers.push(timer);
+        });
+    }
+
+    function renderSalesPlanVisualizer(data) {
+        const container = document.getElementById('sp-visualizer');
+        if (!container) return;
+        const monthTotals = getSalesPlanMonthTotals(data);
+        const total = monthTotals.reduce((sum, value) => sum + value, 0);
+        const pct = Math.min(100, Math.round(total / TEAM_TARGET * 100));
+        const maxMonthly = Math.max(MONTH_TARGET, ...monthTotals, 1);
+        const monthBars = MONTHS.map((month, index) => {
+            const value = monthTotals[index];
+            const height = Math.max(5, Math.round((value / maxMonthly) * 42));
+            return `<div class="sales-viz-month" data-sp-viz-month="${month}">
+                <div class="sales-viz-bar-shell"><div class="sales-viz-bar" style="height:${height}px"></div></div>
+                <div class="sales-viz-month-label">${month}</div>
+                <div class="sales-viz-month-value">—</div>
+            </div>`;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="sales-viz-top">
+                <div>
+                    <div class="sales-viz-eyebrow">试用版动态可视化</div>
+                    <div class="sales-viz-title">逐月累计完成进度</div>
+                    <div class="sales-viz-metric">
+                        <span class="sales-viz-number" id="sp-viz-count">0</span>
+                        <span class="sales-viz-muted">/ ${TEAM_TARGET} 台</span>
+                    </div>
+                </div>
+                <div class="sales-viz-track-wrap">
+                    <div class="sales-viz-track-meta">
+                        <span>当前月份：<strong id="sp-viz-current-month">2月</strong></span>
+                        <span>年度完成率：<strong id="sp-viz-pct">${pct}%</strong></span>
+                    </div>
+                    <div class="sales-viz-track" aria-hidden="true"><div class="sales-viz-fill" id="sp-viz-fill"></div></div>
+                    <div class="sales-viz-months">${monthBars}</div>
+                </div>
+                <button class="sales-viz-replay" type="button" onclick="replaySalesPlanViz()">重播</button>
+            </div>`;
+
+        playSalesPlanViz(monthTotals);
+    }
+
+    function replaySalesPlanViz() {
+        renderSalesPlanVisualizer(spLoad());
     }
 
     async function loadAndRenderSalesPlan() {
@@ -2701,6 +2832,8 @@
                 <div class="stat-card"><div class="stat-label">月均完成台数</div><div class="stat-value">${monthAvg}</div></div>
             `;
         }
+
+        renderSalesPlanVisualizer(data);
     }
 
     function spEdit(el, person, month) {
