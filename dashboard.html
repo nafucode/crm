@@ -445,43 +445,6 @@
             </div>
         </div>
 
-        <div class="panel report-panel" id="report-panel">
-            <div class="report-header">
-                <div>
-                    <div class="panel-title">生成汇报材料</div>
-                    <div class="report-subtitle">按时间范围汇总全员客户反馈、趋势分布和重点信息，生成周报或双周报。</div>
-                </div>
-                <div class="report-actions">
-                    <button id="report-generate-btn" class="btn">生成汇报</button>
-                    <button id="report-copy-btn" class="btn btn-secondary">复制</button>
-                </div>
-            </div>
-            <div class="report-controls">
-                <div class="form-group">
-                    <label for="report-period">汇报周期</label>
-                    <select id="report-period" class="form-control">
-                        <option value="7">近一周</option>
-                        <option value="14">近两周</option>
-                        <option value="30">近一个月</option>
-                        <option value="custom">自定义</option>
-                    </select>
-                </div>
-                <div class="report-custom-dates" id="report-custom-dates">
-                    <div class="form-group">
-                        <label for="report-start-date">开始日期</label>
-                        <input type="date" id="report-start-date" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="report-end-date">结束日期</label>
-                        <input type="date" id="report-end-date" class="form-control">
-                    </div>
-                </div>
-            </div>
-            <div class="report-kpis" id="report-kpis"></div>
-            <textarea id="report-output" class="report-output" readonly placeholder="选择时间后点击“生成汇报”，这里会生成可复制的周报材料。"></textarea>
-            <div id="report-status" class="report-status"></div>
-        </div>
-
         <div class="panel map-panel">
             <div class="panel-title">全球分布</div>
             <div id="world-map"></div>
@@ -537,6 +500,43 @@
         <div class="panel bar-chart-panel">
             <div class="panel-title">每日提交趋势 (最近7天)</div>
             <div id="daily-submission-chart" style="height: 400px;"></div>
+        </div>
+
+        <div class="panel report-panel" id="report-panel">
+            <div class="report-header">
+                <div>
+                    <div class="panel-title">生成汇报材料</div>
+                    <div class="report-subtitle">按时间范围汇总全员客户反馈、趋势分布和重点信息，生成周报或双周报。</div>
+                </div>
+                <div class="report-actions">
+                    <button id="report-generate-btn" class="btn">生成汇报</button>
+                    <button id="report-copy-btn" class="btn btn-secondary">复制</button>
+                </div>
+            </div>
+            <div class="report-controls">
+                <div class="form-group">
+                    <label for="report-period">汇报周期</label>
+                    <select id="report-period" class="form-control">
+                        <option value="7">近一周</option>
+                        <option value="14">近两周</option>
+                        <option value="30">近一个月</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div class="report-custom-dates" id="report-custom-dates">
+                    <div class="form-group">
+                        <label for="report-start-date">开始日期</label>
+                        <input type="date" id="report-start-date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="report-end-date">结束日期</label>
+                        <input type="date" id="report-end-date" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="report-kpis" id="report-kpis"></div>
+            <textarea id="report-output" class="report-output" readonly placeholder="选择时间后点击“生成汇报”，这里会生成可复制的周报材料。"></textarea>
+            <div id="report-status" class="report-status"></div>
         </div>
 
         </div><!-- end tab-dashboard -->
