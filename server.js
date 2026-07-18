@@ -292,6 +292,28 @@ app.get('/api/report-data', authenticateToken, async (req, res) => {
 });
 
 const ORDER_STATUS_KEY = 'crm:order-status';
+const SALES_PLAN_KEY = 'crm:sales-plan:2026';
+const SALES_PLAN_MONTHS = ['2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','1月'];
+const SALES_PLAN_PEOPLE = ['胡佳润', '张多加', '李孟琪', '陈颢', '钱晨阳', '李菲艳'];
+const SALES_PLAN_DEFAULT = {
+    '胡佳润': { '3月': 4, '5月': 1, '6月': 4, '7月': 1 },
+    '张多加': { '3月': 1, '5月': 5, '6月': 1 },
+    '李孟琪': { '4月': 3, '7月': 6 },
+    '陈颢': {},
+    '钱晨阳': { '6月': 1 },
+    '李菲艳': {}
+};
+
+function normalizeSalesPlanData(data = {}) {
+    const normalized = {};
+    SALES_PLAN_PEOPLE.forEach(person => {
+        normalized[person] = {};
+        SALES_PLAN_MONTHS.forEach(month => {
+            normalized[person][month] = Math.max(0, parseInt(data?.[person]?.[month], 10) || 0);
+        });
+    });
+    return normalized;
+}
 
 function normalizeOrderStatusRow(row = {}) {
     return {
@@ -305,6 +327,28 @@ function normalizeOrderStatusRow(row = {}) {
         updatedAt: row.updatedAt || new Date().toISOString()
     };
 }
+
+app.get('/api/sales-plan', authenticateToken, async (req, res) => {
+    try {
+        const stored = await kv.get(SALES_PLAN_KEY);
+        const source = stored && typeof stored === 'object' ? stored : SALES_PLAN_DEFAULT;
+        res.json({ data: normalizeSalesPlanData(source) });
+    } catch (error) {
+        console.error('读取销售计划失败:', error);
+        res.status(500).json({ error: '读取销售计划失败' });
+    }
+});
+
+app.post('/api/sales-plan', authenticateToken, async (req, res) => {
+    try {
+        const data = normalizeSalesPlanData(req.body.data || {});
+        await kv.set(SALES_PLAN_KEY, data);
+        res.json({ ok: true, data });
+    } catch (error) {
+        console.error('保存销售计划失败:', error);
+        res.status(500).json({ error: '保存销售计划失败' });
+    }
+});
 
 app.get('/api/order-status', authenticateToken, async (req, res) => {
     try {

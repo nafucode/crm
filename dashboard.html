@@ -762,7 +762,7 @@
             <div class="panel">
                 <div class="panel-title-container">
                     <div class="panel-title">🎯 2026 年度销售计划完成情况</div>
-                    <span style="font-size:0.85rem;color:var(--secondary-text-color)">2026.2 — 2027.1 · 点击数字可修改</span>
+                    <span style="font-size:0.85rem;color:var(--secondary-text-color)">2026.2 — 2027.1 · 点击数字可修改 · <span id="sales-plan-sync">云端同步</span></span>
                 </div>
 
                 <!-- 团队汇总 -->
@@ -2085,7 +2085,7 @@
         if (id === 'prospects') crmLoadSaved();
         if (id === 'africa') fetchAfricaDataAndRender();
         if (id === 'salesplan') {
-            renderSalesPlan();
+            loadAndRenderSalesPlan();
             renderOrderStatusTable();
         }
         if (id === 'scripts') { scLoadScripts(); scLoadVars(); }
@@ -2494,17 +2494,110 @@
     ];
     const TEAM_TARGET = 220;
     const MONTH_TARGET = 20;
+    const DEFAULT_SALES_PLAN = {
+        '胡佳润': { '3月': 4, '5月': 1, '6月': 4, '7月': 1 },
+        '张多加': { '3月': 1, '5月': 5, '6月': 1 },
+        '李孟琪': { '4月': 3, '7月': 6 },
+        '陈颢': {},
+        '钱晨阳': { '6月': 1 },
+        '李菲艳': {}
+    };
+    let salesPlanData = normalizeSalesPlanData(loadCachedSalesPlan());
+    let salesPlanSaveTimer = null;
+    let salesPlanLoadedFromServer = false;
+
+    function normalizeSalesPlanData(data = {}) {
+        const normalized = {};
+        SP_PEOPLE.forEach(p => {
+            normalized[p.name] = {};
+            MONTHS.forEach(m => {
+                normalized[p.name][m] = Math.max(0, parseInt(data?.[p.name]?.[m], 10) || 0);
+            });
+        });
+        return normalized;
+    }
+
+    function loadCachedSalesPlan() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(SP_KEY) || 'null');
+            return saved || DEFAULT_SALES_PLAN;
+        } catch {
+            return DEFAULT_SALES_PLAN;
+        }
+    }
+
+    function cacheSalesPlan(data) {
+        localStorage.setItem(SP_KEY, JSON.stringify(data));
+    }
 
     function spLoad() {
-        const saved = JSON.parse(localStorage.getItem(SP_KEY) || '{}');
-        // Initialize zeros if not set
-        SP_PEOPLE.forEach(p => {
-            if (!saved[p.name]) saved[p.name] = {};
-            MONTHS.forEach(m => { if (saved[p.name][m] === undefined) saved[p.name][m] = 0; });
-        });
-        return saved;
+        return salesPlanData;
     }
-    function spSave(data) { localStorage.setItem(SP_KEY, JSON.stringify(data)); }
+
+    function setSalesPlanMessage(text, color = 'var(--secondary-text-color)') {
+        const el = document.getElementById('sales-plan-sync');
+        if (!el) return;
+        el.textContent = text;
+        el.style.color = color;
+    }
+
+    async function fetchSalesPlan() {
+        const response = await fetch('/api/sales-plan', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || '读取销售计划失败');
+        salesPlanData = normalizeSalesPlanData(payload.data);
+        cacheSalesPlan(salesPlanData);
+        salesPlanLoadedFromServer = true;
+        setSalesPlanMessage('已同步');
+    }
+
+    async function persistSalesPlan() {
+        cacheSalesPlan(salesPlanData);
+        setSalesPlanMessage('保存中...');
+        try {
+            const response = await fetch('/api/sales-plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ data: salesPlanData })
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error || '保存销售计划失败');
+            salesPlanData = normalizeSalesPlanData(payload.data);
+            cacheSalesPlan(salesPlanData);
+            salesPlanLoadedFromServer = true;
+            setSalesPlanMessage('已保存', 'green');
+        } catch (error) {
+            setSalesPlanMessage(`本地已保存，云端失败: ${error.message}`, '#b26a00');
+        }
+    }
+
+    function scheduleSalesPlanSave() {
+        clearTimeout(salesPlanSaveTimer);
+        salesPlanSaveTimer = setTimeout(persistSalesPlan, 500);
+    }
+
+    function spSave(data) {
+        salesPlanData = normalizeSalesPlanData(data);
+        cacheSalesPlan(salesPlanData);
+        scheduleSalesPlanSave();
+    }
+
+    async function loadAndRenderSalesPlan() {
+        renderSalesPlan();
+        if (salesPlanLoadedFromServer) return;
+        setSalesPlanMessage('同步中...');
+        try {
+            await fetchSalesPlan();
+        } catch (error) {
+            setSalesPlanMessage('读取失败，显示本地缓存', '#b26a00');
+        }
+        renderSalesPlan();
+    }
 
     function renderSalesPlan() {
         const data = spLoad();
@@ -2634,18 +2727,6 @@
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
         a.download = '销售计划完成情况.csv'; a.click();
     }
-
-    // ── 预填3月4月已知数据 ──────────────────────────────────────────
-    (function prefillInitialData() {
-        const existing = localStorage.getItem(SP_KEY);
-        if (existing) return; // don't overwrite if user already has data
-        const init = {};
-        SP_PEOPLE.forEach(p => { init[p.name] = {}; MONTHS.forEach(m => init[p.name][m] = 0); });
-        init['张多加']['3月'] = 1;
-        init['李孟琪']['4月'] = 1;
-        init['胡佳润']['3月'] = 4; // Frank/老莫 4台计入团队负责人名下
-        spSave(init);
-    })();
 
     // ── 订单状态表 ───────────────────────────────────────────────────
     const ORDER_STATUS_KEY = 'sales_order_status_2026';
