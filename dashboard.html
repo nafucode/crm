@@ -396,10 +396,12 @@
         .sales-viz-legend .actual{background:#007bff}
         .sales-viz-legend .forecast{background:repeating-linear-gradient(45deg,rgba(253,126,20,.65) 0 5px,rgba(253,126,20,.25) 5px 10px)}
         .sales-viz-scenarios{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:.5rem;margin-top:.6rem}
-        .sales-viz-scenario{border:1px solid #d9e4f2;border-radius:8px;background:#fff;padding:.55rem .7rem}
+        .sales-viz-scenario{border:1px solid #d9e4f2;border-radius:8px;background:#fff;padding:.55rem .7rem;text-align:left;font-family:inherit;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
+        .sales-viz-scenario:hover{border-color:#ffbd7a;background:#fffaf5}
+        .sales-viz-scenario:focus-visible{outline:2px solid var(--primary-color);outline-offset:2px}
         .sales-viz-scenario strong{display:block;font-size:.78rem;color:var(--text-color);margin-bottom:.25rem}
         .sales-viz-scenario span{font-size:.72rem;color:var(--secondary-text-color)}
-        .sales-viz-scenario.primary{border-color:#ffd7ad;background:#fff8f1}
+        .sales-viz-scenario.primary{border-color:#fd7e14;background:#fff8f1;box-shadow:0 0 0 2px rgba(253,126,20,.12)}
         @keyframes salesGoalPulse{from{background-position:0 0}to{background-position:28px 0}}
         @keyframes salesForecastPulse{from{background-position:0 0}to{background-position:18px 0}}
         @media (max-width: 760px){
@@ -2559,6 +2561,7 @@
     let salesPlanLoadedFromServer = false;
     let salesVizTimers = [];
     let salesVizAnimationFrame = null;
+    let salesVizScenarioKey = '100';
 
     function normalizeSalesPlanData(data = {}) {
         const normalized = {};
@@ -2671,7 +2674,8 @@
             const monthlyPlan = remainingMonths > 0 ? Math.ceil(remainingTarget / remainingMonths) : 0;
             return { ...item, remainingTarget, monthlyPlan };
         });
-        return { actualTotal, remainingMonths, scenarios, monthlyPlan: scenarios[0].monthlyPlan };
+        const selectedScenario = scenarios.find(item => item.key === salesVizScenarioKey) || scenarios[0];
+        return { actualTotal, remainingMonths, scenarios, selectedScenario, monthlyPlan: selectedScenario.monthlyPlan };
     }
 
     function setSalesVizForecastFill(value) {
@@ -2753,14 +2757,41 @@
         if (value) value.textContent = monthlyPlan > 0 ? `预计 ${monthlyPlan}` : '—';
     }
 
+    function resetSalesVizForecastState(monthTotals, endIndex) {
+        const actualTotal = monthTotals.reduce((sum, value) => sum + value, 0);
+        const actualPct = Math.min(100, actualTotal / TEAM_TARGET * 100);
+        setSalesVizForecastFill(actualPct);
+        MONTHS.forEach((month, monthIndex) => {
+            const item = document.querySelector(`[data-sp-viz-month="${month}"]`);
+            if (!item) return;
+            item.classList.toggle('done', monthIndex < endIndex);
+            item.classList.toggle('active', monthIndex === endIndex);
+            item.classList.toggle('future', monthIndex > endIndex);
+            item.classList.toggle('forecast', false);
+            const value = item.querySelector('.sales-viz-month-value');
+            if (!value) return;
+            value.textContent = monthIndex <= endIndex && monthTotals[monthIndex] > 0 ? monthTotals[monthIndex] : '—';
+        });
+        const monthLabel = document.getElementById('sp-viz-current-month');
+        if (monthLabel) monthLabel.textContent = MONTHS[endIndex] || MONTHS[MONTHS.length - 1];
+    }
+
+    function updateSalesVizScenarioCards() {
+        document.querySelectorAll('.sales-viz-scenario').forEach(card => {
+            card.classList.toggle('primary', card.dataset.scenario === salesVizScenarioKey);
+        });
+    }
+
     function renderSalesVizForecastMonths(endIndex, monthlyPlan) {
         MONTHS.forEach((month, monthIndex) => {
             if (monthIndex > endIndex) renderSalesVizForecastMonth(monthIndex, monthlyPlan, false);
         });
     }
 
-    function animateSalesVizForecast(monthTotals, endIndex, forecastIndex = endIndex + 1) {
-        const { actualTotal, remainingMonths, monthlyPlan } = getSalesVizForecast(monthTotals, endIndex);
+    function animateSalesVizForecast(monthTotals, endIndex, scenarioKey = salesVizScenarioKey, forecastIndex = endIndex + 1) {
+        salesVizScenarioKey = scenarioKey;
+        updateSalesVizScenarioCards();
+        const { actualTotal, remainingMonths, selectedScenario, monthlyPlan } = getSalesVizForecast(monthTotals, endIndex);
         if (remainingMonths <= 0 || monthlyPlan <= 0) return;
         if (forecastIndex >= MONTHS.length) return;
 
@@ -2787,10 +2818,10 @@
             setSalesVizForecastFill(toForecastPct);
             renderSalesVizForecastMonth(forecastIndex, monthlyPlan, false);
             if (forecastIndex < MONTHS.length - 1) {
-                const timer = setTimeout(() => animateSalesVizForecast(monthTotals, endIndex, forecastIndex + 1), 130);
+                const timer = setTimeout(() => animateSalesVizForecast(monthTotals, endIndex, scenarioKey, forecastIndex + 1), 130);
                 salesVizTimers.push(timer);
             } else {
-                setSalesVizForecastFill(100);
+                setSalesVizForecastFill(Math.min(100, selectedScenario.targetTotal / TEAM_TARGET * 100));
                 salesVizAnimationFrame = null;
             }
         }
@@ -2812,11 +2843,23 @@
             const { actualTotal, monthlyPlan } = getSalesVizForecast(monthTotals, endIndex);
             setSalesVizForecastFill(actualTotal < TEAM_TARGET ? 100 : 0);
             renderSalesVizForecastMonths(endIndex, monthlyPlan);
+            updateSalesVizScenarioCards();
             return;
         }
 
         setSalesVizFrame(0, cumulative, monthTotals, endIndex, 0);
         animateSalesVizMonth(0, cumulative, monthTotals, endIndex);
+    }
+
+    function replaySalesPlanScenario(scenarioKey) {
+        salesVizScenarioKey = scenarioKey;
+        clearSalesVizTimers();
+        const monthTotals = getSalesPlanMonthTotals(spLoad());
+        const endIndex = getSalesVizEndIndex(monthTotals);
+        resetSalesVizForecastState(monthTotals, endIndex);
+        updateSalesVizScenarioCards();
+        const timer = setTimeout(() => animateSalesVizForecast(monthTotals, endIndex, scenarioKey), 160);
+        salesVizTimers.push(timer);
     }
 
     function renderSalesPlanVisualizer(data) {
@@ -2828,10 +2871,10 @@
         const endIndex = getSalesVizEndIndex(monthTotals);
         const forecast = getSalesVizForecast(monthTotals, endIndex);
         const scenarioCards = forecast.scenarios.map((scenario, index) => `
-            <div class="sales-viz-scenario ${index === 0 ? 'primary' : ''}">
+            <button class="sales-viz-scenario ${scenario.key === salesVizScenarioKey ? 'primary' : ''}" type="button" data-scenario="${scenario.key}" onclick="replaySalesPlanScenario('${scenario.key}')">
                 <strong>${scenario.label}</strong>
                 <span>还差 ${scenario.remainingTarget} 台 · 约 ${scenario.monthlyPlan} 台/月</span>
-            </div>
+            </button>
         `).join('');
         const maxMonthly = Math.max(MONTH_TARGET, forecast.monthlyPlan, ...monthTotals, 1);
         const monthBars = MONTHS.map((month, index) => {
