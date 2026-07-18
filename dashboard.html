@@ -395,11 +395,17 @@
         .sales-viz-legend i{display:inline-block;width:18px;height:8px;border-radius:99px;margin-right:4px;vertical-align:middle}
         .sales-viz-legend .actual{background:#007bff}
         .sales-viz-legend .forecast{background:repeating-linear-gradient(45deg,rgba(253,126,20,.65) 0 5px,rgba(253,126,20,.25) 5px 10px)}
+        .sales-viz-scenarios{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:.5rem;margin-top:.6rem}
+        .sales-viz-scenario{border:1px solid #d9e4f2;border-radius:8px;background:#fff;padding:.55rem .7rem}
+        .sales-viz-scenario strong{display:block;font-size:.78rem;color:var(--text-color);margin-bottom:.25rem}
+        .sales-viz-scenario span{font-size:.72rem;color:var(--secondary-text-color)}
+        .sales-viz-scenario.primary{border-color:#ffd7ad;background:#fff8f1}
         @keyframes salesGoalPulse{from{background-position:0 0}to{background-position:28px 0}}
         @keyframes salesForecastPulse{from{background-position:0 0}to{background-position:18px 0}}
         @media (max-width: 760px){
             .sales-viz-top{grid-template-columns:1fr;gap:.85rem}
             .sales-viz-months{grid-template-columns:repeat(6,1fr)}
+            .sales-viz-scenarios{grid-template-columns:1fr}
             .sales-viz-replay{justify-self:start}
         }
         @media (prefers-reduced-motion: reduce){
@@ -2655,10 +2661,17 @@
 
     function getSalesVizForecast(monthTotals, endIndex) {
         const actualTotal = monthTotals.reduce((sum, value) => sum + value, 0);
-        const remainingTarget = Math.max(0, TEAM_TARGET - actualTotal);
         const remainingMonths = Math.max(0, MONTHS.length - endIndex - 1);
-        const monthlyPlan = remainingMonths > 0 ? Math.ceil(remainingTarget / remainingMonths) : 0;
-        return { actualTotal, remainingTarget, remainingMonths, monthlyPlan };
+        const scenarios = [
+            { key: '100', label: '100% 满额', targetTotal: TEAM_TARGET },
+            { key: '80', label: '80% 稳健', targetTotal: Math.round(TEAM_TARGET * 0.8) },
+            { key: '60', label: '60% 保底', targetTotal: Math.round(TEAM_TARGET * 0.6) }
+        ].map(item => {
+            const remainingTarget = Math.max(0, item.targetTotal - actualTotal);
+            const monthlyPlan = remainingMonths > 0 ? Math.ceil(remainingTarget / remainingMonths) : 0;
+            return { ...item, remainingTarget, monthlyPlan };
+        });
+        return { actualTotal, remainingMonths, scenarios, monthlyPlan: scenarios[0].monthlyPlan };
     }
 
     function setSalesVizForecastFill(value) {
@@ -2730,35 +2743,56 @@
         salesVizAnimationFrame = requestAnimationFrame(tick);
     }
 
-    function renderSalesVizForecastMonths(monthTotals, endIndex, monthlyPlan) {
+    function renderSalesVizForecastMonth(monthIndex, monthlyPlan, active = true) {
+        const month = MONTHS[monthIndex];
+        const item = document.querySelector(`[data-sp-viz-month="${month}"]`);
+        if (!item) return;
+        item.classList.add('forecast');
+        item.classList.toggle('active', active);
+        const value = item.querySelector('.sales-viz-month-value');
+        if (value) value.textContent = monthlyPlan > 0 ? `预计 ${monthlyPlan}` : '—';
+    }
+
+    function renderSalesVizForecastMonths(endIndex, monthlyPlan) {
         MONTHS.forEach((month, monthIndex) => {
-            const item = document.querySelector(`[data-sp-viz-month="${month}"]`);
-            if (!item || monthIndex <= endIndex) return;
-            item.classList.add('forecast');
-            const value = item.querySelector('.sales-viz-month-value');
-            if (value) value.textContent = monthlyPlan > 0 ? `预计 ${monthlyPlan}` : '—';
+            if (monthIndex > endIndex) renderSalesVizForecastMonth(monthIndex, monthlyPlan, false);
         });
     }
 
-    function animateSalesVizForecast(monthTotals, endIndex) {
+    function animateSalesVizForecast(monthTotals, endIndex, forecastIndex = endIndex + 1) {
         const { actualTotal, remainingMonths, monthlyPlan } = getSalesVizForecast(monthTotals, endIndex);
         if (remainingMonths <= 0 || monthlyPlan <= 0) return;
-        renderSalesVizForecastMonths(monthTotals, endIndex, monthlyPlan);
+        if (forecastIndex >= MONTHS.length) return;
 
         const fromPct = Math.min(100, actualTotal / TEAM_TARGET * 100);
+        const futureStep = forecastIndex - endIndex;
+        const fromForecastPct = Math.min(100, fromPct + (futureStep - 1) * (monthlyPlan / TEAM_TARGET * 100));
+        const toForecastPct = Math.min(100, fromPct + futureStep * (monthlyPlan / TEAM_TARGET * 100));
         const start = performance.now();
-        const duration = 1100;
+        const duration = 620;
+
+        renderSalesVizForecastMonth(forecastIndex, monthlyPlan, true);
+        if (forecastIndex > endIndex + 1) renderSalesVizForecastMonth(forecastIndex - 1, monthlyPlan, false);
+        const monthLabel = document.getElementById('sp-viz-current-month');
+        if (monthLabel) monthLabel.textContent = MONTHS[forecastIndex];
 
         function tick(now) {
             const progress = Math.min(1, (now - start) / duration);
             const eased = easeSalesViz(progress);
-            setSalesVizForecastFill(fromPct + (100 - fromPct) * eased);
+            setSalesVizForecastFill(fromForecastPct + (toForecastPct - fromForecastPct) * eased);
             if (progress < 1) {
                 salesVizAnimationFrame = requestAnimationFrame(tick);
                 return;
             }
-            setSalesVizForecastFill(100);
-            salesVizAnimationFrame = null;
+            setSalesVizForecastFill(toForecastPct);
+            renderSalesVizForecastMonth(forecastIndex, monthlyPlan, false);
+            if (forecastIndex < MONTHS.length - 1) {
+                const timer = setTimeout(() => animateSalesVizForecast(monthTotals, endIndex, forecastIndex + 1), 130);
+                salesVizTimers.push(timer);
+            } else {
+                setSalesVizForecastFill(100);
+                salesVizAnimationFrame = null;
+            }
         }
 
         salesVizAnimationFrame = requestAnimationFrame(tick);
@@ -2777,7 +2811,7 @@
             setSalesVizFrame(endIndex, cumulative, monthTotals, endIndex);
             const { actualTotal, monthlyPlan } = getSalesVizForecast(monthTotals, endIndex);
             setSalesVizForecastFill(actualTotal < TEAM_TARGET ? 100 : 0);
-            renderSalesVizForecastMonths(monthTotals, endIndex, monthlyPlan);
+            renderSalesVizForecastMonths(endIndex, monthlyPlan);
             return;
         }
 
@@ -2793,6 +2827,12 @@
         const pct = Math.min(100, Math.round(total / TEAM_TARGET * 100));
         const endIndex = getSalesVizEndIndex(monthTotals);
         const forecast = getSalesVizForecast(monthTotals, endIndex);
+        const scenarioCards = forecast.scenarios.map((scenario, index) => `
+            <div class="sales-viz-scenario ${index === 0 ? 'primary' : ''}">
+                <strong>${scenario.label}</strong>
+                <span>还差 ${scenario.remainingTarget} 台 · 约 ${scenario.monthlyPlan} 台/月</span>
+            </div>
+        `).join('');
         const maxMonthly = Math.max(MONTH_TARGET, forecast.monthlyPlan, ...monthTotals, 1);
         const monthBars = MONTHS.map((month, index) => {
             const value = index > endIndex ? forecast.monthlyPlan : monthTotals[index];
@@ -2820,7 +2860,8 @@
                         <span>年度完成率：<strong id="sp-viz-pct">${pct}%</strong></span>
                     </div>
                     <div class="sales-viz-track" aria-hidden="true"><div class="sales-viz-goal" id="sp-viz-goal"></div><div class="sales-viz-forecast" id="sp-viz-forecast"></div><div class="sales-viz-fill" id="sp-viz-fill"></div></div>
-                    <div class="sales-viz-legend"><span><i class="actual"></i>已完成</span><span><i class="forecast"></i>预测平均：${forecast.remainingMonths > 0 ? forecast.monthlyPlan : 0} 台/月</span></div>
+                    <div class="sales-viz-legend"><span><i class="actual"></i>已完成</span><span><i class="forecast"></i>预测补齐，会按未来月份逐月出现</span></div>
+                    <div class="sales-viz-scenarios">${scenarioCards}</div>
                     <div class="sales-viz-months">${monthBars}</div>
                 </div>
                 <button class="sales-viz-replay" type="button" onclick="replaySalesPlanViz()">重播</button>
