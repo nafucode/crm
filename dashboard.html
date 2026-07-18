@@ -2684,6 +2684,15 @@
         forecast.style.width = `${Math.max(0, Math.min(100, value))}%`;
     }
 
+    function setSalesVizProjectedNumbers(total) {
+        const projectedTotal = Math.max(0, total);
+        const projectedPct = Math.min(100, projectedTotal / TEAM_TARGET * 100);
+        const count = document.getElementById('sp-viz-count');
+        const pct = document.getElementById('sp-viz-pct');
+        if (count) count.textContent = Math.round(projectedTotal);
+        if (pct) pct.textContent = `${Math.round(projectedPct)}%`;
+    }
+
     function setSalesVizFrame(index, cumulative, monthTotals, endIndex, animatedTotal) {
         const currentTotal = animatedTotal ?? cumulative[index] ?? 0;
         const currentPct = Math.min(100, currentTotal / TEAM_TARGET * 100);
@@ -2761,6 +2770,7 @@
         const actualTotal = monthTotals.reduce((sum, value) => sum + value, 0);
         const actualPct = Math.min(100, actualTotal / TEAM_TARGET * 100);
         setSalesVizForecastFill(actualPct);
+        setSalesVizProjectedNumbers(actualTotal);
         MONTHS.forEach((month, monthIndex) => {
             const item = document.querySelector(`[data-sp-viz-month="${month}"]`);
             if (!item) return;
@@ -2797,8 +2807,10 @@
 
         const fromPct = Math.min(100, actualTotal / TEAM_TARGET * 100);
         const futureStep = forecastIndex - endIndex;
-        const fromForecastPct = Math.min(100, fromPct + (futureStep - 1) * (monthlyPlan / TEAM_TARGET * 100));
-        const toForecastPct = Math.min(100, fromPct + futureStep * (monthlyPlan / TEAM_TARGET * 100));
+        const fromProjectedTotal = Math.min(selectedScenario.targetTotal, actualTotal + (futureStep - 1) * monthlyPlan);
+        const toProjectedTotal = Math.min(selectedScenario.targetTotal, actualTotal + futureStep * monthlyPlan);
+        const fromForecastPct = Math.min(100, fromProjectedTotal / TEAM_TARGET * 100);
+        const toForecastPct = Math.min(100, toProjectedTotal / TEAM_TARGET * 100);
         const start = performance.now();
         const duration = 620;
 
@@ -2810,18 +2822,22 @@
         function tick(now) {
             const progress = Math.min(1, (now - start) / duration);
             const eased = easeSalesViz(progress);
+            const animatedTotal = fromProjectedTotal + (toProjectedTotal - fromProjectedTotal) * eased;
             setSalesVizForecastFill(fromForecastPct + (toForecastPct - fromForecastPct) * eased);
+            setSalesVizProjectedNumbers(animatedTotal);
             if (progress < 1) {
                 salesVizAnimationFrame = requestAnimationFrame(tick);
                 return;
             }
             setSalesVizForecastFill(toForecastPct);
+            setSalesVizProjectedNumbers(toProjectedTotal);
             renderSalesVizForecastMonth(forecastIndex, monthlyPlan, false);
             if (forecastIndex < MONTHS.length - 1) {
                 const timer = setTimeout(() => animateSalesVizForecast(monthTotals, endIndex, scenarioKey, forecastIndex + 1), 130);
                 salesVizTimers.push(timer);
             } else {
                 setSalesVizForecastFill(Math.min(100, selectedScenario.targetTotal / TEAM_TARGET * 100));
+                setSalesVizProjectedNumbers(selectedScenario.targetTotal);
                 salesVizAnimationFrame = null;
             }
         }
