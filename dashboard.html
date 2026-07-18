@@ -375,7 +375,7 @@
         .sales-viz-track-meta{display:flex;justify-content:space-between;gap:.75rem;color:var(--secondary-text-color);font-size:.78rem;margin-bottom:.45rem}
         .sales-viz-track{height:12px;background:#e9eef6;border-radius:99px;overflow:hidden;position:relative}
         .sales-viz-goal{position:absolute;inset:0 0 0 auto;width:100%;opacity:.75;background:repeating-linear-gradient(90deg,rgba(0,123,255,.34) 0 7px,transparent 7px 14px);transform-origin:right center;animation:salesGoalPulse 1.1s linear infinite}
-        .sales-viz-fill{height:100%;width:0;background:linear-gradient(90deg,#007bff,#25a7ff,#28a745);border-radius:99px;transition:width .42s cubic-bezier(.22,1,.36,1)}
+        .sales-viz-fill{height:100%;width:0;background:linear-gradient(90deg,#007bff,#25a7ff,#28a745);border-radius:99px}
         .sales-viz-months{display:grid;grid-template-columns:repeat(12,minmax(34px,1fr));gap:.4rem;align-items:end;margin-top:.75rem}
         .sales-viz-month{display:flex;flex-direction:column;align-items:center;gap:.25rem;min-width:0}
         .sales-viz-bar-shell{height:42px;width:100%;max-width:42px;background:#edf2f8;border-radius:6px;display:flex;align-items:flex-end;overflow:hidden}
@@ -2544,6 +2544,7 @@
     let salesPlanSaveTimer = null;
     let salesPlanLoadedFromServer = false;
     let salesVizTimers = [];
+    let salesVizAnimationFrame = null;
 
     function normalizeSalesPlanData(data = {}) {
         const normalized = {};
@@ -2633,6 +2634,10 @@
     function clearSalesVizTimers() {
         salesVizTimers.forEach(timer => clearTimeout(timer));
         salesVizTimers = [];
+        if (salesVizAnimationFrame) {
+            cancelAnimationFrame(salesVizAnimationFrame);
+            salesVizAnimationFrame = null;
+        }
     }
 
     function getSalesVizEndIndex(monthTotals) {
@@ -2640,9 +2645,9 @@
         return Math.max(0, lastDataIndex);
     }
 
-    function setSalesVizFrame(index, cumulative, monthTotals, endIndex) {
-        const currentTotal = cumulative[index] || 0;
-        const currentPct = Math.min(100, Math.round(currentTotal / TEAM_TARGET * 100));
+    function setSalesVizFrame(index, cumulative, monthTotals, endIndex, animatedTotal) {
+        const currentTotal = animatedTotal ?? cumulative[index] ?? 0;
+        const currentPct = Math.min(100, currentTotal / TEAM_TARGET * 100);
         const progress = document.getElementById('sp-viz-fill');
         const goal = document.getElementById('sp-viz-goal');
         const count = document.getElementById('sp-viz-count');
@@ -2650,8 +2655,8 @@
         const monthLabel = document.getElementById('sp-viz-current-month');
         if (progress) progress.style.width = `${currentPct}%`;
         if (goal) goal.style.width = `${Math.max(0, 100 - currentPct)}%`;
-        if (count) count.textContent = currentTotal;
-        if (pct) pct.textContent = `${currentPct}%`;
+        if (count) count.textContent = Math.round(currentTotal);
+        if (pct) pct.textContent = `${Math.round(currentPct)}%`;
         if (monthLabel) monthLabel.textContent = MONTHS[index] || MONTHS[MONTHS.length - 1];
 
         MONTHS.forEach((month, monthIndex) => {
@@ -2663,6 +2668,40 @@
             const value = item.querySelector('.sales-viz-month-value');
             if (value) value.textContent = monthIndex <= index && monthTotals[monthIndex] > 0 ? monthTotals[monthIndex] : '—';
         });
+    }
+
+    function easeSalesViz(t) {
+        return 1 - Math.pow(1 - t, 3);
+    }
+
+    function animateSalesVizMonth(index, cumulative, monthTotals, endIndex) {
+        const fromTotal = index === 0 ? 0 : cumulative[index - 1] || 0;
+        const toTotal = cumulative[index] || 0;
+        const duration = fromTotal === toTotal ? 260 : 760;
+        const start = performance.now();
+
+        function tick(now) {
+            const elapsed = now - start;
+            const progress = Math.min(1, elapsed / duration);
+            const eased = easeSalesViz(progress);
+            const animatedTotal = fromTotal + (toTotal - fromTotal) * eased;
+            setSalesVizFrame(index, cumulative, monthTotals, endIndex, animatedTotal);
+
+            if (progress < 1) {
+                salesVizAnimationFrame = requestAnimationFrame(tick);
+                return;
+            }
+
+            setSalesVizFrame(index, cumulative, monthTotals, endIndex, toTotal);
+            if (index < endIndex) {
+                const timer = setTimeout(() => animateSalesVizMonth(index + 1, cumulative, monthTotals, endIndex), 140);
+                salesVizTimers.push(timer);
+            } else {
+                salesVizAnimationFrame = null;
+            }
+        }
+
+        salesVizAnimationFrame = requestAnimationFrame(tick);
     }
 
     function playSalesPlanViz(monthTotals) {
@@ -2679,11 +2718,8 @@
             return;
         }
 
-        setSalesVizFrame(0, cumulative, monthTotals, endIndex);
-        MONTHS.slice(0, endIndex + 1).forEach((month, index) => {
-            const timer = setTimeout(() => setSalesVizFrame(index, cumulative, monthTotals, endIndex), index * 240);
-            salesVizTimers.push(timer);
-        });
+        setSalesVizFrame(0, cumulative, monthTotals, endIndex, 0);
+        animateSalesVizMonth(0, cumulative, monthTotals, endIndex);
     }
 
     function renderSalesPlanVisualizer(data) {
