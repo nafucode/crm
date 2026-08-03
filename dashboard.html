@@ -462,9 +462,8 @@
         <a href="/dashboard.html" class="navbar-brand"><img src="/xinfuji-logo.svg" alt="XINFUJI Logo" class="logo-img"></a>
         <div class="navbar-nav">
             <a href="/index.html" class="nav-link">返回提交表单</a>
-            <a href="/africa.html" class="nav-link">非洲开发客户</a>
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
-            <a href="#" class="nav-link" onclick="switchTab('africa', null);return false;">非洲数据</a>
+            <a href="https://xinfuji-sales-library.nafuji.chatgpt.site" class="nav-link" target="_blank" rel="noopener">📚 销售资料库</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
             <a href="#" class="nav-link" onclick="switchTab('scripts', null);return false;">💬 话术模板</a>
@@ -697,6 +696,12 @@
 
         <!-- TAB: 代理商开发 -->
         <div id="tab-prospects" class="tab-pane">
+
+            <div class="panel" style="padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <strong style="margin-right:6px">开发客户工具</strong>
+                <a href="/africa.html" class="btn" style="text-decoration:none">非洲客户提交</a>
+                <button class="btn btn-secondary" onclick="switchTab('africa', null)">非洲客户数据</button>
+            </div>
 
             <div class="panel">
                 <div class="panel-title-container">
