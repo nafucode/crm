@@ -455,7 +455,7 @@
         .africa-group-badge{display:inline-block;background:#e7f0ff;color:var(--primary-color);border-radius:99px;padding:2px 8px;font-weight:700;font-size:.75rem;margin-right:4px}
         .peru-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.2rem}
         .peru-note{font-size:.85rem;color:var(--secondary-text-color);line-height:1.6;margin-top:.25rem}
-        .peru-table{table-layout:fixed;min-width:1180px}
+        .peru-table{table-layout:fixed;min-width:1220px}
         .peru-table th{font-size:.78rem;color:var(--secondary-text-color);background:#f8f9fa}
         .peru-table td{font-size:.84rem;vertical-align:top;white-space:normal;word-break:break-word;line-height:1.45}
         .peru-table th:nth-child(1),.peru-table td:nth-child(1){width:52px;text-align:center}
@@ -468,6 +468,11 @@
         .peru-table th:nth-child(8),.peru-table td:nth-child(8){width:118px}
         .peru-table th:nth-child(9),.peru-table td:nth-child(9){width:280px}
         .peru-table th:nth-child(10),.peru-table td:nth-child(10){width:140px}
+        .peru-followup{display:flex;gap:.4rem;align-items:flex-start}
+        .peru-followup-input{width:100%;min-height:34px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:6px;padding:6px 8px;font-family:inherit;font-size:.82rem;resize:vertical}
+        .peru-followup-input:focus{outline:none;border-color:var(--primary-color)}
+        .peru-save-btn{border:none;background:#e8f0fe;color:var(--primary-color);border-radius:6px;padding:7px 10px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap}
+        .peru-save-btn:hover{background:var(--primary-color);color:#fff}
         .peru-status{display:inline-block;border-radius:99px;padding:2px 8px;font-size:.72rem;font-weight:700;background:#eef6ff;color:var(--primary-color)}
         .peru-status.quote{background:#fff3cd;color:#856404}
         .peru-status.meeting{background:#e8f5e9;color:#1b7f3a}
@@ -619,7 +624,6 @@
                 <div class="panel-title-container">
                     <div>
                         <div class="panel-title">🇵🇪 秘鲁利马客户更新</div>
-                        <div class="peru-note">来自《秘鲁利马电梯客户统计表》，按经销商客户与最终客户分表管理，仅 admin 与 naf 可见。</div>
                     </div>
                     <span id="peru-sync-status" style="font-size:.82rem;color:var(--secondary-text-color)">待读取</span>
                 </div>
@@ -654,7 +658,7 @@
 
             <div class="panel">
                 <div class="panel-title-container">
-                    <div class="panel-title">最终客户（建筑商 / 房地产）</div>
+                    <div class="panel-title">直接客户（建筑商 / 房地产）</div>
                     <span id="peru-final-count" style="font-size:.9rem;color:var(--secondary-text-color)"></span>
                 </div>
                 <div class="table-container">
@@ -2246,7 +2250,7 @@
         return '';
     }
 
-    function renderPeruTable(rows, tbodyId, nameField) {
+    function renderPeruTable(rows, tbodyId, nameField, kind) {
         const tbody = document.getElementById(tbodyId);
         if (!tbody) return;
         if (!rows.length) {
@@ -2273,13 +2277,51 @@
                 <td>${website}</td>
                 <td>${status}</td>
                 <td>${escapePeruHtml(row.note || '-')}</td>
-                <td>${escapePeruHtml(row.followUp || '-')}</td>
+                <td>
+                    <div class="peru-followup">
+                        <textarea class="peru-followup-input" data-kind="${kind}" data-no="${escapePeruHtml(row.no)}" rows="2">${escapePeruHtml(row.followUp || '')}</textarea>
+                        <button class="peru-save-btn" type="button" onclick="savePeruFollowUp('${kind}', ${Number(row.no)})">保存</button>
+                    </div>
+                </td>
             </tr>`;
         }).join('');
     }
 
-    async function loadPeruCustomers() {
-        if (peruCustomersLoaded) return;
+    async function savePeruFollowUp(kind, no) {
+        const input = document.querySelector(`.peru-followup-input[data-kind="${kind}"][data-no="${no}"]`);
+        const status = document.getElementById('peru-sync-status');
+        if (!input) return;
+        if (status) {
+            status.textContent = '保存中...';
+            status.style.color = 'var(--secondary-text-color)';
+        }
+        try {
+            const response = await fetch('/api/peru-customers/follow-up', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ kind, no, followUp: input.value.trim() })
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error || '保存失败');
+            peruCustomersLoaded = false;
+            if (status) {
+                status.textContent = '已保存并同步';
+                status.style.color = 'green';
+            }
+            await loadPeruCustomers(true);
+        } catch (error) {
+            if (status) {
+                status.textContent = error.message;
+                status.style.color = 'var(--danger-color)';
+            }
+        }
+    }
+
+    async function loadPeruCustomers(force = false) {
+        if (peruCustomersLoaded && !force) return;
         const status = document.getElementById('peru-sync-status');
         if (status) status.textContent = '读取中...';
         try {
@@ -2290,14 +2332,14 @@
             if (!response.ok) throw new Error(payload.error || '读取秘鲁客户失败');
             const dealers = Array.isArray(payload.dealers) ? payload.dealers : [];
             const finalCustomers = Array.isArray(payload.finalCustomers) ? payload.finalCustomers : [];
-            renderPeruTable(dealers, 'peru-dealer-body', 'dealerName');
-            renderPeruTable(finalCustomers, 'peru-final-body', 'customerName');
+            renderPeruTable(dealers, 'peru-dealer-body', 'dealerName', 'dealers');
+            renderPeruTable(finalCustomers, 'peru-final-body', 'customerName', 'finalCustomers');
             document.getElementById('peru-dealer-count').textContent = `${dealers.length} 条`;
             document.getElementById('peru-final-count').textContent = `${finalCustomers.length} 条`;
             const quoteCount = [...dealers, ...finalCustomers].filter(item => String(item.status || '').includes('报价')).length;
             document.getElementById('peru-summary').innerHTML = `
                 <div class="stat-card"><div class="stat-label">经销商客户</div><div class="stat-value">${dealers.length}</div></div>
-                <div class="stat-card"><div class="stat-label">最终客户</div><div class="stat-value">${finalCustomers.length}</div></div>
+                <div class="stat-card"><div class="stat-label">直接客户</div><div class="stat-value">${finalCustomers.length}</div></div>
                 <div class="stat-card"><div class="stat-label">待报价 / 报价中</div><div class="stat-value" style="color:#fd7e14">${quoteCount}</div></div>
                 <div class="stat-card"><div class="stat-label">城市</div><div class="stat-value" style="font-size:1.45rem">Lima</div></div>
             `;

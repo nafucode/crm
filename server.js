@@ -313,12 +313,53 @@ const PERU_CUSTOMERS = {
         { no: 1, customerName: 'EFRON ARQUITECTOS', contact: 'Pilar Medina', position: '技术经理 (Grte Tec)', phone: '960165463', email: '', website: '', status: '待报价', note: '正在等待他们于 8 月底发送 2 个多户住宅项目的图纸。', followUp: '' }
     ]
 };
+const PERU_CUSTOMERS_KEY = 'crm:peru-customers';
+
+function canAccessPeruCustomers(user = {}) {
+    return String(user.username || '').toLowerCase() === 'naf' || user.role === 'admin';
+}
+
+async function getPeruCustomers() {
+    const stored = await kv.get(PERU_CUSTOMERS_KEY);
+    if (stored && typeof stored === 'object') return stored;
+    await kv.set(PERU_CUSTOMERS_KEY, PERU_CUSTOMERS);
+    return PERU_CUSTOMERS;
+}
 
 app.get('/api/peru-customers', authenticateToken, async (req, res) => {
-    if (String(req.user.username || '').toLowerCase() !== 'naf' && req.user.role !== 'admin') {
+    if (!canAccessPeruCustomers(req.user)) {
         return res.sendStatus(403);
     }
-    res.json(PERU_CUSTOMERS);
+    try {
+        res.json(await getPeruCustomers());
+    } catch (error) {
+        console.error('读取秘鲁客户失败:', error);
+        res.status(500).json({ error: '读取秘鲁客户失败' });
+    }
+});
+
+app.post('/api/peru-customers/follow-up', authenticateToken, async (req, res) => {
+    if (!canAccessPeruCustomers(req.user)) {
+        return res.sendStatus(403);
+    }
+    try {
+        const { kind, no, followUp } = req.body || {};
+        if (!['dealers', 'finalCustomers'].includes(kind)) {
+            return res.status(400).json({ error: '客户类型无效' });
+        }
+        const rowNo = Number(no);
+        const data = await getPeruCustomers();
+        const rows = Array.isArray(data[kind]) ? data[kind] : [];
+        const row = rows.find(item => Number(item.no) === rowNo);
+        if (!row) return res.status(404).json({ error: '未找到客户记录' });
+        row.followUp = String(followUp || '').trim();
+        data.updatedAt = new Date().toISOString();
+        await kv.set(PERU_CUSTOMERS_KEY, data);
+        res.json({ ok: true, row, updatedAt: data.updatedAt });
+    } catch (error) {
+        console.error('保存秘鲁跟进状态失败:', error);
+        res.status(500).json({ error: '保存秘鲁跟进状态失败' });
+    }
 });
 
 const ORDER_STATUS_KEY = 'crm:order-status';
