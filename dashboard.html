@@ -453,6 +453,25 @@
         .africa-group-table{width:100%;border-collapse:collapse}
         .africa-group-table th,.africa-group-table td{white-space:normal;font-size:.84rem;vertical-align:top}
         .africa-group-badge{display:inline-block;background:#e7f0ff;color:var(--primary-color);border-radius:99px;padding:2px 8px;font-weight:700;font-size:.75rem;margin-right:4px}
+        .peru-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.2rem}
+        .peru-note{font-size:.85rem;color:var(--secondary-text-color);line-height:1.6;margin-top:.25rem}
+        .peru-table{table-layout:fixed;min-width:1180px}
+        .peru-table th{font-size:.78rem;color:var(--secondary-text-color);background:#f8f9fa}
+        .peru-table td{font-size:.84rem;vertical-align:top;white-space:normal;word-break:break-word;line-height:1.45}
+        .peru-table th:nth-child(1),.peru-table td:nth-child(1){width:52px;text-align:center}
+        .peru-table th:nth-child(2),.peru-table td:nth-child(2){width:190px}
+        .peru-table th:nth-child(3),.peru-table td:nth-child(3){width:120px}
+        .peru-table th:nth-child(4),.peru-table td:nth-child(4){width:120px}
+        .peru-table th:nth-child(5),.peru-table td:nth-child(5){width:110px}
+        .peru-table th:nth-child(6),.peru-table td:nth-child(6){width:170px}
+        .peru-table th:nth-child(7),.peru-table td:nth-child(7){width:160px}
+        .peru-table th:nth-child(8),.peru-table td:nth-child(8){width:118px}
+        .peru-table th:nth-child(9),.peru-table td:nth-child(9){width:280px}
+        .peru-table th:nth-child(10),.peru-table td:nth-child(10){width:140px}
+        .peru-status{display:inline-block;border-radius:99px;padding:2px 8px;font-size:.72rem;font-weight:700;background:#eef6ff;color:var(--primary-color)}
+        .peru-status.quote{background:#fff3cd;color:#856404}
+        .peru-status.meeting{background:#e8f5e9;color:#1b7f3a}
+        .peru-status.pending{background:#f1f3f5;color:#5f6b76}
         @media (max-width: 900px){.africa-group-panel{grid-template-columns:1fr}}
     </style>
 </head>
@@ -464,6 +483,7 @@
             <a href="/index.html" class="nav-link">返回提交表单</a>
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
             <a href="https://xinfuji-sales-library.nafuji.chatgpt.site" class="nav-link" target="_blank" rel="noopener">📚 销售资料库</a>
+            <a href="#" class="nav-link" id="nav-peru" style="display:none" onclick="switchTab('peru', null);return false;">🇵🇪 秘鲁客户</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
             <a href="#" class="nav-link" onclick="switchTab('scripts', null);return false;">💬 话术模板</a>
@@ -592,6 +612,72 @@
         </div>
 
         </div><!-- end tab-dashboard -->
+
+        <!-- TAB: 秘鲁客户 -->
+        <div id="tab-peru" class="tab-pane">
+            <div class="panel">
+                <div class="panel-title-container">
+                    <div>
+                        <div class="panel-title">🇵🇪 秘鲁利马客户更新</div>
+                        <div class="peru-note">来自《秘鲁利马电梯客户统计表》，按经销商客户与最终客户分表管理，仅 admin 与 naf 可见。</div>
+                    </div>
+                    <span id="peru-sync-status" style="font-size:.82rem;color:var(--secondary-text-color)">待读取</span>
+                </div>
+                <div class="peru-summary" id="peru-summary"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title-container">
+                    <div class="panel-title">经销商客户</div>
+                    <span id="peru-dealer-count" style="font-size:.9rem;color:var(--secondary-text-color)"></span>
+                </div>
+                <div class="table-container">
+                    <table class="peru-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>客户名称</th>
+                                <th>联系人</th>
+                                <th>职位</th>
+                                <th>电话</th>
+                                <th>邮箱</th>
+                                <th>网站</th>
+                                <th>状态</th>
+                                <th>秘鲁备注 / 最新进展</th>
+                                <th>跟进状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="peru-dealer-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title-container">
+                    <div class="panel-title">最终客户（建筑商 / 房地产）</div>
+                    <span id="peru-final-count" style="font-size:.9rem;color:var(--secondary-text-color)"></span>
+                </div>
+                <div class="table-container">
+                    <table class="peru-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>客户名称</th>
+                                <th>联系人</th>
+                                <th>职位</th>
+                                <th>电话</th>
+                                <th>邮箱</th>
+                                <th>网站</th>
+                                <th>状态</th>
+                                <th>秘鲁备注 / 最新进展</th>
+                                <th>跟进状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="peru-final-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div><!-- end tab-peru -->
 
         <!-- TAB: 非洲数据 -->
         <div id="tab-africa" class="tab-pane">
@@ -1277,6 +1363,8 @@
         }
 
         let allData = []; // Store all data globally
+        let canViewPeruCustomers = false;
+        let peruCustomersLoaded = false;
 
         document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('token');
@@ -1288,6 +1376,10 @@
             const payload = JSON.parse(atob(token.split('.')[1]));
             const username = payload.username;
             document.getElementById('username-display').textContent = `Welcome, ${username}`;
+            canViewPeruCustomers = payload.role === 'admin' || String(username || '').toLowerCase() === 'naf';
+            if (canViewPeruCustomers) {
+                document.getElementById('nav-peru').style.display = '';
+            }
 
             if (username === 'naf') {
                 setupReportGenerator();
@@ -2135,13 +2227,101 @@
                     alert(`Failed to delete record: ${error.message}`);
                 });
         }
+
+    function escapePeruHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[char]));
+    }
+
+    function peruStatusClass(status) {
+        const text = String(status || '');
+        if (text.includes('报价')) return 'quote';
+        if (text.includes('会')) return 'meeting';
+        if (text.includes('待定')) return 'pending';
+        return '';
+    }
+
+    function renderPeruTable(rows, tbodyId, nameField) {
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--secondary-text-color);padding:1.5rem">暂无数据</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map(row => {
+            const website = row.website
+                ? `<a href="${escapePeruHtml(row.website)}" target="_blank" rel="noopener" style="color:var(--primary-color)">${escapePeruHtml(row.website)}</a>`
+                : '-';
+            const email = row.email
+                ? `<a href="mailto:${escapePeruHtml(row.email)}" style="color:var(--primary-color)">${escapePeruHtml(row.email)}</a>`
+                : '-';
+            const status = row.status
+                ? `<span class="peru-status ${peruStatusClass(row.status)}">${escapePeruHtml(row.status)}</span>`
+                : '-';
+            return `<tr>
+                <td>${escapePeruHtml(row.no)}</td>
+                <td><strong>${escapePeruHtml(row[nameField])}</strong></td>
+                <td>${escapePeruHtml(row.contact || '-')}</td>
+                <td>${escapePeruHtml(row.position || '-')}</td>
+                <td>${escapePeruHtml(row.phone || '-')}</td>
+                <td>${email}</td>
+                <td>${website}</td>
+                <td>${status}</td>
+                <td>${escapePeruHtml(row.note || '-')}</td>
+                <td>${escapePeruHtml(row.followUp || '-')}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    async function loadPeruCustomers() {
+        if (peruCustomersLoaded) return;
+        const status = document.getElementById('peru-sync-status');
+        if (status) status.textContent = '读取中...';
+        try {
+            const response = await fetch('/api/peru-customers', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error || '读取秘鲁客户失败');
+            const dealers = Array.isArray(payload.dealers) ? payload.dealers : [];
+            const finalCustomers = Array.isArray(payload.finalCustomers) ? payload.finalCustomers : [];
+            renderPeruTable(dealers, 'peru-dealer-body', 'dealerName');
+            renderPeruTable(finalCustomers, 'peru-final-body', 'customerName');
+            document.getElementById('peru-dealer-count').textContent = `${dealers.length} 条`;
+            document.getElementById('peru-final-count').textContent = `${finalCustomers.length} 条`;
+            const quoteCount = [...dealers, ...finalCustomers].filter(item => String(item.status || '').includes('报价')).length;
+            document.getElementById('peru-summary').innerHTML = `
+                <div class="stat-card"><div class="stat-label">经销商客户</div><div class="stat-value">${dealers.length}</div></div>
+                <div class="stat-card"><div class="stat-label">最终客户</div><div class="stat-value">${finalCustomers.length}</div></div>
+                <div class="stat-card"><div class="stat-label">待报价 / 报价中</div><div class="stat-value" style="color:#fd7e14">${quoteCount}</div></div>
+                <div class="stat-card"><div class="stat-label">城市</div><div class="stat-value" style="font-size:1.45rem">Lima</div></div>
+            `;
+            if (status) status.textContent = `已同步 · ${payload.updatedAt || '秘鲁更新'}`;
+            peruCustomersLoaded = true;
+        } catch (error) {
+            if (status) {
+                status.textContent = error.message;
+                status.style.color = 'var(--danger-color)';
+            }
+        }
+    }
     // ── Tab 切换 ───────────────────────────────────────────
     function switchTab(id, btn) {
+        if (id === 'peru' && !canViewPeruCustomers) {
+            alert('秘鲁客户页面仅 admin 和 naf 账号可见。');
+            return;
+        }
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => { if(b) b.classList.remove('active'); });
         document.getElementById('tab-' + id).classList.add('active');
         if (btn) btn.classList.add('active');
         if (id === 'prospects') crmLoadSaved();
+        if (id === 'peru') loadPeruCustomers();
         if (id === 'africa') fetchAfricaDataAndRender();
         if (id === 'salesplan') {
             loadAndRenderSalesPlan();
