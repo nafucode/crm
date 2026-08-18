@@ -2766,7 +2766,7 @@
     const SP_KEY = 'salesplan_2026';
     const MONTHS = ['3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','1月'];
     const SP_PEOPLE = [
-        { name: '胡佳润', target: null, isLeader: true },  // 团队负责人，对整体220台负责
+        { name: '胡佳润', target: null },
         { name: '张多加', target: 80 },
         { name: '李孟琪', target: 50 },
         { name: '陈颢',   target: 40 },
@@ -2776,7 +2776,7 @@
     const TEAM_TARGET = 220;
     const MONTH_TARGET = 20;
     const DEFAULT_SALES_PLAN = {
-        '胡佳润': { '3月': 4, '5月': 1, '6月': 4, '7月': 3 },
+        '胡佳润': { '3月': 4, '5月': 1, '6月': 4, '7月': 3, '8月': 2 },
         '张多加': { '3月': 1, '5月': 5, '6月': 1, '8月': 1 },
         '李孟琪': { '4月': 3, '7月': 6, '8月': 3 },
         '陈颢': { '8月': 4 },
@@ -3183,11 +3183,6 @@
         MONTHS.forEach(m => monthTotals[m] = 0);
         let grandTotal = 0;
 
-        // Pre-compute team grand total so leader row can show team completion rate
-        const preTotal = SP_PEOPLE.reduce((s, p) => s + MONTHS.reduce((ms, m) => ms + (data[p.name][m] || 0), 0), 0);
-        const prePct = Math.min(100, Math.round(preTotal / TEAM_TARGET * 100));
-        const preColor = prePct >= 100 ? '#28a745' : prePct >= 60 ? '#007bff' : prePct >= 30 ? '#fd7e14' : '#dc3545';
-
         tbody.innerHTML = SP_PEOPLE.map(p => {
             const done = MONTHS.reduce((s, m) => s + (data[p.name][m] || 0), 0);
             grandTotal += done;
@@ -3199,23 +3194,6 @@
                         onclick="spEdit(this,'${p.name}','${m}')">${val || '—'}</span>
                 </td>`;
             }).join('');
-
-            if (p.isLeader) {
-                return `<tr style="background:#f0f4ff;border-bottom:2px solid #c5d3ff">
-                    <td style="font-weight:700">${p.name}<br><span style="font-size:0.75rem;color:var(--secondary-text-color);font-weight:400">团队负责人</span></td>
-                    <td style="text-align:center;color:var(--secondary-text-color);font-size:0.8rem">220<br><span style="font-size:0.7rem">(团队总目标)</span></td>
-                    <td style="text-align:center;font-weight:600;color:${preColor}">${preTotal}</td>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:6px">
-                            <div style="flex:1;background:#e9ecef;border-radius:4px;height:8px;overflow:hidden">
-                                <div style="width:${prePct}%;background:${preColor};height:100%;border-radius:4px;transition:width .3s"></div>
-                            </div>
-                            <span style="font-size:0.8rem;color:${preColor};font-weight:600;min-width:34px">${prePct}%</span>
-                        </div>
-                    </td>
-                    ${monthCells}
-                </tr>`;
-            }
 
             const pct = p.target ? Math.min(100, Math.round(done / p.target * 100)) : null;
             const barColor = pct === null ? '#6c757d' : pct >= 100 ? '#28a745' : pct >= 60 ? '#007bff' : pct >= 30 ? '#fd7e14' : '#dc3545';
@@ -3245,16 +3223,16 @@
             return `<td style="text-align:center;font-weight:600;background:${bg};color:${color};font-size:0.85rem">${v || '—'}</td>`;
         }).join('');
 
-        tfoot.innerHTML = `<tr style="background:#f8f9fa;border-top:2px solid var(--border-color)">
-            <td style="font-weight:700">团队合计</td>
-            <td style="text-align:center;font-weight:700">${TEAM_TARGET}</td>
-            <td style="text-align:center;font-weight:700;color:${teamColor}">${grandTotal}</td>
+        tfoot.innerHTML = `<tr style="background:#fff8e1;border-top:3px solid #fd7e14;box-shadow:inset 0 1px 0 #ffe8a3">
+            <td style="font-weight:800;color:#1f2933">团队合计</td>
+            <td style="text-align:center;font-weight:800;color:#1f2933">${TEAM_TARGET}</td>
+            <td style="text-align:center;font-weight:800;color:${teamColor};font-size:1rem">${grandTotal}</td>
             <td>
                 <div style="display:flex;align-items:center;gap:6px">
                     <div style="flex:1;background:#e9ecef;border-radius:4px;height:8px;overflow:hidden">
                         <div style="width:${teamPct}%;background:${teamColor};height:100%;border-radius:4px;transition:width .3s"></div>
                     </div>
-                    <span style="font-size:0.8rem;color:${teamColor};font-weight:700;min-width:34px">${teamPct}%</span>
+                    <span style="font-size:0.85rem;color:${teamColor};font-weight:800;min-width:34px">${teamPct}%</span>
                 </div>
             </td>
             ${monthTotalCells}
@@ -3294,9 +3272,9 @@
         let csv = '业务员,年度目标,已完成,完成率,' + MONTHS.join(',') + '\n';
         SP_PEOPLE.forEach(p => {
             const done = MONTHS.reduce((s, m) => s + (data[p.name][m] || 0), 0);
-            const pct = Math.round(done / p.target * 100);
+            const pct = p.target ? `${Math.round(done / p.target * 100)}%` : '—';
             const months = MONTHS.map(m => data[p.name][m] || 0).join(',');
-            csv += `${p.name},${p.target},${done},${pct}%,${months}\n`;
+            csv += `${p.name},${p.target ?? '待定'},${done},${pct},${months}\n`;
         });
         const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
