@@ -314,6 +314,31 @@ const PERU_CUSTOMERS = {
     ]
 };
 const PERU_CUSTOMERS_KEY = 'crm:peru-customers';
+const SALES_UPDATES_KEY = 'crm:sales-updates';
+const SALES_UPDATE_CATEGORIES = new Set(['meeting', 'market', 'customer', 'product', 'notice']);
+
+function normalizeSalesUpdate(row = {}) {
+    return {
+        id: row.id || makeId('u_'),
+        category: SALES_UPDATE_CATEGORIES.has(row.category) ? row.category : 'meeting',
+        title: String(row.title || '').trim().slice(0, 80),
+        content: String(row.content || '').trim().slice(0, 3000),
+        authorUsername: row.authorUsername || '',
+        authorName: row.authorName || row.authorUsername || '',
+        createdAt: row.createdAt || new Date().toISOString(),
+        updatedAt: row.updatedAt || row.createdAt || new Date().toISOString()
+    };
+}
+
+async function readSalesUpdates() {
+    const raw = await kv.hgetall(SALES_UPDATES_KEY);
+    return Object.values(raw || {})
+        .map(parseStoredValue)
+        .filter(Boolean)
+        .map(normalizeSalesUpdate)
+        .filter(item => item.id && item.title && item.content)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
 
 function canAccessPeruCustomers(user = {}) {
     return String(user.username || '').toLowerCase() === 'naf' || user.role === 'admin';
@@ -325,6 +350,56 @@ async function getPeruCustomers() {
     await kv.set(PERU_CUSTOMERS_KEY, PERU_CUSTOMERS);
     return PERU_CUSTOMERS;
 }
+
+app.get('/api/sales-updates', authenticateToken, async (req, res) => {
+    try {
+        const updates = await readSalesUpdates();
+        res.json({ updates });
+    } catch (error) {
+        console.error('读取销售动态失败:', error);
+        res.status(500).json({ error: '读取销售动态失败' });
+    }
+});
+
+app.post('/api/sales-updates', authenticateToken, async (req, res) => {
+    try {
+        const now = new Date().toISOString();
+        const update = normalizeSalesUpdate({
+            ...req.body,
+            id: makeId('u_'),
+            authorUsername: req.user.username,
+            authorName: req.user.realName || req.user.username,
+            createdAt: now,
+            updatedAt: now
+        });
+        if (!update.title || !update.content) {
+            return res.status(400).json({ error: '标题和内容不能为空' });
+        }
+        await kv.hset(SALES_UPDATES_KEY, { [update.id]: update });
+        res.json({ ok: true, update });
+    } catch (error) {
+        console.error('发布销售动态失败:', error);
+        res.status(500).json({ error: '发布销售动态失败' });
+    }
+});
+
+app.delete('/api/sales-updates/:id', authenticateToken, async (req, res) => {
+    try {
+        const raw = await kv.hget(SALES_UPDATES_KEY, req.params.id);
+        const existing = raw ? normalizeSalesUpdate(parseStoredValue(raw)) : null;
+        if (!existing || !existing.id) {
+            return res.status(404).json({ error: '未找到销售动态' });
+        }
+        if (req.user.role !== 'admin' && existing.authorUsername !== req.user.username) {
+            return res.status(403).json({ error: '只能删除自己发布的动态' });
+        }
+        await kv.hdel(SALES_UPDATES_KEY, req.params.id);
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('删除销售动态失败:', error);
+        res.status(500).json({ error: '删除销售动态失败' });
+    }
+});
 
 app.get('/api/peru-customers', authenticateToken, async (req, res) => {
     if (!canAccessPeruCustomers(req.user)) {
