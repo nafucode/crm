@@ -321,8 +321,8 @@ function normalizeSalesUpdate(row = {}) {
     return {
         id: row.id || makeId('u_'),
         category: SALES_UPDATE_CATEGORIES.has(row.category) ? row.category : 'meeting',
-        title: String(row.title || '').trim().slice(0, 80),
-        content: String(row.content || '').trim().slice(0, 3000),
+        title: String(row.title || '').trim().slice(0, 120),
+        content: String(row.content || '').trim().slice(0, 8000),
         authorUsername: row.authorUsername || '',
         authorName: row.authorName || row.authorUsername || '',
         createdAt: row.createdAt || new Date().toISOString(),
