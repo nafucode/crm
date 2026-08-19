@@ -3543,6 +3543,47 @@
         product: '产品资料',
         notice: '注意事项'
     };
+    const DEFAULT_SALES_UPDATES = [{
+        id: 'u_fabe_brand_value_20260819',
+        category: 'product',
+        title: '新品牌技术卖点怎么讲：把配置升级转成代理商价值',
+        content: `这份 FABE 表的核心不是“我们用了更贵的配置”，而是帮助业务员把技术升级讲成代理商能感知、能转述、能成交的价值。新品牌的表达方向应该是：我们在看不见但决定长期稳定性的部件和流程上投入更多，让代理商更好卖、更好装、更好维护。
+
+一、不要从“进口件、贵配置”开始讲
+客户和代理商真正关心的不是某个零件有多贵，而是这个升级能不能减少现场麻烦、降低售后压力、提升项目口碑。比如 HEIDENHAIN 德国编码器，不建议只说“德国进口”；更好的讲法是：
+German HEIDENHAIN feedback technology for more precise and stable elevator control.
+也就是更精准的速度与位置反馈，带来更稳定的启停、平层和运行体验，减少调试中的不确定性。
+
+二、把每个技术点翻译成代理商价值
+曳引机升级：不要讲成堆品牌，而要讲长期运行品质。它对应的是更低振动、更低噪声和更平顺的运行体验，适合住宅、酒店等更重视乘坐感的项目。
+
+控制系统升级：重点是“看不见的地方也愿意增加成本”。控制柜核心器件和信号处理稳定，能减少随机性问题，让海外现场更少遇到疑难故障。
+
+门机和光幕系统：这是客户每天都会感知的部分。更稳定的开关门、更可靠的入口检测，直接对应更少投诉、更少调整、更少售后出勤。
+
+线束和端子标准化：这是代理商安装团队最容易感知的价值。接线清晰、线号标准、排障更快，能减少安装接错和后期维护难度。
+
+出厂预调试 / FAT：这句话可以作为重点销售语言：
+We solve as many problems as possible in our factory — not at your jobsite.
+核心意思是：尽量把问题在工厂解决，不把工厂的问题留给代理商现场承担。
+
+三、统一销售主线
+建议所有业务员围绕三句话展开：
+Easier to Sell：更容易卖，因为产品逻辑更清楚，有配置、有证据、有差异。
+Easier to Install：更容易安装，因为线束、端子、预调试和标准化减少现场不确定性。
+Easier to Maintain：更容易维护，因为高频部件和核心电气件更稳定，售后压力更小。
+
+四、每个卖点都要带 Evidence
+以后讲新品牌升级，不要只讲结论。每一个技术点后面都要准备证明材料：BOM、铭牌照片、柜内实拍、规格书、FAT checklist、测试视频、运行视频或真实案例。没有证据的“高端”，客户会当成口号；有证据的“减少安装和售后负担”，代理商才愿意相信并转介绍。
+
+可以使用的总表达：
+We invest more in the parts and processes that reduce your long-term installation and service burden.
+我们投入更多在那些能降低长期安装和售后负担的部件与流程上。`,
+        authorUsername: 'naf',
+        authorName: '胡佳润',
+        createdAt: '2026-08-19T02:00:54.000Z',
+        isDefault: true
+    }];
     let salesUpdatesLoaded = false;
 
     function escapeUpdateHtml(value) {
@@ -3636,11 +3677,11 @@
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(payload.error || '读取失败');
             salesUpdatesLoaded = true;
-            renderSalesUpdates(payload.updates || []);
+            renderSalesUpdates((payload.updates && payload.updates.length) ? payload.updates : DEFAULT_SALES_UPDATES);
             setSalesUpdateStatus('已同步', '#28a745');
         } catch (error) {
-            feed.innerHTML = `<div class="updates-empty">${escapeUpdateHtml(error.message)}</div>`;
-            setSalesUpdateStatus(error.message, 'var(--danger-color)');
+            renderSalesUpdates(DEFAULT_SALES_UPDATES);
+            setSalesUpdateStatus('读取失败，显示内置文章', '#b26a00');
         }
     }
 
@@ -3653,7 +3694,7 @@
         }
         const current = getCurrentUserPayload();
         feed.innerHTML = updates.map((item, index) => {
-            const canDelete = current.role === 'admin' || current.username === item.authorUsername;
+            const canDelete = !item.isDefault && (current.role === 'admin' || current.username === item.authorUsername);
             const category = item.category || 'meeting';
             const label = UPDATE_CATEGORY_LABELS[category] || '销售动态';
             const deleteButton = canDelete
