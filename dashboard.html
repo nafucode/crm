@@ -31,19 +31,34 @@
         }
 
         .navbar {
-            background: var(--white);
+            background:
+                linear-gradient(90deg, rgba(0,123,255,.08), transparent 24%, transparent 76%, rgba(0,123,255,.06)),
+                rgba(255,255,255,.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             padding: 0 2.5rem; /* Increased right padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(0, 123, 255, .16);
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
             height: 60px;
-            box-shadow: var(--shadow);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
             box-sizing: border-box; /* Add this line */
+        }
+
+        .navbar::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,123,255,.68), transparent);
+            pointer-events: none;
         }
 
         .navbar-brand {
@@ -63,18 +78,37 @@
         .navbar-nav {
             display: flex;
             align-items: center;
+            gap: .35rem;
         }
 
         .nav-link {
             color: var(--secondary-text-color);
             text-decoration: none;
-            margin-left: 1.5rem;
+            margin-left: 0;
             font-size: 1rem;
-            transition: color 0.3s;
+            font-weight: 600;
+            line-height: 1;
+            padding: .55rem .8rem;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            position: relative;
+            transition: color .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
         }
 
         .nav-link:hover {
-            color: var(--primary-color);
+            color: #0b5ed7;
+            background: linear-gradient(180deg, rgba(15,23,42,.10), rgba(0,123,255,.07));
+            border-color: rgba(0,123,255,.22);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.75), 0 8px 22px rgba(0,123,255,.13);
+            transform: translateY(-1px);
+        }
+
+        #username-display.nav-link:hover {
+            color: var(--secondary-text-color);
+            background: transparent;
+            border-color: transparent;
+            box-shadow: none;
+            transform: none;
         }
 
         .main-content {
@@ -356,7 +390,7 @@
         .update-card.featured .update-content{font-size:1rem;color:rgba(255,255,255,.86);max-width:920px;display:block;overflow:visible}
         .update-actions{display:flex;gap:.5rem;align-items:center}
         .updates-empty{border:1px dashed var(--border-color);border-radius:10px;padding:2rem;text-align:center;color:var(--secondary-text-color);background:#fbfcfd}
-        @media (max-width: 980px){.updates-masthead,.updates-layout{grid-template-columns:1fr}.updates-masthead-side{align-items:flex-start;text-align:left}.updates-feed{grid-template-columns:1fr}.updates-editor{position:static}.navbar-nav{gap:.75rem;flex-wrap:wrap}.nav-link{margin-left:.75rem}}
+        @media (max-width: 980px){.updates-masthead,.updates-layout{grid-template-columns:1fr}.updates-masthead-side{align-items:flex-start;text-align:left}.updates-feed{grid-template-columns:1fr}.updates-editor{position:static}.navbar-nav{gap:.45rem;flex-wrap:wrap}.nav-link{font-size:.9rem;padding:.48rem .62rem}}
 
         /* ── Prospect search ── */
         .prospect-search-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:1.5rem;}
