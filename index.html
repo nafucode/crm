@@ -59,17 +59,18 @@
             pointer-events: none;
         }
         .navbar-brand img { height: 40px; width: auto; }
-        .nav-links { display: flex; align-items: center; gap: .35rem; }
+        .nav-links { display: flex; align-items: center; gap: .22rem; }
         .nav-links a {
             color: var(--dark-gray);
             text-decoration: none;
             margin-left: 0;
-            font-size: 1rem;
+            font-size: .9rem;
             font-weight: 600;
             line-height: 1;
-            padding: .55rem .8rem;
+            padding: .48rem .58rem;
             border: 1px solid transparent;
             border-radius: 999px;
+            white-space: nowrap;
             transition: color .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
         }
         .nav-links a:hover, .nav-links a.active {
@@ -86,11 +87,12 @@
             color: var(--dark-gray);
             cursor: pointer;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: .9rem;
             font-weight: 600;
             line-height: 1;
             margin-left: 0;
-            padding: .55rem .8rem;
+            padding: .48rem .58rem;
+            white-space: nowrap;
             transition: color .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
         }
         #logout-btn:hover {
