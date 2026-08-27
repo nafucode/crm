@@ -546,6 +546,7 @@
         .peru-status.quote{background:#fff3cd;color:#856404}
         .peru-status.meeting{background:#e8f5e9;color:#1b7f3a}
         .peru-status.pending{background:#f1f3f5;color:#5f6b76}
+        .peru-status.closed{background:#f1f3f5;color:#868e96}
         @media (max-width: 900px){.africa-group-panel{grid-template-columns:1fr}}
     </style>
 </head>
@@ -2372,6 +2373,7 @@
         if (text.includes('报价')) return 'quote';
         if (text.includes('会')) return 'meeting';
         if (text.includes('待定')) return 'pending';
+        if (text.includes('关闭') || text.includes('结束')) return 'closed';
         return '';
     }
 

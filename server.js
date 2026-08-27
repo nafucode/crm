@@ -292,25 +292,26 @@ app.get('/api/report-data', authenticateToken, async (req, res) => {
 });
 
 const PERU_CUSTOMERS = {
-    updatedAt: '2026-08 秘鲁利马客户更新',
+    updatedAt: '2026-08-14 秘鲁客户更新',
     dealers: [
-        { no: 1, dealerName: 'INTERNATIONAL GROUP', contact: 'Jair Calderòn', position: '', phone: '947001724', email: 'braydonpk12@gmail.com', website: '', status: '待报价', note: '需要对“El Hodspital de Chachapoyas”项目进行报价。', followUp: '等待工厂统计数据' },
-        { no: 2, dealerName: 'JD ASCENSORES', contact: 'Lucila Maldonado', position: '', phone: '987176697', email: 'jdascensoressac@gmail.com', website: '', status: '待报价', note: '目前有 2 份报价待制作（一份给大学项目，另一份已发送至 Naf 的 WhatsApp）。', followUp: '已报价' },
-        { no: 3, dealerName: 'DELTA ASCENSORES', contact: 'Jorge Vega', position: '', phone: '933550978', email: '', website: '', status: '已排期开会', note: '已预约于 8 月 7 日星期五上午 11:00 在 Delta 办公室开会。', followUp: '' },
-        { no: 4, dealerName: 'Elevatronic', contact: 'Antonio Rodriguez', position: '', phone: '981347565', email: '', website: '', status: '待定', note: '下周出差，之后联系沟通。', followUp: '' },
-        { no: 5, dealerName: 'Edel Ascensores', contact: '待定', position: '', phone: '981039271', email: '', website: '', status: '已启动/跟进中', note: '已发送迅富士（Xiunfuji）相关资料。', followUp: '' },
-        { no: 6, dealerName: 'MOVITECNICA', contact: 'Joelys Mujica', position: '', phone: '9420421010', email: '', website: '', status: '已启动/跟进中', note: '潜在供应商评估流程尚未结束，他们届时会主动联系。', followUp: '' },
-        { no: 7, dealerName: 'Ascensores Excelsior Perú', contact: '待定', position: '', phone: '987329287', email: '', website: 'https://ascensoresexcelsior.com', status: '已启动/跟进中', note: '已发送公司介绍资料，等待反馈。', followUp: '' },
-        { no: 8, dealerName: 'ASCENDI ASCENSORES', contact: '', position: '', phone: '956746735', email: 'ventas@ascendi.pe', website: '', status: '已启动/跟进中', note: '已与一位合伙人交谈，正在等待安排会议。', followUp: '' },
-        { no: 9, dealerName: 'PROVEEDOORS', contact: '待定', position: '', phone: '958540000', email: 'provee-doors@hotmail.com', website: '', status: '已启动/跟进中', note: '已发送公司介绍资料，等待反馈。', followUp: '' },
-        { no: 10, dealerName: 'CHG GROUP', contact: 'Srta. Nicoll', position: '', phone: '960228077', email: 'comercial@chgascensor.com', website: '', status: '已启动/跟进中', note: '属于 Ascensores Chavez 旗下，已发送相关资料。', followUp: '' },
-        { no: 11, dealerName: 'ASCENSORES JY', contact: '待定', position: '', phone: '944291441', email: '', website: '', status: '已启动/跟进中', note: '该公司所有的采购均通过 JD Ascensores 进行。', followUp: '' },
-        { no: 12, dealerName: 'HITECH ASCENSORES', contact: '待定', position: '', phone: '981583501', email: 'ascensoreshitech@gmail.com', website: 'https://hitechcompanysac.com', status: '已启动/跟进中', note: '已发送相关资料。', followUp: '' },
-        { no: 13, dealerName: 'Accesorios & Ascensores S.A.C.', contact: '待定', position: '', phone: '965 030 965', email: '', website: '', status: '待定', note: '', followUp: '' },
-        { no: 14, dealerName: 'Ascensores Space', contact: '待定', position: '', phone: '965 171 550', email: '', website: '', status: '待定', note: '', followUp: '' }
+        { no: 1, dealerName: 'JD ASCENSORES', contact: 'Lucila Maldonado', position: '', phone: '987176697', email: 'jdascensoressac@gmail.com', website: '', status: '已关闭', note: '报价数：2。流程已由一家当地公司中标。', followUp: '' },
+        { no: 2, dealerName: 'DELTA ASCENSORES', contact: 'Jorge Vega', position: '', phone: '933550978', email: '', website: '', status: '待报价', note: '报价数：5。已完成相关会议。该公司符合提供技术服务的要求，下一步需要明确合作模式和工厂商业条件。目前正在推进多个政府项目机会，并通过 WhatsApp 共享给我们用于预算报价。', followUp: '' },
+        { no: 3, dealerName: 'Elevatronic', contact: 'Antonio Rodriguez', position: '', phone: '981347565', email: '', website: '', status: '待定', note: '已安排 8 月 17 日星期一开会。', followUp: '' },
+        { no: 4, dealerName: 'Edel Ascensores', contact: '待定', position: '', phone: '981039271', email: '', website: '', status: '跟进中', note: '暂无回复，继续跟进。', followUp: '' },
+        { no: 5, dealerName: 'MOVITECNICA', contact: 'Joelys Mujica', position: '', phone: '9420421010', email: '', website: '', status: '已启动', note: '潜在供应商评估流程仍在进行中，对方后续会主动联系。', followUp: '' },
+        { no: 6, dealerName: 'Ascensores Excelsior Perú', contact: '待定', position: '', phone: '987329287', email: '', website: 'https://ascensoresexcelsior.com', status: '跟进中', note: '已发送公司介绍资料，等待反馈；目前继续跟进。', followUp: '' },
+        { no: 7, dealerName: 'ASCENDI ASCENSORES', contact: '', position: '', phone: '956746735', email: 'ventas@ascendi.pe', website: '', status: '跟进中', note: '等待安排会议。', followUp: '' },
+        { no: 8, dealerName: 'PROVEEDOORS', contact: '待定', position: '', phone: '958540000', email: 'provee-doors@hotmail.com', website: '', status: '跟进中', note: '暂无回复，继续跟进。', followUp: '' },
+        { no: 9, dealerName: 'CHG GROUP', contact: 'Srta. Nicoll', position: '', phone: '960228077', email: 'comercial@chgascernsor.com', website: '', status: '跟进中', note: '暂无回复，继续跟进。', followUp: '' },
+        { no: 10, dealerName: 'ASCENSORES JY', contact: '待定', position: '', phone: '944291441', email: '', website: '', status: '已关闭', note: '流程已由一家当地公司中标。', followUp: '' },
+        { no: 11, dealerName: 'HITECH ASCENSORES', contact: '待定', position: '', phone: '981583501', email: 'ascensoreshitech@gmail.com', website: 'https://hitechcompanysac.com', status: '跟进中', note: '暂无回复，继续跟进。', followUp: '' },
+        { no: 12, dealerName: 'Accesorios & Ascensores S.A.C.', contact: '待定', position: '', phone: '965 030 965', email: '', website: '', status: '跟进中', note: '暂无回复，继续跟进。', followUp: '' },
+        { no: 13, dealerName: 'Ascensores Space', contact: '待定', position: '', phone: '965 171 550', email: '', website: '', status: '跟进中', note: '暂无回复，继续跟进。', followUp: '' }
     ],
     finalCustomers: [
-        { no: 1, customerName: 'EFRON ARQUITECTOS', contact: 'Pilar Medina', position: '技术经理 (Grte Tec)', phone: '960165463', email: '', website: '', status: '待报价', note: '正在等待他们于 8 月底发送 2 个多户住宅项目的图纸。', followUp: '' }
+        { no: 1, customerName: 'EFRON ARQUITECTOS', contact: 'Pilar Medina', position: '技术经理 (Grte Tec)', phone: '960165463', email: '', website: '', status: '已启动', note: '等待对方在 8 月底发送 2 个多户住宅项目的图纸。', followUp: '' },
+        { no: 2, customerName: 'CITRIX', contact: 'Fernando Campos', position: '技术经理 (Grte Tec)', phone: '', email: '', website: '', status: '已启动', note: '等待对方在 8 月底发送 2 个多户住宅项目的图纸。', followUp: '' },
+        { no: 3, customerName: 'INTERNATIONAL GROUP', contact: 'Jair Calderòn', position: '', phone: '947001724', email: 'braydonpk12@gmail.com', website: '', status: '跟进中', note: '报价数：1。暂无回复，继续跟进。', followUp: '' }
     ]
 };
 const PERU_CUSTOMERS_KEY = 'crm:peru-customers';
