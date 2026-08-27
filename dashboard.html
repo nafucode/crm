@@ -547,7 +547,38 @@
         .peru-status.meeting{background:#e8f5e9;color:#1b7f3a}
         .peru-status.pending{background:#f1f3f5;color:#5f6b76}
         .peru-status.closed{background:#f1f3f5;color:#868e96}
+        /* ── CBM & delivery cost calculator ── */
+        .cbm-shell{max-width:1180px;margin:0 auto}
+        .cbm-heading{margin-bottom:1.25rem}
+        .cbm-heading h1{margin:0;color:#111827;font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.035em}
+        .cbm-heading p{max-width:760px;margin:.55rem 0 0;color:var(--secondary-text-color);font-size:.94rem;line-height:1.65}
+        .cbm-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(320px,.82fr);gap:1rem;align-items:stretch}
+        .cbm-panel{margin:0;border-radius:14px;padding:1.4rem}
+        .cbm-mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:1.25rem;padding:4px;border-radius:10px;background:#edf2f7}
+        .cbm-mode-btn{height:42px;border:0;border-radius:8px;background:transparent;color:var(--secondary-text-color);font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer}
+        .cbm-mode-btn.active{background:#fff;color:var(--text-color);box-shadow:0 2px 8px rgba(15,23,42,.1)}
+        .cbm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.85rem}
+        .cbm-grid-top{grid-template-columns:minmax(0,1fr) 160px;margin-bottom:.9rem}
+        .cbm-field label{display:block;margin:0 0 6px 2px;color:var(--secondary-text-color);font-size:.78rem;font-weight:700}
+        .cbm-field input,.cbm-field select{width:100%;height:50px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;background:#fff;color:var(--text-color);padding:0 12px;font-family:inherit;font-size:1rem;font-weight:500;outline:none}
+        .cbm-field input:focus,.cbm-field select:focus{border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(0,123,255,.12)}
+        .cbm-input-wrap{position:relative}.cbm-input-wrap input{padding-right:52px}.cbm-suffix{position:absolute;right:13px;bottom:16px;color:var(--secondary-text-color);font-size:.78rem;font-weight:700;pointer-events:none}
+        .cbm-direct-box{padding:1rem;border:1px solid #cfe1ff;border-radius:10px;background:#f7fbff}
+        .cbm-direct-box p{margin:0 0 .85rem;color:var(--secondary-text-color);font-size:.83rem;line-height:1.55}
+        .cbm-shipping{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,280px);gap:1rem;align-items:end;margin-top:1.15rem;padding:1rem;border:1px solid #f0d7cb;border-radius:10px;background:#fff8f5}
+        .cbm-shipping-label{align-self:center}.cbm-shipping-label span{display:block;color:#c4512d;font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.cbm-shipping-label strong{display:block;margin-top:4px;font-size:.98rem}
+        .cbm-rate-wrap input{padding-right:90px}.cbm-rate-wrap .cbm-suffix{font-size:.72rem}
+        .cbm-actions{display:flex;gap:.65rem;margin-top:1.15rem}.cbm-actions .btn{min-height:46px;padding:.55rem 1.25rem;border-radius:8px;font-size:.9rem}.cbm-actions .cbm-calculate{flex:1;background:#172333}.cbm-actions .cbm-calculate:hover{background:#243b55}
+        .cbm-result-panel{display:flex;flex-direction:column;justify-content:space-between;min-height:385px;background:linear-gradient(145deg,#163b55,#245d78);border-color:#245d78;color:#fff}
+        .cbm-result-label{color:#bfdae7;font-size:.74rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
+        .cbm-result-value{margin:.35rem 0 0;font-size:clamp(2.7rem,6vw,4.8rem);font-weight:750;letter-spacing:-.045em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.cbm-result-value small{font-size:1rem;letter-spacing:0}
+        .cbm-cost-block{margin-top:1.1rem;padding:1rem 0;border-top:1px solid rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.2)}
+        .cbm-cost-value{margin:.3rem 0;font-size:clamp(1.8rem,4vw,2.55rem);font-weight:750;letter-spacing:-.025em;font-variant-numeric:tabular-nums}.cbm-cost-detail{color:#c9dce5;font-size:.79rem}
+        .cbm-result-note{margin-top:.9rem;padding:.8rem .9rem;border-radius:8px;background:rgba(255,255,255,.09);color:#dce9ef;font-size:.8rem;line-height:1.55}
+        .cbm-formula{margin-top:1rem;color:#d0e1e9;font-size:.8rem;line-height:1.6}.cbm-formula strong{display:block;color:#fff;font-size:.9rem}
         @media (max-width: 900px){.africa-group-panel{grid-template-columns:1fr}}
+        @media (max-width: 860px){.cbm-layout{grid-template-columns:1fr}.cbm-result-panel{min-height:330px}}
+        @media (max-width: 620px){.cbm-grid,.cbm-grid-top,.cbm-shipping{grid-template-columns:1fr}.cbm-panel{padding:1rem}.cbm-actions{align-items:stretch}.cbm-actions .btn{min-height:48px}}
     </style>
 </head>
 
@@ -559,6 +590,7 @@
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
             <a href="https://xinfuji-sales-library.nafaxai.chatgpt.site" class="nav-link">📚 销售资料库</a>
             <a href="#" class="nav-link" onclick="switchTab('updates', null);return false;">📝 销售动态</a>
+            <a href="#" class="nav-link" onclick="switchTab('calculator', null);return false;">📦 体积运费</a>
             <a href="#" class="nav-link" id="nav-peru" style="display:none" onclick="switchTab('peru', null);return false;">🇵🇪 秘鲁客户</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
@@ -688,6 +720,76 @@
         </div>
 
         </div><!-- end tab-dashboard -->
+
+        <!-- TAB: 体积与费用计算器 -->
+        <div id="tab-calculator" class="tab-pane">
+            <div class="cbm-shell">
+                <div class="cbm-heading">
+                    <h1>体积与费用计算器</h1>
+                    <p>按货物尺寸换算总体积，或直接输入已知 CBM，快速估算 YY Cargo Lagos 到门费用。</p>
+                </div>
+                <div class="cbm-layout">
+                    <section class="panel cbm-panel" aria-labelledby="cbm-input-title">
+                        <div class="panel-title" id="cbm-input-title" style="font-size:1.15rem;margin-bottom:1rem">选择计算方式</div>
+                        <div class="cbm-mode-tabs" aria-label="体积计算方式">
+                            <button type="button" class="cbm-mode-btn active" id="cbm-mode-dimensions" aria-pressed="true">按尺寸换算</button>
+                            <button type="button" class="cbm-mode-btn" id="cbm-mode-direct" aria-pressed="false">直接输入 CBM</button>
+                        </div>
+
+                        <div id="cbm-dimension-fields">
+                            <div class="cbm-grid cbm-grid-top">
+                                <div class="cbm-field">
+                                    <label for="cbm-unit">尺寸单位</label>
+                                    <select id="cbm-unit">
+                                        <option value="cm" selected>厘米（cm）</option>
+                                        <option value="mm">毫米（mm）</option>
+                                        <option value="m">米（m）</option>
+                                    </select>
+                                </div>
+                                <div class="cbm-field">
+                                    <label for="cbm-quantity">件数</label>
+                                    <input id="cbm-quantity" type="number" min="1" step="1" value="1" inputmode="numeric">
+                                </div>
+                            </div>
+                            <div class="cbm-grid">
+                                <div class="cbm-field cbm-input-wrap"><label for="cbm-length">长度</label><input id="cbm-length" type="number" min="0" step="any" placeholder="例如 200" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
+                                <div class="cbm-field cbm-input-wrap"><label for="cbm-width">宽度</label><input id="cbm-width" type="number" min="0" step="any" placeholder="例如 100" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
+                                <div class="cbm-field cbm-input-wrap"><label for="cbm-height">高度</label><input id="cbm-height" type="number" min="0" step="any" placeholder="例如 150" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
+                            </div>
+                        </div>
+
+                        <div class="cbm-direct-box" id="cbm-direct-fields" hidden>
+                            <p>已经知道大概立方数时，可直接输入总体积，无需填写长、宽、高。</p>
+                            <div class="cbm-field cbm-input-wrap"><label for="cbm-direct">总体积</label><input id="cbm-direct" type="number" min="0" step="any" placeholder="例如 5.5" inputmode="decimal"><span class="cbm-suffix">CBM</span></div>
+                        </div>
+
+                        <div class="cbm-shipping">
+                            <div class="cbm-shipping-label"><span>YY Cargo · Lagos</span><strong>到门费用估算</strong></div>
+                            <div class="cbm-field cbm-input-wrap cbm-rate-wrap"><label for="cbm-rate">到门单价</label><input id="cbm-rate" type="number" min="0" step="0.01" value="320" inputmode="decimal"><span class="cbm-suffix">USD/CBM</span></div>
+                        </div>
+
+                        <div class="cbm-actions">
+                            <button class="btn cbm-calculate" id="cbm-calculate" type="button">计算 CBM 与费用</button>
+                            <button class="btn btn-secondary" id="cbm-reset" type="button">清空</button>
+                        </div>
+                    </section>
+
+                    <aside class="panel cbm-panel cbm-result-panel" aria-live="polite">
+                        <div>
+                            <div class="cbm-result-label">总体积</div>
+                            <div class="cbm-result-value"><span id="cbm-result">0.000</span> <small>CBM</small></div>
+                            <div class="cbm-cost-block">
+                                <div class="cbm-result-label">预计到门费用</div>
+                                <div class="cbm-cost-value" id="cbm-cost">USD 0.00</div>
+                                <div class="cbm-cost-detail" id="cbm-cost-detail">按 320.00 USD/CBM 计算</div>
+                            </div>
+                            <div class="cbm-result-note" id="cbm-detail">请输入长、宽、高开始计算。</div>
+                        </div>
+                        <div class="cbm-formula"><strong id="cbm-formula-title">厘米换算公式</strong><span id="cbm-formula-text">长 × 宽 × 高 × 件数 ÷ 1,000,000</span></div>
+                    </aside>
+                </div>
+            </div>
+        </div><!-- end tab-calculator -->
 
         <!-- TAB: 秘鲁客户 -->
         <div id="tab-peru" class="tab-pane">
@@ -1514,6 +1616,7 @@
                 setupReportGenerator();
             }
             setupSalesUpdateForm();
+            setupCbmCalculator();
 
             // Role-based access control
             if (payload.role === 'admin') {
@@ -2479,6 +2582,120 @@
             }
         }
     }
+    // ── 体积与费用计算器 ──────────────────────────────────
+    const CRM_CBM_UNITS = {
+        cm: { factor: 0.01, name: '厘米', formula: '长 × 宽 × 高 × 件数 ÷ 1,000,000' },
+        mm: { factor: 0.001, name: '毫米', formula: '长 × 宽 × 高 × 件数 ÷ 1,000,000,000' },
+        m: { factor: 1, name: '米', formula: '长 × 宽 × 高 × 件数' }
+    };
+    let crmCbmMode = 'dimensions';
+
+    function crmFormatCbm(value) {
+        return value.toLocaleString('zh-CN', { minimumFractionDigits: 3, maximumFractionDigits: 6 });
+    }
+
+    function crmFormatUsd(value) {
+        return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateCrmCbm() {
+        const rateInput = document.getElementById('cbm-rate');
+        const rate = Math.max(0, Number(rateInput.value) || 0);
+        let cbm = 0;
+        let detailText = '';
+
+        if (crmCbmMode === 'direct') {
+            cbm = Math.max(0, Number(document.getElementById('cbm-direct').value) || 0);
+            if (!(cbm > 0)) {
+                updateCrmCbmResult(0, rate, '请输入大于 0 的总体积。');
+                return;
+            }
+            detailText = `直接输入总体积 ${crmFormatCbm(cbm)} CBM。`;
+        } else {
+            const length = Number(document.getElementById('cbm-length').value);
+            const width = Number(document.getElementById('cbm-width').value);
+            const height = Number(document.getElementById('cbm-height').value);
+            const quantityInput = document.getElementById('cbm-quantity');
+            const quantity = Math.max(1, Math.floor(Number(quantityInput.value) || 1));
+            const unit = document.getElementById('cbm-unit').value;
+            const unitConfig = CRM_CBM_UNITS[unit];
+            quantityInput.value = quantity;
+
+            if (!(length > 0 && width > 0 && height > 0)) {
+                updateCrmCbmResult(0, rate, '请输入大于 0 的长、宽、高。');
+                return;
+            }
+
+            cbm = length * width * height * (unitConfig.factor ** 3) * quantity;
+            detailText = `${length} × ${width} × ${height} ${unit}，共 ${quantity} 件；单件 ${crmFormatCbm(cbm / quantity)} CBM。`;
+        }
+
+        updateCrmCbmResult(cbm, rate, detailText);
+    }
+
+    function updateCrmCbmResult(cbm, rate, detailText) {
+        document.getElementById('cbm-result').textContent = crmFormatCbm(cbm);
+        document.getElementById('cbm-cost').textContent = `USD ${crmFormatUsd(cbm * rate)}`;
+        document.getElementById('cbm-cost-detail').textContent = cbm > 0
+            ? `${crmFormatCbm(cbm)} CBM × ${crmFormatUsd(rate)} USD/CBM`
+            : `按 ${crmFormatUsd(rate)} USD/CBM 计算`;
+        document.getElementById('cbm-detail').textContent = detailText;
+    }
+
+    function updateCrmCbmUnit() {
+        const unit = document.getElementById('cbm-unit').value;
+        const unitConfig = CRM_CBM_UNITS[unit];
+        document.querySelectorAll('.cbm-dimension-suffix').forEach(item => { item.textContent = unit; });
+        if (crmCbmMode === 'dimensions') {
+            document.getElementById('cbm-formula-title').textContent = `${unitConfig.name}换算公式`;
+            document.getElementById('cbm-formula-text').textContent = unitConfig.formula;
+        }
+        calculateCrmCbm();
+    }
+
+    function setCrmCbmMode(mode, focusInput = false) {
+        crmCbmMode = mode;
+        const direct = mode === 'direct';
+        const dimensionButton = document.getElementById('cbm-mode-dimensions');
+        const directButton = document.getElementById('cbm-mode-direct');
+        document.getElementById('cbm-dimension-fields').hidden = direct;
+        document.getElementById('cbm-direct-fields').hidden = !direct;
+        dimensionButton.classList.toggle('active', !direct);
+        directButton.classList.toggle('active', direct);
+        dimensionButton.setAttribute('aria-pressed', String(!direct));
+        directButton.setAttribute('aria-pressed', String(direct));
+
+        if (direct) {
+            document.getElementById('cbm-formula-title').textContent = '费用计算公式';
+            document.getElementById('cbm-formula-text').textContent = '总体积（CBM）× 到门单价（USD/CBM）';
+            if (focusInput) document.getElementById('cbm-direct').focus();
+            calculateCrmCbm();
+        } else {
+            updateCrmCbmUnit();
+            if (focusInput) document.getElementById('cbm-length').focus();
+        }
+    }
+
+    function resetCrmCbm() {
+        ['cbm-length', 'cbm-width', 'cbm-height', 'cbm-direct'].forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('cbm-quantity').value = 1;
+        document.getElementById('cbm-rate').value = 320;
+        calculateCrmCbm();
+        document.getElementById(crmCbmMode === 'direct' ? 'cbm-direct' : 'cbm-length').focus();
+    }
+
+    function setupCbmCalculator() {
+        ['cbm-length', 'cbm-width', 'cbm-height', 'cbm-quantity', 'cbm-direct', 'cbm-rate'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateCrmCbm);
+        });
+        document.getElementById('cbm-unit').addEventListener('change', updateCrmCbmUnit);
+        document.getElementById('cbm-mode-dimensions').addEventListener('click', () => setCrmCbmMode('dimensions', true));
+        document.getElementById('cbm-mode-direct').addEventListener('click', () => setCrmCbmMode('direct', true));
+        document.getElementById('cbm-calculate').addEventListener('click', calculateCrmCbm);
+        document.getElementById('cbm-reset').addEventListener('click', resetCrmCbm);
+        setCrmCbmMode('dimensions');
+    }
+
     // ── Tab 切换 ───────────────────────────────────────────
     function switchTab(id, btn) {
         if (id === 'peru' && !canViewPeruCustomers) {
