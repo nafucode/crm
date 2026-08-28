@@ -547,38 +547,47 @@
         .peru-status.meeting{background:#e8f5e9;color:#1b7f3a}
         .peru-status.pending{background:#f1f3f5;color:#5f6b76}
         .peru-status.closed{background:#f1f3f5;color:#868e96}
-        /* ── CBM & delivery cost calculator ── */
-        .cbm-shell{max-width:1180px;margin:0 auto}
-        .cbm-heading{margin-bottom:1.25rem}
-        .cbm-heading h1{margin:0;color:#111827;font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.035em}
-        .cbm-heading p{max-width:760px;margin:.55rem 0 0;color:var(--secondary-text-color);font-size:.94rem;line-height:1.65}
-        .cbm-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(320px,.82fr);gap:1rem;align-items:stretch}
-        .cbm-panel{margin:0;border-radius:14px;padding:1.4rem}
-        .cbm-mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:1.25rem;padding:4px;border-radius:10px;background:#edf2f7}
-        .cbm-mode-btn{height:42px;border:0;border-radius:8px;background:transparent;color:var(--secondary-text-color);font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer}
-        .cbm-mode-btn.active{background:#fff;color:var(--text-color);box-shadow:0 2px 8px rgba(15,23,42,.1)}
-        .cbm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.85rem}
-        .cbm-grid-top{grid-template-columns:minmax(0,1fr) 160px;margin-bottom:.9rem}
-        .cbm-field label{display:block;margin:0 0 6px 2px;color:var(--secondary-text-color);font-size:.78rem;font-weight:700}
-        .cbm-field input,.cbm-field select{width:100%;height:50px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;background:#fff;color:var(--text-color);padding:0 12px;font-family:inherit;font-size:1rem;font-weight:500;outline:none}
-        .cbm-field input:focus,.cbm-field select:focus{border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(0,123,255,.12)}
-        .cbm-input-wrap{position:relative}.cbm-input-wrap input{padding-right:52px}.cbm-suffix{position:absolute;right:13px;bottom:16px;color:var(--secondary-text-color);font-size:.78rem;font-weight:700;pointer-events:none}
-        .cbm-direct-box{padding:1rem;border:1px solid #cfe1ff;border-radius:10px;background:#f7fbff}
-        .cbm-direct-box p{margin:0 0 .85rem;color:var(--secondary-text-color);font-size:.83rem;line-height:1.55}
-        .cbm-shipping{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,280px);gap:1rem;align-items:end;margin-top:1.15rem;padding:1rem;border:1px solid #f0d7cb;border-radius:10px;background:#fff8f5}
-        .cbm-shipping-label{align-self:center}.cbm-shipping-label span{display:block;color:#c4512d;font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.cbm-shipping-label strong{display:block;margin-top:4px;font-size:.98rem}
-        .cbm-rate-wrap input{padding-right:90px}.cbm-rate-wrap .cbm-suffix{font-size:.72rem}
-        .cbm-actions{display:flex;gap:.65rem;margin-top:1.15rem}.cbm-actions .btn{min-height:46px;padding:.55rem 1.25rem;border-radius:8px;font-size:.9rem}.cbm-actions .cbm-calculate{flex:1;background:#172333}.cbm-actions .cbm-calculate:hover{background:#243b55}
-        .cbm-result-panel{display:flex;flex-direction:column;justify-content:space-between;min-height:385px;background:linear-gradient(145deg,#163b55,#245d78);border-color:#245d78;color:#fff}
-        .cbm-result-label{color:#bfdae7;font-size:.74rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
-        .cbm-result-value{margin:.35rem 0 0;font-size:clamp(2.7rem,6vw,4.8rem);font-weight:750;letter-spacing:-.045em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.cbm-result-value small{font-size:1rem;letter-spacing:0}
-        .cbm-cost-block{margin-top:1.1rem;padding:1rem 0;border-top:1px solid rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.2)}
-        .cbm-cost-value{margin:.3rem 0;font-size:clamp(1.8rem,4vw,2.55rem);font-weight:750;letter-spacing:-.025em;font-variant-numeric:tabular-nums}.cbm-cost-detail{color:#c9dce5;font-size:.79rem}
-        .cbm-result-note{margin-top:.9rem;padding:.8rem .9rem;border-radius:8px;background:rgba(255,255,255,.09);color:#dce9ef;font-size:.8rem;line-height:1.55}
-        .cbm-formula{margin-top:1rem;color:#d0e1e9;font-size:.8rem;line-height:1.6}.cbm-formula strong{display:block;color:#fff;font-size:.9rem}
+        /* ── Freight history reference ── */
+        .freight-history-shell{max-width:1180px;margin:0 auto}
+        .freight-history-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(220px,.65fr);gap:1.5rem;align-items:end;margin-bottom:1.2rem;padding:1.35rem 0 1.2rem;border-bottom:2px solid #182331}
+        .freight-history-eyebrow{color:#c4512d;font-size:.72rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+        .freight-history-title{margin:.45rem 0 .55rem;color:#182331;font-size:clamp(1.8rem,4vw,3rem);font-weight:750;line-height:1.12;letter-spacing:0}
+        .freight-history-intro{max-width:760px;margin:0;color:var(--secondary-text-color);font-size:.94rem;line-height:1.75}
+        .freight-history-meta{text-align:right;color:var(--secondary-text-color);font-size:.83rem;line-height:1.5}
+        .freight-history-meta strong{display:block;color:var(--primary-color);font-size:2.25rem;line-height:1;font-variant-numeric:tabular-nums}
+        .freight-history-query{margin-bottom:1rem;padding:1rem;border:1px solid var(--border-color);border-radius:12px;background:#fff;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+        .freight-history-row{display:grid;grid-template-columns:minmax(0,1fr) 230px auto;gap:.7rem;align-items:end}
+        .freight-history-field label{display:block;margin:0 0 6px 2px;color:var(--secondary-text-color);font-size:.78rem;font-weight:800}
+        .freight-history-field input,.freight-history-field select{width:100%;height:48px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;background:#fff;color:var(--text-color);padding:0 12px;font-family:inherit;font-size:.98rem;font-weight:600;outline:none}
+        .freight-history-field input:focus,.freight-history-field select:focus{border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(0,123,255,.12)}
+        .freight-clear-btn{height:48px;border:1px solid var(--border-color);border-radius:9px;background:#f8fafc;color:#475569;padding:0 1rem;font-family:inherit;font-size:.88rem;font-weight:800;cursor:pointer;white-space:nowrap}
+        .freight-clear-btn:hover{background:#eef2f7;color:var(--text-color)}
+        .freight-history-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.9rem}
+        .freight-chip{border:1px solid #dbe3ec;border-radius:999px;background:#f8fafc;color:#475569;padding:.42rem .75rem;font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer}
+        .freight-chip:hover,.freight-chip.active{border-color:var(--primary-color);background:#e8f1ff;color:var(--primary-color)}
+        .freight-history-summary{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin:.9rem 0}
+        .freight-history-summary h2{margin:0;color:#182331;font-size:1.35rem}
+        .freight-history-summary p{margin:0;color:var(--secondary-text-color);font-size:.86rem}
+        .freight-history-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
+        .freight-card{padding:1rem;border:1px solid #dfe5eb;border-radius:12px;background:#fff;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+        .freight-card.tour{border-color:#f3c969;background:linear-gradient(180deg,#fffdf5,#fff)}
+        .freight-cardhead{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;margin-bottom:.9rem}
+        .freight-load{color:#101828;font-size:1.55rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+        .freight-load small{color:var(--secondary-text-color);font-size:.78rem}
+        .freight-tags{text-align:right}
+        .freight-floors{color:#475569;font-size:.82rem;font-weight:800}
+        .freight-tour-badge{display:inline-block;margin-top:.35rem;border-radius:999px;background:#fff1bd;color:#8a5a00;padding:.2rem .48rem;font-size:.72rem;font-weight:800}
+        .freight-label{margin-bottom:.25rem;color:var(--secondary-text-color);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+        .freight-value{color:#182331;font-size:1.2rem;font-weight:800;font-variant-numeric:tabular-nums}
+        .freight-twocol{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.8rem}
+        .freight-foot{display:flex;justify-content:space-between;gap:.7rem;margin-top:.9rem;padding-top:.75rem;border-top:1px solid #edf0f4;color:var(--secondary-text-color);font-size:.78rem}
+        .freight-complete{color:#198754;font-weight:800}
+        .freight-partial{color:#b56a00;font-weight:800}
+        .freight-empty{grid-column:1/-1;border:1px dashed #cbd5e1;border-radius:12px;padding:2.4rem 1rem;text-align:center;color:var(--secondary-text-color);background:#fff}
+        .freight-history-note{margin-top:1rem;color:var(--secondary-text-color);font-size:.78rem;line-height:1.7}
         @media (max-width: 900px){.africa-group-panel{grid-template-columns:1fr}}
-        @media (max-width: 860px){.cbm-layout{grid-template-columns:1fr}.cbm-result-panel{min-height:330px}}
-        @media (max-width: 620px){.cbm-grid,.cbm-grid-top,.cbm-shipping{grid-template-columns:1fr}.cbm-panel{padding:1rem}.cbm-actions{align-items:stretch}.cbm-actions .btn{min-height:48px}}
+        @media (max-width: 850px){.freight-history-hero{grid-template-columns:1fr}.freight-history-meta{text-align:left}.freight-history-row{grid-template-columns:1fr 1fr}.freight-clear-btn{grid-column:1/-1}.freight-history-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media (max-width: 560px){.freight-history-row,.freight-history-grid,.freight-twocol{grid-template-columns:1fr}.freight-history-summary{display:block}.freight-history-summary p{margin-top:.35rem}}
     </style>
 </head>
 
@@ -721,73 +730,44 @@
 
         </div><!-- end tab-dashboard -->
 
-        <!-- TAB: 体积与费用计算器 -->
+        <!-- TAB: 体积运费历史 -->
         <div id="tab-calculator" class="tab-pane">
-            <div class="cbm-shell">
-                <div class="cbm-heading">
-                    <h1>体积与费用计算器</h1>
-                    <p>按货物尺寸换算总体积，或直接输入已知 CBM，快速估算 YY Cargo Lagos 到门费用。</p>
-                </div>
-                <div class="cbm-layout">
-                    <section class="panel cbm-panel" aria-labelledby="cbm-input-title">
-                        <div class="panel-title" id="cbm-input-title" style="font-size:1.15rem;margin-bottom:1rem">选择计算方式</div>
-                        <div class="cbm-mode-tabs" aria-label="体积计算方式">
-                            <button type="button" class="cbm-mode-btn active" id="cbm-mode-dimensions" aria-pressed="true">按尺寸换算</button>
-                            <button type="button" class="cbm-mode-btn" id="cbm-mode-direct" aria-pressed="false">直接输入 CBM</button>
-                        </div>
+            <div class="freight-history-shell">
+                <section class="freight-history-hero">
+                    <div>
+                        <div class="freight-history-eyebrow">Historical Shipping Reference</div>
+                        <h1 class="freight-history-title">电梯历史体积<br>与重量查询</h1>
+                        <p class="freight-history-intro">输入载重或选择载重，快速查看不同层站配置对应的历史包装重量与体积范围。重量已统一为 KGS。</p>
+                    </div>
+                    <div class="freight-history-meta">
+                        <strong id="freight-record-total">0</strong>
+                        <span>条已识别历史记录 · 来源：体积表</span>
+                    </div>
+                </section>
 
-                        <div id="cbm-dimension-fields">
-                            <div class="cbm-grid cbm-grid-top">
-                                <div class="cbm-field">
-                                    <label for="cbm-unit">尺寸单位</label>
-                                    <select id="cbm-unit">
-                                        <option value="cm" selected>厘米（cm）</option>
-                                        <option value="mm">毫米（mm）</option>
-                                        <option value="m">米（m）</option>
-                                    </select>
-                                </div>
-                                <div class="cbm-field">
-                                    <label for="cbm-quantity">件数</label>
-                                    <input id="cbm-quantity" type="number" min="1" step="1" value="1" inputmode="numeric">
-                                </div>
-                            </div>
-                            <div class="cbm-grid">
-                                <div class="cbm-field cbm-input-wrap"><label for="cbm-length">长度</label><input id="cbm-length" type="number" min="0" step="any" placeholder="例如 200" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
-                                <div class="cbm-field cbm-input-wrap"><label for="cbm-width">宽度</label><input id="cbm-width" type="number" min="0" step="any" placeholder="例如 100" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
-                                <div class="cbm-field cbm-input-wrap"><label for="cbm-height">高度</label><input id="cbm-height" type="number" min="0" step="any" placeholder="例如 150" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
-                            </div>
+                <section class="freight-history-query" aria-label="历史体积查询条件">
+                    <div class="freight-history-row">
+                        <div class="freight-history-field">
+                            <label for="freight-load-input">载重（KG）</label>
+                            <input id="freight-load-input" inputmode="numeric" placeholder="例如：630" aria-label="输入载重">
                         </div>
+                        <div class="freight-history-field">
+                            <label for="freight-floor-select">层 / 站 / 门</label>
+                            <select id="freight-floor-select" aria-label="选择层站">
+                                <option value="">全部层站</option>
+                            </select>
+                        </div>
+                        <button class="freight-clear-btn" id="freight-clear-btn" type="button">清除筛选</button>
+                    </div>
+                    <div class="freight-history-chips" id="freight-load-chips" aria-label="快速选择载重"></div>
+                </section>
 
-                        <div class="cbm-direct-box" id="cbm-direct-fields" hidden>
-                            <p>已经知道大概立方数时，可直接输入总体积，无需填写长、宽、高。</p>
-                            <div class="cbm-field cbm-input-wrap"><label for="cbm-direct">总体积</label><input id="cbm-direct" type="number" min="0" step="any" placeholder="例如 5.5" inputmode="decimal"><span class="cbm-suffix">CBM</span></div>
-                        </div>
-
-                        <div class="cbm-shipping">
-                            <div class="cbm-shipping-label"><span>YY Cargo · Lagos</span><strong>到门费用估算</strong></div>
-                            <div class="cbm-field cbm-input-wrap cbm-rate-wrap"><label for="cbm-rate">到门单价</label><input id="cbm-rate" type="number" min="0" step="0.01" value="320" inputmode="decimal"><span class="cbm-suffix">USD/CBM</span></div>
-                        </div>
-
-                        <div class="cbm-actions">
-                            <button class="btn cbm-calculate" id="cbm-calculate" type="button">计算 CBM 与费用</button>
-                            <button class="btn btn-secondary" id="cbm-reset" type="button">清空</button>
-                        </div>
-                    </section>
-
-                    <aside class="panel cbm-panel cbm-result-panel" aria-live="polite">
-                        <div>
-                            <div class="cbm-result-label">总体积</div>
-                            <div class="cbm-result-value"><span id="cbm-result">0.000</span> <small>CBM</small></div>
-                            <div class="cbm-cost-block">
-                                <div class="cbm-result-label">预计到门费用</div>
-                                <div class="cbm-cost-value" id="cbm-cost">USD 0.00</div>
-                                <div class="cbm-cost-detail" id="cbm-cost-detail">按 320.00 USD/CBM 计算</div>
-                            </div>
-                            <div class="cbm-result-note" id="cbm-detail">请输入长、宽、高开始计算。</div>
-                        </div>
-                        <div class="cbm-formula"><strong id="cbm-formula-title">厘米换算公式</strong><span id="cbm-formula-text">长 × 宽 × 高 × 件数 ÷ 1,000,000</span></div>
-                    </aside>
-                </div>
+                <section class="freight-history-summary">
+                    <h2 id="freight-result-title">全部历史范围</h2>
+                    <p id="freight-result-count"></p>
+                </section>
+                <section class="freight-history-grid" id="freight-history-results" aria-live="polite"></section>
+                <div class="freight-history-note">说明：范围取同载重、同层站有效历史记录中的最小值和最大值；“部分缺失”表示该组合存在历史记录，但部分记录未填写或已排除明显异常值。原始数据中的吨位已按 1 TON = 1,000 KGS 转换。标记“观光梯”的记录，其代表重量比同载重历史中位值高出至少 30%。</div>
             </div>
         </div><!-- end tab-calculator -->
 
@@ -1616,7 +1596,7 @@
                 setupReportGenerator();
             }
             setupSalesUpdateForm();
-            setupCbmCalculator();
+            initFreightHistory();
 
             // Role-based access control
             if (payload.role === 'admin') {
@@ -2582,118 +2562,158 @@
             }
         }
     }
-    // ── 体积与费用计算器 ──────────────────────────────────
-    const CRM_CBM_UNITS = {
-        cm: { factor: 0.01, name: '厘米', formula: '长 × 宽 × 高 × 件数 ÷ 1,000,000' },
-        mm: { factor: 0.001, name: '毫米', formula: '长 × 宽 × 高 × 件数 ÷ 1,000,000,000' },
-        m: { factor: 1, name: '米', formula: '长 × 宽 × 高 × 件数' }
-    };
-    let crmCbmMode = 'dimensions';
+    // ── 体积运费历史数据 ──────────────────────────────────
+    const FREIGHT_HISTORY_DATA = [{"load":400,"floors":"2/2/2","records":1,"complete":1,"weightMinKg":2800,"weightMaxKg":2800,"cbmMin":6.096065,"cbmMax":6.096065},{"load":400,"floors":"3/3/3","records":2,"complete":2,"weightMinKg":2800,"weightMaxKg":2800,"cbmMin":6.3427,"cbmMax":6.938625},{"load":400,"floors":"4/4/4","records":2,"complete":1,"weightMinKg":3100,"weightMaxKg":3100,"cbmMin":7.792802,"cbmMax":7.792802},{"load":400,"floors":"6/6/6","records":1,"complete":1,"weightMinKg":6000,"weightMaxKg":6000,"cbmMin":10.0605,"cbmMax":10.0605},{"load":450,"floors":"2/2/2","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":450,"floors":"3/3/3","records":3,"complete":1,"weightMinKg":3848,"weightMaxKg":3848,"cbmMin":11.40125,"cbmMax":11.40125},{"load":450,"floors":"4/4/4","records":1,"complete":1,"weightMinKg":3500,"weightMaxKg":3500,"cbmMin":6.656267,"cbmMax":6.656267},{"load":450,"floors":"6/6/6","records":2,"complete":2,"weightMinKg":5000,"weightMaxKg":6000,"cbmMin":9.46649,"cbmMax":9.657275},{"load":630,"floors":"2/2/2","records":2,"complete":2,"weightMinKg":4500,"weightMaxKg":6100,"cbmMin":8.95657,"cbmMax":9.856066},{"load":630,"floors":"3/3/3","records":4,"complete":4,"weightMinKg":2800,"weightMaxKg":4700,"cbmMin":7.217628,"cbmMax":9.736875},{"load":630,"floors":"3/3/4","records":1,"complete":1,"weightMinKg":4330,"weightMaxKg":4330,"cbmMin":11.24865,"cbmMax":11.24865},{"load":630,"floors":"4/4/4","records":4,"complete":4,"weightMinKg":4280,"weightMaxKg":4800,"cbmMin":9.235475,"cbmMax":11.79525},{"load":630,"floors":"5/5/5","records":2,"complete":2,"weightMinKg":4970,"weightMaxKg":5000,"cbmMin":10.700567,"cbmMax":12.67925},{"load":630,"floors":"6/6/6","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":630,"floors":"7/7/7","records":2,"complete":2,"weightMinKg":5500,"weightMaxKg":6500,"cbmMin":10.991,"cbmMax":11.13913},{"load":630,"floors":"9/9/9","records":1,"complete":1,"weightMinKg":5800,"weightMaxKg":5800,"cbmMin":10.454986,"cbmMax":10.454986},{"load":630,"floors":"10/10/10","records":2,"complete":2,"weightMinKg":5800,"weightMaxKg":7500,"cbmMin":10.562305,"cbmMax":12.172352},{"load":630,"floors":"15/15/15","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":630,"floors":"18/18/18","records":1,"complete":1,"weightMinKg":7000,"weightMaxKg":7000,"cbmMin":13.58083,"cbmMax":13.58083},{"load":630,"floors":"21/21/21","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":630,"floors":"23/23/23","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":800,"floors":"2/2/2","records":1,"complete":1,"weightMinKg":5100,"weightMaxKg":5100,"cbmMin":9.032699,"cbmMax":9.032699},{"load":800,"floors":"3/3/3","records":6,"complete":5,"weightMinKg":4900,"weightMaxKg":5300,"cbmMin":9.454618,"cbmMax":10.167615},{"load":800,"floors":"5/5/5","records":2,"complete":2,"weightMinKg":5300,"weightMaxKg":6100,"cbmMin":9.707175,"cbmMax":11.416414},{"load":800,"floors":"9/9/9","records":1,"complete":1,"weightMinKg":6500,"weightMaxKg":6500,"cbmMin":15.549709,"cbmMax":15.549709},{"load":800,"floors":"21/21/21","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":1000,"floors":"2/2/2","records":2,"complete":1,"weightMinKg":6100,"weightMaxKg":6100,"cbmMin":10.449623,"cbmMax":10.449623},{"load":1000,"floors":"3/3/3","records":1,"complete":1,"weightMinKg":5400,"weightMaxKg":5400,"cbmMin":10.416918,"cbmMax":10.416918},{"load":1000,"floors":"4/4/4","records":2,"complete":2,"weightMinKg":4800,"weightMaxKg":5500,"cbmMin":10.268239,"cbmMax":10.615905},{"load":1000,"floors":"5/5/5","records":3,"complete":1,"weightMinKg":5600,"weightMaxKg":5600,"cbmMin":11.235405,"cbmMax":11.235405},{"load":1000,"floors":"7/7/7","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":1000,"floors":"8/8/8","records":1,"complete":1,"weightMinKg":7500,"weightMaxKg":7500,"cbmMin":14.953677,"cbmMax":14.953677},{"load":1000,"floors":"9/9/9","records":1,"complete":0,"weightMinKg":null,"weightMaxKg":null,"cbmMin":null,"cbmMax":null},{"load":1050,"floors":"2/2/2","records":1,"complete":1,"weightMinKg":5700,"weightMaxKg":5700,"cbmMin":11.055052,"cbmMax":11.055052},{"load":1050,"floors":"6/6/6","records":1,"complete":1,"weightMinKg":8500,"weightMaxKg":8500,"cbmMin":14.709432,"cbmMax":14.709432},{"load":1150,"floors":"4/4/4","records":1,"complete":1,"weightMinKg":6700,"weightMaxKg":6700,"cbmMin":12.33028,"cbmMax":12.33028},{"load":1150,"floors":"7/7/7","records":1,"complete":1,"weightMinKg":6400,"weightMaxKg":6400,"cbmMin":12.010997,"cbmMax":12.010997},{"load":1250,"floors":"9/9/9","records":1,"complete":1,"weightMinKg":7300,"weightMaxKg":7300,"cbmMin":13.692757,"cbmMax":13.692757},{"load":1350,"floors":"6/6/6","records":2,"complete":1,"weightMinKg":7200,"weightMaxKg":7200,"cbmMin":14.772426,"cbmMax":14.772426},{"load":1600,"floors":"2/2/2","records":1,"complete":1,"weightMinKg":7000,"weightMaxKg":7000,"cbmMin":12.026679,"cbmMax":12.026679},{"load":1600,"floors":"3/3/3","records":2,"complete":2,"weightMinKg":6500,"weightMaxKg":7200,"cbmMin":10.759104,"cbmMax":11.949408},{"load":1600,"floors":"10/10/10","records":1,"complete":1,"weightMinKg":8000,"weightMaxKg":8000,"cbmMin":15.040119,"cbmMax":15.040119}];
+    Object.assign(FREIGHT_HISTORY_DATA.find(d => d.load === 630 && d.floors === '3/3/3'), { complete: 3, excluded: 1, weightMinKg: 4500, weightMaxKg: 4700, cbmMin: 9.028395, cbmMax: 9.736875 });
+    let freightHistoryInitialized = false;
 
-    function crmFormatCbm(value) {
-        return value.toLocaleString('zh-CN', { minimumFractionDigits: 3, maximumFractionDigits: 6 });
+    function freightFormatRange(min, max, digits = 0) {
+        if (min == null || max == null) return '暂无汇总';
+        const options = { maximumFractionDigits: digits, minimumFractionDigits: digits };
+        const a = Number(min).toLocaleString('zh-CN', options);
+        const b = Number(max).toLocaleString('zh-CN', options);
+        return min === max ? a : `${a} - ${b}`;
     }
 
-    function crmFormatUsd(value) {
-        return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function freightCanonicalFloor(floors) {
+        const match = String(floors).match(/^(\d+)\/\1\/\1$/);
+        return match ? Number(match[1]) : null;
     }
 
-    function calculateCrmCbm() {
-        const rateInput = document.getElementById('cbm-rate');
-        const rate = Math.max(0, Number(rateInput.value) || 0);
-        let cbm = 0;
-        let detailText = '';
+    function freightMedian(values) {
+        const sorted = values.slice().sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
 
-        if (crmCbmMode === 'direct') {
-            cbm = Math.max(0, Number(document.getElementById('cbm-direct').value) || 0);
-            if (!(cbm > 0)) {
-                updateCrmCbmResult(0, rate, '请输入大于 0 的总体积。');
-                return;
+    function buildFreightTourKeys() {
+        const keys = new Set();
+        const byLoad = FREIGHT_HISTORY_DATA.reduce((map, item) => {
+            if (item.weightMinKg != null && item.weightMaxKg != null) {
+                const center = (item.weightMinKg + item.weightMaxKg) / 2;
+                if (!map.has(item.load)) map.set(item.load, []);
+                map.get(item.load).push(center);
             }
-            detailText = `直接输入总体积 ${crmFormatCbm(cbm)} CBM。`;
-        } else {
-            const length = Number(document.getElementById('cbm-length').value);
-            const width = Number(document.getElementById('cbm-width').value);
-            const height = Number(document.getElementById('cbm-height').value);
-            const quantityInput = document.getElementById('cbm-quantity');
-            const quantity = Math.max(1, Math.floor(Number(quantityInput.value) || 1));
-            const unit = document.getElementById('cbm-unit').value;
-            const unitConfig = CRM_CBM_UNITS[unit];
-            quantityInput.value = quantity;
+            return map;
+        }, new Map());
 
-            if (!(length > 0 && width > 0 && height > 0)) {
-                updateCrmCbmResult(0, rate, '请输入大于 0 的长、宽、高。');
-                return;
-            }
-
-            cbm = length * width * height * (unitConfig.factor ** 3) * quantity;
-            detailText = `${length} × ${width} × ${height} ${unit}，共 ${quantity} 件；单件 ${crmFormatCbm(cbm / quantity)} CBM。`;
-        }
-
-        updateCrmCbmResult(cbm, rate, detailText);
-    }
-
-    function updateCrmCbmResult(cbm, rate, detailText) {
-        document.getElementById('cbm-result').textContent = crmFormatCbm(cbm);
-        document.getElementById('cbm-cost').textContent = `USD ${crmFormatUsd(cbm * rate)}`;
-        document.getElementById('cbm-cost-detail').textContent = cbm > 0
-            ? `${crmFormatCbm(cbm)} CBM × ${crmFormatUsd(rate)} USD/CBM`
-            : `按 ${crmFormatUsd(rate)} USD/CBM 计算`;
-        document.getElementById('cbm-detail').textContent = detailText;
-    }
-
-    function updateCrmCbmUnit() {
-        const unit = document.getElementById('cbm-unit').value;
-        const unitConfig = CRM_CBM_UNITS[unit];
-        document.querySelectorAll('.cbm-dimension-suffix').forEach(item => { item.textContent = unit; });
-        if (crmCbmMode === 'dimensions') {
-            document.getElementById('cbm-formula-title').textContent = `${unitConfig.name}换算公式`;
-            document.getElementById('cbm-formula-text').textContent = unitConfig.formula;
-        }
-        calculateCrmCbm();
-    }
-
-    function setCrmCbmMode(mode, focusInput = false) {
-        crmCbmMode = mode;
-        const direct = mode === 'direct';
-        const dimensionButton = document.getElementById('cbm-mode-dimensions');
-        const directButton = document.getElementById('cbm-mode-direct');
-        document.getElementById('cbm-dimension-fields').hidden = direct;
-        document.getElementById('cbm-direct-fields').hidden = !direct;
-        dimensionButton.classList.toggle('active', !direct);
-        directButton.classList.toggle('active', direct);
-        dimensionButton.setAttribute('aria-pressed', String(!direct));
-        directButton.setAttribute('aria-pressed', String(direct));
-
-        if (direct) {
-            document.getElementById('cbm-formula-title').textContent = '费用计算公式';
-            document.getElementById('cbm-formula-text').textContent = '总体积（CBM）× 到门单价（USD/CBM）';
-            if (focusInput) document.getElementById('cbm-direct').focus();
-            calculateCrmCbm();
-        } else {
-            updateCrmCbmUnit();
-            if (focusInput) document.getElementById('cbm-length').focus();
-        }
-    }
-
-    function resetCrmCbm() {
-        ['cbm-length', 'cbm-width', 'cbm-height', 'cbm-direct'].forEach(id => { document.getElementById(id).value = ''; });
-        document.getElementById('cbm-quantity').value = 1;
-        document.getElementById('cbm-rate').value = 320;
-        calculateCrmCbm();
-        document.getElementById(crmCbmMode === 'direct' ? 'cbm-direct' : 'cbm-length').focus();
-    }
-
-    function setupCbmCalculator() {
-        ['cbm-length', 'cbm-width', 'cbm-height', 'cbm-quantity', 'cbm-direct', 'cbm-rate'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calculateCrmCbm);
+        FREIGHT_HISTORY_DATA.forEach(item => {
+            if (item.weightMinKg == null || item.weightMaxKg == null) return;
+            const baseline = freightMedian(byLoad.get(item.load) || []);
+            const center = (item.weightMinKg + item.weightMaxKg) / 2;
+            if (baseline && center >= baseline * 1.3) keys.add(`${item.load}|${item.floors}`);
         });
-        document.getElementById('cbm-unit').addEventListener('change', updateCrmCbmUnit);
-        document.getElementById('cbm-mode-dimensions').addEventListener('click', () => setCrmCbmMode('dimensions', true));
-        document.getElementById('cbm-mode-direct').addEventListener('click', () => setCrmCbmMode('direct', true));
-        document.getElementById('cbm-calculate').addEventListener('click', calculateCrmCbm);
-        document.getElementById('cbm-reset').addEventListener('click', resetCrmCbm);
-        setCrmCbmMode('dimensions');
+        return keys;
+    }
+
+    const FREIGHT_TOUR_KEYS = buildFreightTourKeys();
+
+    function updateFreightFloors() {
+        const input = document.getElementById('freight-load-input');
+        const select = document.getElementById('freight-floor-select');
+        if (!input || !select) return;
+        const previous = select.value;
+        const load = Number(input.value);
+        const rows = Number.isFinite(load) && load > 0
+            ? FREIGHT_HISTORY_DATA.filter(item => item.load === load)
+            : FREIGHT_HISTORY_DATA;
+        const floors = [...new Set(rows.map(item => item.floors))]
+            .sort((a, b) => (freightCanonicalFloor(a) || 999) - (freightCanonicalFloor(b) || 999) || a.localeCompare(b));
+        select.innerHTML = '<option value="">全部层站</option>' + floors.map(item => `<option value="${item}">${item}</option>`).join('');
+        select.value = floors.includes(previous) ? previous : '';
+    }
+
+    function renderFreightHistory() {
+        const input = document.getElementById('freight-load-input');
+        const select = document.getElementById('freight-floor-select');
+        const results = document.getElementById('freight-history-results');
+        if (!input || !select || !results) return;
+
+        const load = Number(input.value);
+        const floor = select.value;
+        const rows = FREIGHT_HISTORY_DATA
+            .filter(item => (!Number.isFinite(load) || load <= 0 || item.load === load) && (!floor || item.floors === floor))
+            .sort((a, b) => a.load - b.load || (freightCanonicalFloor(a.floors) || 999) - (freightCanonicalFloor(b.floors) || 999) || a.floors.localeCompare(b.floors));
+
+        document.querySelectorAll('.freight-chip').forEach(chip => {
+            chip.classList.toggle('active', Number(chip.dataset.load) === load);
+        });
+        const title = Number.isFinite(load) && load > 0
+            ? `${load}KG 历史范围${floor ? ` · ${floor}` : ''}`
+            : (floor ? `${floor} 历史范围` : '全部历史范围');
+        document.getElementById('freight-result-title').textContent = title;
+        document.getElementById('freight-result-count').textContent = `${rows.length} 个层站组合 · ${rows.reduce((sum, item) => sum + item.records, 0)} 条历史记录`;
+
+        results.innerHTML = rows.length ? rows.map(item => {
+            const hasTour = FREIGHT_TOUR_KEYS.has(`${item.load}|${item.floors}`);
+            const statusText = item.complete === 0
+                ? '无有效汇总'
+                : (item.complete < item.records ? `${item.complete}/${item.records} 条有效` : `${item.complete} 条有效`);
+            const statusClass = item.complete === item.records ? 'freight-complete' : 'freight-partial';
+            const excluded = item.excluded ? ` · 已排除 ${item.excluded} 条异常` : '';
+            return `
+                <article class="freight-card${hasTour ? ' tour' : ''}">
+                    <div class="freight-cardhead">
+                        <div class="freight-load">${item.load}<small> KG</small></div>
+                        <div class="freight-tags">
+                            <div class="freight-floors">${item.floors}</div>
+                            ${hasTour ? '<span class="freight-tour-badge">观光梯</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="freight-twocol">
+                        <div>
+                            <div class="freight-label">包装重量</div>
+                            <div class="freight-value">${freightFormatRange(item.weightMinKg, item.weightMaxKg)} KGS</div>
+                        </div>
+                        <div>
+                            <div class="freight-label">总体积</div>
+                            <div class="freight-value">${freightFormatRange(item.cbmMin, item.cbmMax, 2)} CBM</div>
+                        </div>
+                    </div>
+                    <div class="freight-foot">
+                        <span>历史 ${item.records} 条${excluded}</span>
+                        <span class="${statusClass}">${statusText}</span>
+                    </div>
+                </article>
+            `;
+        }).join('') : '<div class="freight-empty">没有找到对应载重和层站的历史记录。</div>';
+    }
+
+    function initFreightHistory() {
+        const input = document.getElementById('freight-load-input');
+        const chipWrap = document.getElementById('freight-load-chips');
+        const select = document.getElementById('freight-floor-select');
+        const clearBtn = document.getElementById('freight-clear-btn');
+        if (!input || !chipWrap || !select || !clearBtn) return;
+
+        document.getElementById('freight-record-total').textContent = FREIGHT_HISTORY_DATA.reduce((sum, item) => sum + item.records, 0);
+        if (!freightHistoryInitialized) {
+            const loads = [...new Set(FREIGHT_HISTORY_DATA.map(item => item.load))].sort((a, b) => a - b);
+            chipWrap.innerHTML = loads.map(load => `<button type="button" class="freight-chip" data-load="${load}">${load}KG</button>`).join('');
+            chipWrap.querySelectorAll('.freight-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    input.value = chip.dataset.load;
+                    updateFreightFloors();
+                    renderFreightHistory();
+                });
+            });
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/[^\d]/g, '');
+                updateFreightFloors();
+                renderFreightHistory();
+            });
+            select.addEventListener('change', renderFreightHistory);
+            clearBtn.addEventListener('click', () => {
+                input.value = '';
+                select.value = '';
+                updateFreightFloors();
+                renderFreightHistory();
+                input.focus();
+            });
+            freightHistoryInitialized = true;
+        }
+        updateFreightFloors();
+        renderFreightHistory();
     }
 
     // ── Tab 切换 ───────────────────────────────────────────
@@ -2714,6 +2734,7 @@
             renderOrderStatusTable();
         }
         if (id === 'updates') loadSalesUpdates();
+        if (id === 'calculator') initFreightHistory();
         if (id === 'scripts') { scLoadScripts(); scLoadVars(); }
         if (id === 'scriptmgr') smLoad();
     }
