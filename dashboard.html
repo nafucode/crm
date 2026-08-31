@@ -604,7 +604,6 @@
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
             <a href="#" class="nav-link" onclick="switchTab('scripts', null);return false;">💬 话术模板</a>
-            <a href="#" class="nav-link" id="nav-scriptmgr" style="display:none" onclick="switchTab('scriptmgr', null);return false;">⚙️ 话术管理</a>
             <span id="username-display" class="nav-link"></span>
             <a href="#" id="logout" class="nav-link">退出登录</a>
         </div>
@@ -1270,101 +1269,98 @@
 
                 <!-- Playbook view (hidden unless playbook cat) -->
                 <div id="sc-playbook-view" style="display:none"></div>
+
+                <div id="script-management-section" style="display:none;margin-top:1.25rem">
+                    <div class="panel-title-container" style="padding-top:1.1rem;border-top:1px solid var(--border-color)">
+                        <div class="panel-title">⚙️ 话术管理</div>
+                        <button class="btn" style="padding:6px 16px;font-size:.85rem;background:#28a745" onclick="smOpenModal()">＋ 新增话术</button>
+                    </div>
+                    <div id="sm-status" style="display:none;margin:.5rem 0;font-size:.85rem;padding:8px 12px;border-radius:6px"></div>
+                    <div class="table-container" style="margin-top:1rem">
+                        <table id="sm-table" style="min-width:900px">
+                            <thead>
+                                <tr style="background:#f8f9fa">
+                                    <th style="width:60px">ID</th>
+                                    <th style="width:80px">分类</th>
+                                    <th style="width:80px">子类</th>
+                                    <th style="width:160px">标题</th>
+                                    <th>英文内容（预览）</th>
+                                    <th style="width:100px;text-align:center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sm-tbody"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--secondary-text-color)">加载中…</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div id="sm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;overflow-y:auto">
+                    <div style="background:#fff;border-radius:12px;max-width:720px;margin:40px auto;padding:2rem;position:relative">
+                        <button onclick="smCloseModal()" style="position:absolute;top:1rem;right:1rem;border:none;background:none;font-size:1.4rem;cursor:pointer;color:#999">✕</button>
+                        <div style="font-weight:700;font-size:1.1rem;margin-bottom:1.25rem" id="sm-modal-title">新增话术</div>
+                        <input type="hidden" id="sm-edit-id">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">ID <span style="color:red">*</span></label>
+                                <input id="sm-f-id" class="sm-input" placeholder="如 c4, my1" style="width:100%">
+                            </div>
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">分类 <span style="color:red">*</span></label>
+                                <select id="sm-f-cat" class="sm-input" style="width:100%">
+                                    <option value="cold">❄️ 破冰</option>
+                                    <option value="intro">🏢 公司介绍</option>
+                                    <option value="product">🔧 产品切入</option>
+                                    <option value="followup">📩 跟进</option>
+                                    <option value="quote">💰 报价</option>
+                                    <option value="closing">🤝 成交推进</option>
+                                    <option value="objection">🛡️ 异议处理</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">子类标签</label>
+                                <input id="sm-f-sub" class="sm-input" placeholder="如 初次联系" style="width:100%">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:.75rem">
+                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">标题 <span style="color:red">*</span></label>
+                            <input id="sm-f-title" class="sm-input" placeholder="卡片标题" style="width:100%">
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇬🇧 英文 <span style="color:red">*</span></label>
+                                <textarea id="sm-f-en" class="sm-input" rows="5" placeholder="英文话术内容" style="width:100%;resize:vertical"></textarea>
+                            </div>
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇪🇸 西班牙语</label>
+                                <textarea id="sm-f-es" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
+                            </div>
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇮🇩 印尼语</label>
+                                <textarea id="sm-f-idlang" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
+                            </div>
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇫🇷 法语</label>
+                                <textarea id="sm-f-fr" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">变量（逗号分隔）</label>
+                                <input id="sm-f-vars" class="sm-input" placeholder="如 name,city,company" style="width:100%">
+                            </div>
+                            <div>
+                                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">标签（逗号分隔）</label>
+                                <input id="sm-f-tags" class="sm-input" placeholder="如 new,lead" style="width:100%">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:.75rem;justify-content:flex-end">
+                            <button class="btn" style="padding:8px 20px;background:#6c757d" onclick="smCloseModal()">取消</button>
+                            <button class="btn" style="padding:8px 20px" onclick="smSave()" id="sm-save-btn">保存</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div><!-- end tab-scripts -->
-
-        <!-- TAB: 话术管理（admin only） -->
-        <div id="tab-scriptmgr" class="tab-pane">
-            <div class="panel">
-                <div class="panel-title-container">
-                    <div class="panel-title">⚙️ 话术管理</div>
-                    <button class="btn" style="padding:6px 16px;font-size:.85rem;background:#28a745" onclick="smOpenModal()">＋ 新增话术</button>
-                </div>
-                <div id="sm-status" style="display:none;margin:.5rem 0;font-size:.85rem;padding:8px 12px;border-radius:6px"></div>
-                <div class="table-container" style="margin-top:1rem">
-                    <table id="sm-table" style="min-width:900px">
-                        <thead>
-                            <tr style="background:#f8f9fa">
-                                <th style="width:60px">ID</th>
-                                <th style="width:80px">分类</th>
-                                <th style="width:80px">子类</th>
-                                <th style="width:160px">标题</th>
-                                <th>英文内容（预览）</th>
-                                <th style="width:100px;text-align:center">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sm-tbody"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--secondary-text-color)">加载中…</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Modal -->
-            <div id="sm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;overflow-y:auto">
-                <div style="background:#fff;border-radius:12px;max-width:720px;margin:40px auto;padding:2rem;position:relative">
-                    <button onclick="smCloseModal()" style="position:absolute;top:1rem;right:1rem;border:none;background:none;font-size:1.4rem;cursor:pointer;color:#999">✕</button>
-                    <div style="font-weight:700;font-size:1.1rem;margin-bottom:1.25rem" id="sm-modal-title">新增话术</div>
-                    <input type="hidden" id="sm-edit-id">
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem">
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">ID <span style="color:red">*</span></label>
-                            <input id="sm-f-id" class="sm-input" placeholder="如 c4, my1" style="width:100%">
-                        </div>
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">分类 <span style="color:red">*</span></label>
-                            <select id="sm-f-cat" class="sm-input" style="width:100%">
-                                <option value="cold">❄️ 破冰</option>
-                                <option value="intro">🏢 公司介绍</option>
-                                <option value="product">🔧 产品切入</option>
-                                <option value="followup">📩 跟进</option>
-                                <option value="quote">💰 报价</option>
-                                <option value="closing">🤝 成交推进</option>
-                                <option value="objection">🛡️ 异议处理</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">子类标签</label>
-                            <input id="sm-f-sub" class="sm-input" placeholder="如 初次联系" style="width:100%">
-                        </div>
-                    </div>
-                    <div style="margin-bottom:.75rem">
-                        <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">标题 <span style="color:red">*</span></label>
-                        <input id="sm-f-title" class="sm-input" placeholder="卡片标题" style="width:100%">
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇬🇧 英文 <span style="color:red">*</span></label>
-                            <textarea id="sm-f-en" class="sm-input" rows="5" placeholder="英文话术内容" style="width:100%;resize:vertical"></textarea>
-                        </div>
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇪🇸 西班牙语</label>
-                            <textarea id="sm-f-es" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
-                        </div>
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇮🇩 印尼语</label>
-                            <textarea id="sm-f-idlang" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
-                        </div>
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">🇫🇷 法语</label>
-                            <textarea id="sm-f-fr" class="sm-input" rows="5" placeholder="（选填）" style="width:100%;resize:vertical"></textarea>
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">变量（逗号分隔）</label>
-                            <input id="sm-f-vars" class="sm-input" placeholder="如 name,city,company" style="width:100%">
-                        </div>
-                        <div>
-                            <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">标签（逗号分隔）</label>
-                            <input id="sm-f-tags" class="sm-input" placeholder="如 new,lead" style="width:100%">
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:.75rem;justify-content:flex-end">
-                        <button class="btn" style="padding:8px 20px;background:#6c757d" onclick="smCloseModal()">取消</button>
-                        <button class="btn" style="padding:8px 20px" onclick="smSave()" id="sm-save-btn">保存</button>
-                    </div>
-                </div>
-            </div>
-        </div><!-- end tab-scriptmgr -->
 
     </div>
 
@@ -1576,6 +1572,7 @@
         let allData = []; // Store all data globally
         let canViewPeruCustomers = false;
         let peruCustomersLoaded = false;
+        let canManageScripts = false;
 
         document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('token');
@@ -1587,6 +1584,7 @@
             const payload = JSON.parse(atob(token.split('.')[1]));
             const username = payload.username;
             document.getElementById('username-display').textContent = `Welcome, ${username}`;
+            canManageScripts = payload.role === 'admin';
             canViewPeruCustomers = payload.role === 'admin' || String(username || '').toLowerCase() === 'naf';
             if (canViewPeruCustomers) {
                 document.getElementById('nav-peru').style.display = '';
@@ -1600,7 +1598,7 @@
 
             // Role-based access control
             if (payload.role === 'admin') {
-                document.getElementById('nav-scriptmgr').style.display = '';
+                document.getElementById('script-management-section').style.display = '';
                 // Admin sees everything
                 document.getElementById('filter-apply-btn').addEventListener('click', applyFilters);
                 document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
@@ -2718,6 +2716,7 @@
 
     // ── Tab 切换 ───────────────────────────────────────────
     function switchTab(id, btn) {
+        if (id === 'scriptmgr') id = 'scripts';
         if (id === 'peru' && !canViewPeruCustomers) {
             alert('秘鲁客户页面仅 admin 和 naf 账号可见。');
             return;
@@ -2735,8 +2734,11 @@
         }
         if (id === 'updates') loadSalesUpdates();
         if (id === 'calculator') initFreightHistory();
-        if (id === 'scripts') { scLoadScripts(); scLoadVars(); }
-        if (id === 'scriptmgr') smLoad();
+        if (id === 'scripts') {
+            scLoadScripts();
+            scLoadVars();
+            if (canManageScripts) smLoad();
+        }
     }
 
     // ── 城市数据 ───────────────────────────────────────────
