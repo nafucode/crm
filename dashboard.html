@@ -138,6 +138,22 @@
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
         }
 
+        .dashboard-stat-filter {
+            width: 100%;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .dashboard-stat-filter.is-active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0.75rem 1.5rem rgba(0, 123, 255, 0.18);
+        }
+
+        .dashboard-stat-filter.is-active .stat-label {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
         .stat-label {
             font-size: 0.9rem;
             color: var(--secondary-text-color);
@@ -170,6 +186,16 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+        }
+
+        .map-title-row {
+            margin-bottom: 1rem;
+        }
+
+        .map-scope-label {
+            color: var(--secondary-text-color);
+            font-size: 0.95rem;
+            font-weight: 600;
         }
 
         .filter-controls {
@@ -615,26 +641,29 @@
         <div id="tab-dashboard" class="tab-pane active">
 
         <div class="summary-grid" id="summary-grid">
-            <div class="stat-card">
+            <button class="stat-card dashboard-stat-filter is-active" type="button" data-map-period="all" aria-pressed="true">
                 <div class="stat-label">总客户数</div>
                 <div class="stat-value" id="stat-total">—</div>
-            </div>
-            <div class="stat-card">
+            </button>
+            <button class="stat-card dashboard-stat-filter" type="button" data-map-period="today" aria-pressed="false">
                 <div class="stat-label">今日新增</div>
                 <div class="stat-value" id="stat-today">—</div>
-            </div>
-            <div class="stat-card">
+            </button>
+            <button class="stat-card dashboard-stat-filter" type="button" data-map-period="week" aria-pressed="false">
                 <div class="stat-label">本周新增</div>
                 <div class="stat-value" id="stat-week">—</div>
-            </div>
-            <div class="stat-card">
+            </button>
+            <button class="stat-card dashboard-stat-filter" type="button" data-map-period="month" aria-pressed="false">
                 <div class="stat-label">本月新增</div>
                 <div class="stat-value" id="stat-month">—</div>
-            </div>
+            </button>
         </div>
 
         <div class="panel map-panel">
-            <div class="panel-title">全球分布</div>
+            <div class="panel-title-container map-title-row">
+                <div class="panel-title">全球分布</div>
+                <div class="map-scope-label" id="map-scope-label">全部客户</div>
+            </div>
             <div id="world-map"></div>
         </div>
 
@@ -1573,6 +1602,13 @@
         let canViewPeruCustomers = false;
         let peruCustomersLoaded = false;
         let canManageScripts = false;
+        let activeDashboardMapPeriod = 'all';
+        const dashboardMapPeriodLabels = {
+            all: '全部客户',
+            today: '今日新增',
+            week: '本周新增',
+            month: '本月新增'
+        };
 
         document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('token');
@@ -1603,6 +1639,7 @@
                 document.getElementById('filter-apply-btn').addEventListener('click', applyFilters);
                 document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
                 document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
+                setupDashboardMapFilters();
                 document.getElementById('africa-filter-apply-btn').addEventListener('click', applyAfricaFilters);
                 document.getElementById('africa-filter-reset-btn').addEventListener('click', resetAfricaFilters);
                 document.getElementById('africa-export-excel-btn').addEventListener('click', exportAfricaToExcel);
@@ -1684,8 +1721,54 @@
             currentFilteredData = data; // Update the global filtered data
             renderTable(data);
             updateSummary(data);
-            renderMap(generateMapData(data));
+            renderDashboardMap(data);
             renderDailySubmissionChart(data);
+        }
+
+        function setupDashboardMapFilters() {
+            const cards = document.querySelectorAll('#summary-grid .dashboard-stat-filter');
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    activeDashboardMapPeriod = card.dataset.mapPeriod || 'all';
+                    updateDashboardMapFilterState();
+                    renderDashboardMap(currentFilteredData);
+                });
+            });
+            updateDashboardMapFilterState();
+        }
+
+        function updateDashboardMapFilterState() {
+            document.querySelectorAll('#summary-grid .dashboard-stat-filter').forEach(card => {
+                const isActive = card.dataset.mapPeriod === activeDashboardMapPeriod;
+                card.classList.toggle('is-active', isActive);
+                card.setAttribute('aria-pressed', String(isActive));
+            });
+            const label = document.getElementById('map-scope-label');
+            if (label) label.textContent = dashboardMapPeriodLabels[activeDashboardMapPeriod] || '全部客户';
+        }
+
+        function getDashboardMapScopedData(data) {
+            const source = Array.isArray(data) ? data : [];
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const rangeStart = {
+                today,
+                week: startOfWeek,
+                month: startOfMonth
+            }[activeDashboardMapPeriod];
+
+            if (!rangeStart) return source;
+            return source.filter(item => {
+                const itemDate = new Date(item.Timestamp || item.timestamp);
+                return itemDate && !Number.isNaN(itemDate.getTime()) && itemDate >= rangeStart;
+            });
+        }
+
+        function renderDashboardMap(data) {
+            renderMap(generateMapData(getDashboardMapScopedData(data)));
         }
 
         function exportToExcel() {
