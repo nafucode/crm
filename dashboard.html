@@ -296,25 +296,25 @@
             min-width: 2680px;
         }
         #data-table th:nth-child(1) { width: 155px; } /* 日期 */
-        #data-table th:nth-child(2) { width: 80px; }  /* 国家 */
-        #data-table th:nth-child(3) { width: 220px; } /* 客户信息 */
-        #data-table th:nth-child(4) { width: 90px; }  /* 联系人 */
-        #data-table th:nth-child(5) { width: 135px; } /* 电话 */
-        #data-table th:nth-child(6) { width: 135px; } /* WhatsApp */
-        #data-table th:nth-child(7) { width: 170px; } /* 邮箱 */
-        #data-table th:nth-child(8) { width: 105px; } /* 类型 */
-        #data-table th:nth-child(9) { width: 105px; } /* 项目类型 */
-        #data-table th:nth-child(10) { width: 170px; } /* 项目名称 */
-        #data-table th:nth-child(11) { width: 80px; }  /* 台数 */
-        #data-table th:nth-child(12) { width: 105px; } /* 阶段 */
-        #data-table th:nth-child(13) { width: 110px; } /* 状态 */
-        #data-table th:nth-child(14) { width: 105px; } /* 跟进日期 */
-        #data-table th:nth-child(15) { width: 190px; } /* 本次沟通内容 */
-        #data-table th:nth-child(16) { width: 180px; } /* 客户核心需求 */
-        #data-table th:nth-child(17) { width: 180px; } /* 下一步计划 */
-        #data-table th:nth-child(18) { width: 72px;  } /* 经销商 */
-        #data-table th:nth-child(19) { width: 90px;  } /* 负责人 */
-        #data-table th:nth-child(20) { width: 72px;  } /* 提交人 */
+        #data-table th:nth-child(2) { width: 72px;  } /* 提交人 */
+        #data-table th:nth-child(3) { width: 80px; }  /* 国家 */
+        #data-table th:nth-child(4) { width: 220px; } /* 客户信息 */
+        #data-table th:nth-child(5) { width: 90px; }  /* 联系人 */
+        #data-table th:nth-child(6) { width: 135px; } /* 电话 */
+        #data-table th:nth-child(7) { width: 135px; } /* WhatsApp */
+        #data-table th:nth-child(8) { width: 170px; } /* 邮箱 */
+        #data-table th:nth-child(9) { width: 105px; } /* 类型 */
+        #data-table th:nth-child(10) { width: 105px; } /* 项目类型 */
+        #data-table th:nth-child(11) { width: 170px; } /* 项目名称 */
+        #data-table th:nth-child(12) { width: 80px; }  /* 台数 */
+        #data-table th:nth-child(13) { width: 105px; } /* 阶段 */
+        #data-table th:nth-child(14) { width: 110px; } /* 状态 */
+        #data-table th:nth-child(15) { width: 105px; } /* 跟进日期 */
+        #data-table th:nth-child(16) { width: 190px; } /* 本次沟通内容 */
+        #data-table th:nth-child(17) { width: 180px; } /* 客户核心需求 */
+        #data-table th:nth-child(18) { width: 180px; } /* 下一步计划 */
+        #data-table th:nth-child(19) { width: 72px;  } /* 经销商 */
+        #data-table th:nth-child(20) { width: 90px;  } /* 负责人 */
         #data-table th:nth-child(21) { width: 130px; } /* 操作 */
 
         td[data-field="summary"],
@@ -773,6 +773,7 @@
                     <thead>
                         <tr>
                             <th>日期</th>
+                            <th>提交人</th>
                             <th>国家</th>
                             <th>客户信息</th>
                             <th>联系人</th>
@@ -791,7 +792,6 @@
                             <th>下一步计划</th>
                             <th style="text-align:center">经销商</th>
                             <th>负责人</th>
-                            <th>提交人</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -1870,6 +1870,7 @@
             // 1. Prepare data with Chinese headers
             const dataToExport = currentFilteredData.map(item => ({
                 '日期': new Date(item.Timestamp || item.timestamp).toLocaleString(),
+                '提交人': item.salesperson,
                 '国家': getChineseCountryName(item.country),
                 '客户信息': item.customerId,
                 '联系人': item.contactName || '',
@@ -1887,8 +1888,7 @@
                 '本次沟通内容': item.summary || '',
                 '客户核心需求': item.customerNeed || '',
                 '下一步计划': item.nextAction || '',
-                '经销商': item.isDealer ? '是' : '否',
-                '提交人': item.salesperson
+                '经销商': item.isDealer ? '是' : '否'
             }));
 
             // 2. Create worksheet and workbook
@@ -2378,6 +2378,7 @@
                 if (item.isDealer) row.classList.add('is-dealer');
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
+                    <td data-field="salesperson">${item.salesperson}</td>
                     <td data-field="country">${getChineseCountryName(item.country)}</td>
                     <td data-field="customerId" contenteditable="true">${crmEscapeHtml(item.customerId || '')}</td>
                     <td data-field="contactName" contenteditable="true">${crmEscapeHtml(item.contactName || '')}</td>
@@ -2401,7 +2402,6 @@
                         </label>
                     </td>
                     <td data-field="owner" contenteditable="true">${crmEscapeHtml(item.owner || '')}</td>
-                    <td data-field="salesperson">${item.salesperson}</td>
                     <td>
                         <button class="btn btn-save" onclick="updateRow(this)">Save</button>
                         <button class="btn btn-delete" onclick="deleteRow(this)">Delete</button>
