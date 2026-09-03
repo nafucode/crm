@@ -142,6 +142,10 @@
             margin-bottom: 1.5rem;
             position: relative;
         }
+        .customer-form-instance.editing-record {
+            border-color: var(--primary-color);
+            box-shadow: 0 12px 28px rgba(0, 123, 255, 0.12);
+        }
         .customer-form-instance h2 {
             margin-top: 0;
             margin-bottom: 1.5rem;
@@ -326,6 +330,14 @@
         tbody tr:hover {
             background-color: #f1f3f5;
         }
+        tbody tr {
+            cursor: pointer;
+        }
+        tbody tr.selected-history-row {
+            outline: 2px solid var(--primary-color);
+            outline-offset: -2px;
+            background-color: #eef6ff;
+        }
         tbody tr.needs-follow-update {
             background-color: #fff7e6;
         }
@@ -396,6 +408,13 @@
             border-radius: 10px;
             background: #fffaf0;
             padding: 0.85rem 1rem;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+        }
+        .follow-reminder-item:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 8px 18px rgba(245, 158, 11, 0.15);
+            transform: translateY(-1px);
         }
         .follow-reminder-item strong {
             display: block;
@@ -423,6 +442,52 @@
             border-color: var(--primary-color);
             background: var(--primary-color);
             color: white;
+        }
+        .update-history-panel {
+            display: none;
+            margin-top: 1rem;
+            border: 1px solid #d7e7ff;
+            border-radius: 12px;
+            background: #f8fbff;
+            padding: 1rem;
+        }
+        .update-history-panel.active {
+            display: block;
+        }
+        .update-history-title {
+            color: var(--text-color);
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+        }
+        .update-history-list {
+            display: grid;
+            gap: 0.65rem;
+        }
+        .update-history-item {
+            border-left: 3px solid var(--primary-color);
+            background: #fff;
+            border-radius: 8px;
+            padding: 0.7rem 0.85rem;
+        }
+        .update-history-meta {
+            color: var(--dark-gray);
+            font-size: 0.82rem;
+            margin-bottom: 0.35rem;
+        }
+        .update-history-text {
+            color: var(--text-color);
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+        .form-mode-note {
+            display: none;
+            margin: -0.75rem 0 0.25rem;
+            color: #0b63ce;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .form-mode-note.active {
+            display: block;
         }
         .btn-save {
             padding: 4px 8px;
@@ -462,6 +527,7 @@
     <div class="main-content">
         <div class="container">
             <h1>客户信息批量提交</h1>
+            <div id="form-mode-note" class="form-mode-note"></div>
             <form id="feedbackForm">
                 <div class="form-group">
                     <label for="submitter">提交人</label>
@@ -473,9 +539,11 @@
                 </div>
 
                 <button type="button" id="add-customer-btn">+ 增加新客户</button>
+                <button type="button" id="cancel-edit-btn" style="display:none">取消更新，新增客户</button>
 
-                <button type="submit">提交所有客户信息</button>
+                <button type="submit" id="submit-form-btn">提交所有客户信息</button>
             </form>
+            <div id="selected-update-history" class="update-history-panel"></div>
         </div>
     </div>
 
@@ -661,6 +729,11 @@
             return lastDate ? getDaysSince(lastDate) >= FOLLOW_UPDATE_DAYS : false;
         }
 
+        function formatDateTime(value) {
+            const date = value ? new Date(value) : null;
+            return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : '';
+        }
+
         // 认证和用户信息获取
         const token = localStorage.getItem('token');
         if (!token) {
@@ -750,9 +823,16 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const addCustomerBtn = document.getElementById('add-customer-btn');
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+            const submitFormBtn = document.getElementById('submit-form-btn');
+            const formModeNote = document.getElementById('form-mode-note');
+            const selectedUpdateHistory = document.getElementById('selected-update-history');
             const container = document.getElementById('customer-forms-container');
             const form = document.getElementById('feedbackForm');
             let nextCustomerId = 1;
+            let editingTimestamp = '';
+            let selectedHistoryItem = null;
+            const countryChoiceInstances = new Map();
 
             function renumberVisualHeaders() {
                 container.querySelectorAll('.customer-form-instance').forEach((form, index) => {
@@ -764,6 +844,7 @@
                 const customerId = nextCustomerId++;
                 const formInstance = document.createElement('div');
                 formInstance.className = 'customer-form-instance';
+                formInstance.dataset.customerFormId = String(customerId);
 
                 formInstance.innerHTML = `
                     <button type="button" class="delete-btn" title="删除此客户">&times;</button>
@@ -899,10 +980,12 @@
                 }));
 
                 choices.setChoices(choicesData, 'value', 'label', true);
+                countryChoiceInstances.set(String(customerId), choices);
 
                 formInstance.querySelector('.delete-btn').addEventListener('click', function() {
                     if (container.querySelectorAll('.customer-form-instance').length > 1) {
                         formInstance.remove();
+                        countryChoiceInstances.delete(formInstance.dataset.customerFormId);
                         renumberVisualHeaders();
                     } else {
                         alert('至少需要保留一个客户信息表单。');
@@ -915,6 +998,133 @@
 
             addCustomerBtn.addEventListener('click', addCustomerForm);
             addCustomerForm();
+            cancelEditBtn.addEventListener('click', resetCustomerFormMode);
+
+            function getPrimaryCustomerForm() {
+                return container.querySelector('.customer-form-instance');
+            }
+
+            function setField(formInstance, name, value) {
+                const field = formInstance.querySelector(`[name="${name}"]`);
+                if (!field) return;
+                field.value = value || '';
+                if (name === 'country') {
+                    const choices = countryChoiceInstances.get(formInstance.dataset.customerFormId);
+                    if (choices) choices.setChoiceByValue(value || '');
+                }
+            }
+
+            function getRecordValue(item, ...keys) {
+                for (const key of keys) {
+                    if (item[key] !== undefined && item[key] !== null && item[key] !== '') {
+                        return item[key];
+                    }
+                }
+                return '';
+            }
+
+            function resetCustomerFormMode() {
+                editingTimestamp = '';
+                selectedHistoryItem = null;
+                container.innerHTML = '';
+                countryChoiceInstances.clear();
+                addCustomerForm();
+                addCustomerBtn.style.display = '';
+                cancelEditBtn.style.display = 'none';
+                submitFormBtn.textContent = '提交所有客户信息';
+                formModeNote.classList.remove('active');
+                formModeNote.textContent = '';
+                selectedUpdateHistory.classList.remove('active');
+                selectedUpdateHistory.innerHTML = '';
+                document.querySelectorAll('#history-table tbody tr.selected-history-row').forEach(row => row.classList.remove('selected-history-row'));
+            }
+
+            function populateFormFromHistory(item) {
+                editingTimestamp = item.Timestamp || item.timestamp || '';
+                selectedHistoryItem = item;
+                container.innerHTML = '';
+                countryChoiceInstances.clear();
+                addCustomerForm();
+                const formInstance = getPrimaryCustomerForm();
+                if (!formInstance) return;
+                formInstance.classList.add('editing-record');
+                formInstance.querySelector('h2').textContent = '更新客户反馈';
+                setField(formInstance, 'country', getRecordValue(item, 'country', 'Country'));
+                setField(formInstance, 'customerType', item.customerType);
+                setField(formInstance, 'customerInfo', getRecordValue(item, 'customerId', 'customerInfo'));
+                setField(formInstance, 'contactName', item.contactName);
+                setField(formInstance, 'phone', item.phone);
+                setField(formInstance, 'whatsapp', item.whatsapp);
+                setField(formInstance, 'email', item.email);
+                setField(formInstance, 'projectType', item.projectType);
+                setField(formInstance, 'estimatedQuantity', item.estimatedQuantity);
+                setField(formInstance, 'projectName', item.projectName);
+                setField(formInstance, 'projectStage', item.projectStage || '初步接触');
+                setField(formInstance, 'followStatus', item.followStatus || '待跟进');
+                setField(formInstance, 'nextFollowDate', item.nextFollowDate);
+                setField(formInstance, 'owner', item.owner || item.salesperson || document.getElementById('submitter').value);
+                setField(formInstance, 'description', item.summary);
+                setField(formInstance, 'customerNeed', item.customerNeed);
+                setField(formInstance, 'nextAction', item.nextAction);
+                addCustomerBtn.style.display = 'none';
+                cancelEditBtn.style.display = '';
+                submitFormBtn.textContent = '保存客户更新';
+                formModeNote.textContent = `正在更新：${getRecordValue(item, 'customerId', 'customerInfo') || '未填写客户'}。保存后会保留本次更新记录。`;
+                formModeNote.classList.add('active');
+                renderSelectedUpdateHistory(item);
+                document.querySelector('.main-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function renderSelectedUpdateHistory(item) {
+                const history = Array.isArray(item.updateHistory) ? [...item.updateHistory] : [];
+                selectedUpdateHistory.classList.add('active');
+                if (!history.length) {
+                    selectedUpdateHistory.innerHTML = `
+                        <div class="update-history-title">更新记录</div>
+                        <div class="follow-reminder-meta">这条客户还没有历史更新，保存后会从这次开始记录。</div>
+                    `;
+                    return;
+                }
+                selectedUpdateHistory.innerHTML = `
+                    <div class="update-history-title">更新记录（${history.length} 次）</div>
+                    <div class="update-history-list">
+                        ${history.reverse().map(entry => `
+                            <div class="update-history-item">
+                                <div class="update-history-meta">${escapeHtml(formatDateTime(entry.updatedAt))} · ${escapeHtml(entry.updatedBy || '未填写')} · ${escapeHtml(entry.projectStage || '-')} · ${escapeHtml(entry.followStatus || '-')}</div>
+                                <div class="update-history-text">${escapeHtml([
+                                    entry.summary ? `本次沟通：${entry.summary}` : '',
+                                    entry.customerNeed ? `客户需求：${entry.customerNeed}` : '',
+                                    entry.nextAction ? `下一步：${entry.nextAction}` : '',
+                                    entry.nextFollowDate ? `下次跟进：${entry.nextFollowDate}` : ''
+                                ].filter(Boolean).join('\\n') || '本次未填写详细内容')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            function collectCustomerFormData(customerForm, submitter) {
+                return {
+                    country: customerForm.querySelector(`[name="country"]`).value,
+                    customerId: customerForm.querySelector(`[name="customerInfo"]`).value,
+                    contactName: customerForm.querySelector(`[name="contactName"]`).value,
+                    phone: customerForm.querySelector(`[name="phone"]`).value,
+                    whatsapp: customerForm.querySelector(`[name="whatsapp"]`).value,
+                    email: customerForm.querySelector(`[name="email"]`).value,
+                    customerType: customerForm.querySelector(`[name="customerType"]`).value,
+                    projectType: customerForm.querySelector(`[name="projectType"]`).value,
+                    projectName: customerForm.querySelector(`[name="projectName"]`).value,
+                    estimatedQuantity: customerForm.querySelector(`[name="estimatedQuantity"]`).value,
+                    projectStage: customerForm.querySelector(`[name="projectStage"]`).value,
+                    followStatus: customerForm.querySelector(`[name="followStatus"]`).value,
+                    nextFollowDate: customerForm.querySelector(`[name="nextFollowDate"]`).value,
+                    owner: customerForm.querySelector(`[name="owner"]`).value || submitter,
+                    customerNeed: customerForm.querySelector(`[name="customerNeed"]`).value,
+                    nextAction: customerForm.querySelector(`[name="nextAction"]`).value,
+                    summary: customerForm.querySelector(`[name="description"]`).value,
+                    salesperson: submitter
+                };
+            }
 
             // Fetch and render history on initial load
             fetchAndRenderHistory();
@@ -939,11 +1149,12 @@
                         const row = historyTableBody.insertRow();
                         const timestamp = item.Timestamp || item.timestamp;
                         row.dataset.timestamp = timestamp; // Store timestamp for updates
+                        row.title = '点击调出到上方表单更新';
                         if (needsFollowUpdate(item)) row.classList.add('needs-follow-update');
                         row.innerHTML = `
                             <td>${new Date(timestamp).toLocaleString()}</td>
-                            <td>${item.country}</td>
-                            <td data-field="customerId" contenteditable="true">${item.customerId}</td>
+                            <td>${getRecordValue(item, 'country', 'Country')}</td>
+                            <td data-field="customerId" contenteditable="true">${getRecordValue(item, 'customerId', 'customerInfo')}</td>
                             <td data-field="contactName" contenteditable="true">${item.contactName || ''}</td>
                             <td data-field="phone" contenteditable="true">${item.phone || '-'}</td>
                             <td data-field="whatsapp" contenteditable="true">${item.whatsapp || ''}</td>
@@ -959,8 +1170,14 @@
                             <td data-field="summary" contenteditable="true">${item.summary || '-'}</td>
                             <td data-field="customerNeed" contenteditable="true">${item.customerNeed || ''}</td>
                             <td data-field="nextAction" contenteditable="true">${item.nextAction || ''}</td>
-                            <td><button class="btn btn-save" onclick="updateHistoryRow(this)">保存</button></td>
+                            <td><button class="btn btn-save" onclick="event.stopPropagation(); updateHistoryRow(this)">保存</button></td>
                         `;
+                        row.addEventListener('click', event => {
+                            if (event.target.closest('button') || event.target.isContentEditable) return;
+                            document.querySelectorAll('#history-table tbody tr.selected-history-row').forEach(item => item.classList.remove('selected-history-row'));
+                            row.classList.add('selected-history-row');
+                            populateFormFromHistory(item);
+                        });
                     });
                     renderFollowUpdateReminder(sortedHistory);
                 })
@@ -986,16 +1203,26 @@
                 list.innerHTML = dueItems.slice(0, 8).map(item => {
                     const lastDate = getLastFeedbackDate(item);
                     const days = getDaysSince(lastDate);
-                    const customer = item.customerId || '未填写客户';
-                    const country = item.country || '未填写国家';
+                    const customer = getRecordValue(item, 'customerId', 'customerInfo') || '未填写客户';
+                    const country = getRecordValue(item, 'country', 'Country') || '未填写国家';
                     const action = item.nextAction || item.summary || '请补充本次沟通和下一步计划';
+                    const timestamp = item.Timestamp || item.timestamp || '';
                     return `
-                        <div class="follow-reminder-item">
+                        <div class="follow-reminder-item" data-reminder-timestamp="${escapeHtml(timestamp)}">
                             <strong>${escapeHtml(customer)}</strong>
                             <div class="follow-reminder-meta">${escapeHtml(country)} · 已 ${days} 天未更新 · ${escapeHtml(action)}</div>
                         </div>
                     `;
                 }).join('') + (dueItems.length > 8 ? `<div class="follow-reminder-meta">还有 ${dueItems.length - 8} 条，请在下方提交历史中继续查看。</div>` : '');
+                list.querySelectorAll('[data-reminder-timestamp]').forEach(itemEl => {
+                    itemEl.addEventListener('click', () => {
+                        const timestamp = itemEl.dataset.reminderTimestamp;
+                        const item = dueItems.find(row => (row.Timestamp || row.timestamp || '') === timestamp);
+                        if (!item) return;
+                        closeFollowReminder();
+                        populateFormFromHistory(item);
+                    });
+                });
 
                 if (!sessionStorage.getItem('followReminderSeen')) {
                     modal.classList.add('active');
@@ -1020,31 +1247,48 @@
                 const allCustomersData = [];
                 const customerForms = container.querySelectorAll('.customer-form-instance');
 
+                if (editingTimestamp) {
+                    const customerForm = getPrimaryCustomerForm();
+                    if (!customerForm) return;
+                    const updatedData = collectCustomerFormData(customerForm, submitter);
+                    if (!updatedData.country) {
+                        alert('客户必须选择一个国家。');
+                        return;
+                    }
+                    fetch('/api/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ timestamp: editingTimestamp, ...updatedData })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => { throw new Error(text || '更新失败') });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert('客户更新已保存，并已保留本次更新记录。');
+                        selectedHistoryItem = data.updatedRecord;
+                        renderSelectedUpdateHistory(data.updatedRecord);
+                        fetchAndRenderHistory();
+                    })
+                    .catch(error => {
+                        alert(`更新失败: ${error.message}`);
+                    });
+                    return;
+                }
+
                 for (const customerForm of customerForms) {
-                    const country = customerForm.querySelector(`[name="country"]`).value;
-                    if (!country) {
+                    const customerData = collectCustomerFormData(customerForm, submitter);
+                    if (!customerData.country) {
                         alert('所有客户都必须选择一个国家。');
                         return;
                     }
                     allCustomersData.push({
-                        country: country,
-                        customerId: customerForm.querySelector(`[name="customerInfo"]`).value, // 使用 customerId
-                        contactName: customerForm.querySelector(`[name="contactName"]`).value,
-                        phone: customerForm.querySelector(`[name="phone"]`).value,
-                        whatsapp: customerForm.querySelector(`[name="whatsapp"]`).value,
-                        email: customerForm.querySelector(`[name="email"]`).value,
-                        customerType: customerForm.querySelector(`[name="customerType"]`).value,
-                        projectType: customerForm.querySelector(`[name="projectType"]`).value,
-                        projectName: customerForm.querySelector(`[name="projectName"]`).value,
-                        estimatedQuantity: customerForm.querySelector(`[name="estimatedQuantity"]`).value,
-                        projectStage: customerForm.querySelector(`[name="projectStage"]`).value,
-                        followStatus: customerForm.querySelector(`[name="followStatus"]`).value,
-                        nextFollowDate: customerForm.querySelector(`[name="nextFollowDate"]`).value,
-                        owner: customerForm.querySelector(`[name="owner"]`).value || submitter,
-                        customerNeed: customerForm.querySelector(`[name="customerNeed"]`).value,
-                        nextAction: customerForm.querySelector(`[name="nextAction"]`).value,
-                        summary: customerForm.querySelector(`[name="description"]`).value, // 使用 summary
-                        salesperson: submitter, // 字段名改为 salesperson 以保持一致
+                        ...customerData,
                         Timestamp: new Date().toISOString()
                     });
                 }
@@ -1065,8 +1309,7 @@
                 })
                 .then(data => {
                     alert('所有客户反馈提交成功！');
-                    container.innerHTML = '';
-                    addCustomerForm(); // Add a fresh form
+                    resetCustomerFormMode();
                     fetchAndRenderHistory(); // Refresh history table
                 })
                 .catch(error => {

@@ -16,6 +16,19 @@ const app = express();
 const port = 3000;
 const JWT_SECRET = 'your_super_secret_key_that_should_be_long_and_random'; // 请在未来替换为一个更安全的密钥
 
+function buildUpdateHistoryEntry(record = {}, user = {}) {
+    return {
+        updatedAt: new Date().toISOString(),
+        updatedBy: user.realName || user.username || record.salesperson || '',
+        projectStage: record.projectStage || '',
+        followStatus: record.followStatus || '',
+        summary: record.summary || '',
+        customerNeed: record.customerNeed || '',
+        nextAction: record.nextAction || '',
+        nextFollowDate: record.nextFollowDate || ''
+    };
+}
+
 // 中间件
 app.use(cors()); // 允许跨域请求
 app.use(express.json()); // 解析 JSON 请求体
@@ -626,6 +639,7 @@ app.post('/api/update', authenticateToken, async (req, res) => {
             return res.status(403).send('权限不足：您只能修改自己的提交记录。');
         }
 
+        const updatedAt = new Date().toISOString();
         const newRecord = {
             ...oldRecord,
             ...(customerId !== undefined && { customerId }),
@@ -645,8 +659,13 @@ app.post('/api/update', authenticateToken, async (req, res) => {
             ...(customerNeed !== undefined && { customerNeed }),
             ...(nextAction !== undefined && { nextAction }),
             ...(isDealer !== undefined && { isDealer }),
-            lastFeedbackAt: new Date().toISOString()
+            lastFeedbackAt: updatedAt
         };
+        const existingHistory = Array.isArray(oldRecord.updateHistory) ? oldRecord.updateHistory : [];
+        newRecord.updateHistory = [
+            ...existingHistory,
+            buildUpdateHistoryEntry({ ...newRecord, lastFeedbackAt: updatedAt }, req.user)
+        ];
 
         await kv.lset('feedback', index, newRecord);
         res.status(200).json({ message: '数据更新成功', updatedRecord: newRecord });
