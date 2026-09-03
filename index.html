@@ -402,8 +402,9 @@
                             <th>跟进状态</th>
                             <th>下次跟进</th>
                             <th>负责人</th>
-                            <th>下一步</th>
-                            <th>其他描述</th>
+                            <th>本次沟通内容</th>
+                            <th>客户核心需求</th>
+                            <th>下一步计划</th>
                             <th>操作</th>
                         </tr>
                 </thead>
@@ -571,6 +572,7 @@
                 const followStatus = row.querySelector('[data-field="followStatus"]').textContent;
                 const nextFollowDate = row.querySelector('[data-field="nextFollowDate"]').textContent;
                 const owner = row.querySelector('[data-field="owner"]').textContent;
+                const customerNeed = row.querySelector('[data-field="customerNeed"]').textContent;
                 const nextAction = row.querySelector('[data-field="nextAction"]').textContent;
                 const summary = row.querySelector('[data-field="summary"]').textContent;
 
@@ -580,7 +582,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ timestamp, customerId, contactName, phone, whatsapp, email, customerType, projectType, projectName, estimatedQuantity, projectStage, followStatus, nextFollowDate, owner, nextAction, summary })
+                    body: JSON.stringify({ timestamp, customerId, contactName, phone, whatsapp, email, customerType, projectType, projectName, estimatedQuantity, projectStage, followStatus, nextFollowDate, owner, summary, customerNeed, nextAction })
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -713,12 +715,16 @@
                             <input type="text" id="owner-${customerId}" name="owner" value="${document.getElementById('submitter').value || ''}">
                         </div>
                         <div class="form-group full-width">
-                            <label for="nextAction-${customerId}">下一步</label>
-                            <textarea id="nextAction-${customerId}" name="nextAction" rows="2"></textarea>
+                            <label for="description-${customerId}">本次沟通内容</label>
+                            <textarea id="description-${customerId}" name="description" rows="3"></textarea>
                         </div>
                         <div class="form-group full-width">
-                            <label for="description-${customerId}">本次沟通</label>
-                            <textarea id="description-${customerId}" name="description" rows="3"></textarea>
+                            <label for="customerNeed-${customerId}">客户核心需求</label>
+                            <textarea id="customerNeed-${customerId}" name="customerNeed" rows="2"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="nextAction-${customerId}">下一步计划</label>
+                            <textarea id="nextAction-${customerId}" name="nextAction" rows="2"></textarea>
                         </div>
                     </div>
                 `;
@@ -800,8 +806,9 @@
                             <td data-field="followStatus" contenteditable="true">${item.followStatus || '待跟进'}</td>
                             <td data-field="nextFollowDate" contenteditable="true">${item.nextFollowDate || ''}</td>
                             <td data-field="owner" contenteditable="true">${item.owner || item.salesperson || ''}</td>
-                            <td data-field="nextAction" contenteditable="true">${item.nextAction || ''}</td>
                             <td data-field="summary" contenteditable="true">${item.summary || '-'}</td>
+                            <td data-field="customerNeed" contenteditable="true">${item.customerNeed || ''}</td>
+                            <td data-field="nextAction" contenteditable="true">${item.nextAction || ''}</td>
                             <td><button class="btn btn-save" onclick="updateHistoryRow(this)">保存</button></td>
                         `;
                     });
@@ -836,6 +843,7 @@
                         followStatus: customerForm.querySelector(`[name="followStatus"]`).value,
                         nextFollowDate: customerForm.querySelector(`[name="nextFollowDate"]`).value,
                         owner: customerForm.querySelector(`[name="owner"]`).value || submitter,
+                        customerNeed: customerForm.querySelector(`[name="customerNeed"]`).value,
                         nextAction: customerForm.querySelector(`[name="nextAction"]`).value,
                         summary: customerForm.querySelector(`[name="description"]`).value, // 使用 summary
                         salesperson: submitter, // 字段名改为 salesperson 以保持一致

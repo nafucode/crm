@@ -293,7 +293,7 @@
 
         #data-table {
             table-layout: fixed;
-            min-width: 2140px;
+            min-width: 2680px;
         }
         #data-table th:nth-child(1) { width: 155px; } /* 日期 */
         #data-table th:nth-child(2) { width: 80px; }  /* 国家 */
@@ -309,15 +309,17 @@
         #data-table th:nth-child(12) { width: 105px; } /* 阶段 */
         #data-table th:nth-child(13) { width: 110px; } /* 状态 */
         #data-table th:nth-child(14) { width: 105px; } /* 跟进日期 */
-        #data-table th:nth-child(15) { width: 180px; } /* 下一步 */
-        #data-table th:nth-child(16) { width: 170px; } /* 其他描述 */
-        #data-table th:nth-child(17) { width: 72px;  } /* 经销商 */
-        #data-table th:nth-child(18) { width: 90px;  } /* 负责人 */
-        #data-table th:nth-child(19) { width: 72px;  } /* 提交人 */
-        #data-table th:nth-child(20) { width: 130px; } /* 操作 */
+        #data-table th:nth-child(15) { width: 190px; } /* 本次沟通内容 */
+        #data-table th:nth-child(16) { width: 180px; } /* 客户核心需求 */
+        #data-table th:nth-child(17) { width: 180px; } /* 下一步计划 */
+        #data-table th:nth-child(18) { width: 72px;  } /* 经销商 */
+        #data-table th:nth-child(19) { width: 90px;  } /* 负责人 */
+        #data-table th:nth-child(20) { width: 72px;  } /* 提交人 */
+        #data-table th:nth-child(21) { width: 130px; } /* 操作 */
 
         td[data-field="summary"],
         td[data-field="customerId"],
+        td[data-field="customerNeed"],
         td[data-field="nextAction"] {
             white-space: normal;
             word-break: break-word;
@@ -784,8 +786,9 @@
                             <th>项目阶段</th>
                             <th>跟进状态</th>
                             <th>下次跟进</th>
-                            <th>下一步</th>
-                            <th>其他描述</th>
+                            <th>本次沟通内容</th>
+                            <th>客户核心需求</th>
+                            <th>下一步计划</th>
                             <th style="text-align:center">经销商</th>
                             <th>负责人</th>
                             <th>提交人</th>
@@ -1881,8 +1884,9 @@
                 '跟进状态': item.followStatus || '',
                 '下次跟进日期': item.nextFollowDate || '',
                 '负责人': item.owner || '',
+                '本次沟通内容': item.summary || '',
+                '客户核心需求': item.customerNeed || '',
                 '下一步计划': item.nextAction || '',
-                '其他描述': item.summary || '',
                 '经销商': item.isDealer ? '是' : '否',
                 '提交人': item.salesperson
             }));
@@ -2387,8 +2391,9 @@
                     <td data-field="projectStage" contenteditable="true">${crmEscapeHtml(item.projectStage || '')}</td>
                     <td data-field="followStatus" contenteditable="true">${crmEscapeHtml(item.followStatus || '')}</td>
                     <td data-field="nextFollowDate" contenteditable="true">${crmEscapeHtml(item.nextFollowDate || '')}</td>
-                    <td data-field="nextAction" contenteditable="true">${crmEscapeHtml(item.nextAction || '')}</td>
                     <td data-field="summary" contenteditable="true">${crmEscapeHtml(item.summary || '')}</td>
+                    <td data-field="customerNeed" contenteditable="true">${crmEscapeHtml(item.customerNeed || '')}</td>
+                    <td data-field="nextAction" contenteditable="true">${crmEscapeHtml(item.nextAction || '')}</td>
                     <td style="text-align:center">
                         <label class="dealer-toggle" title="标记为经销商">
                             <input type="checkbox" class="dealer-check" ${item.isDealer ? 'checked' : ''} onchange="toggleDealer(this)">
@@ -2575,8 +2580,9 @@
             const followStatus = row.querySelector('[data-field="followStatus"]').textContent;
             const nextFollowDate = row.querySelector('[data-field="nextFollowDate"]').textContent;
             const owner = row.querySelector('[data-field="owner"]').textContent;
-            const nextAction = row.querySelector('[data-field="nextAction"]').textContent;
             const summary = row.querySelector('[data-field="summary"]').textContent;
+            const customerNeed = row.querySelector('[data-field="customerNeed"]').textContent;
+            const nextAction = row.querySelector('[data-field="nextAction"]').textContent;
             const isDealer = row.querySelector('.dealer-check')?.checked ?? false;
 
             fetch('/api/update', {
@@ -2600,8 +2606,9 @@
                     followStatus,
                     nextFollowDate,
                     owner,
-                    nextAction,
                     summary,
+                    customerNeed,
+                    nextAction,
                     isDealer
                 })
             })

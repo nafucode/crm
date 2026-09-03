@@ -149,6 +149,7 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
                         followStatus: submission.followStatus || existingRecord.followStatus,
                         nextFollowDate: submission.nextFollowDate || existingRecord.nextFollowDate,
                         owner: submission.owner || existingRecord.owner,
+                        customerNeed: submission.customerNeed || existingRecord.customerNeed,
                         nextAction: submission.nextAction || existingRecord.nextAction,
                         Timestamp: submission.Timestamp, // 更新时间戳
                     };
@@ -602,6 +603,7 @@ app.post('/api/update', authenticateToken, async (req, res) => {
         followStatus,
         nextFollowDate,
         owner,
+        customerNeed,
         nextAction
     } = req.body;
 
@@ -640,6 +642,7 @@ app.post('/api/update', authenticateToken, async (req, res) => {
             ...(followStatus !== undefined && { followStatus }),
             ...(nextFollowDate !== undefined && { nextFollowDate }),
             ...(owner !== undefined && { owner }),
+            ...(customerNeed !== undefined && { customerNeed }),
             ...(nextAction !== undefined && { nextAction }),
             ...(isDealer !== undefined && { isDealer })
         };
