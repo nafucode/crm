@@ -644,7 +644,8 @@ app.post('/api/update', authenticateToken, async (req, res) => {
             ...(owner !== undefined && { owner }),
             ...(customerNeed !== undefined && { customerNeed }),
             ...(nextAction !== undefined && { nextAction }),
-            ...(isDealer !== undefined && { isDealer })
+            ...(isDealer !== undefined && { isDealer }),
+            lastFeedbackAt: new Date().toISOString()
         };
 
         await kv.lset('feedback', index, newRecord);

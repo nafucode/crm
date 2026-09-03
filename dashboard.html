@@ -331,6 +331,15 @@
         tbody tr.is-dealer:hover {
             background-color: #fff3b0 !important;
         }
+        tbody tr.needs-follow-update {
+            box-shadow: inset 4px 0 0 #f59e0b;
+        }
+        tbody tr.needs-follow-update td:first-child::after {
+            content: "  需更新";
+            color: #b45309;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
 
         /* Toggle switch for 经销商 */
         .dealer-toggle {
@@ -1698,6 +1707,7 @@
             month: '本月新增'
         };
         const closedProjectStages = ['已成交', '已关闭'];
+        const closedFollowStatuses = ['已完成'];
 
         document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('token');
@@ -1884,6 +1894,7 @@
                 '项目阶段': item.projectStage || '',
                 '跟进状态': item.followStatus || '',
                 '下次跟进日期': item.nextFollowDate || '',
+                '最后反馈时间': item.lastFeedbackAt ? new Date(item.lastFeedbackAt).toLocaleString() : '',
                 '负责人': item.owner || '',
                 '本次沟通内容': item.summary || '',
                 '客户核心需求': item.customerNeed || '',
@@ -2376,6 +2387,7 @@
                 // Handle both 'Timestamp' and 'timestamp'
                 const timestamp = item.Timestamp || item.timestamp;
                 if (item.isDealer) row.classList.add('is-dealer');
+                if (needsSevenDayUpdate(item)) row.classList.add('needs-follow-update');
                 row.innerHTML = `
                     <td data-field="timestamp">${new Date(timestamp).toLocaleString()}</td>
                     <td data-field="salesperson">${item.salesperson}</td>
@@ -2493,6 +2505,19 @@
             return nextDate < today;
         }
 
+        function getLastFeedbackDate(item) {
+            const raw = item.lastFeedbackAt || item.updatedAt || item.Timestamp || item.timestamp;
+            const date = raw ? new Date(raw) : null;
+            return date && !Number.isNaN(date.getTime()) ? date : null;
+        }
+
+        function needsSevenDayUpdate(item) {
+            if (!isProjectOpen(item) || closedFollowStatuses.includes(String(item.followStatus || '').trim())) return false;
+            const lastDate = getLastFeedbackDate(item);
+            if (!lastDate) return false;
+            return (Date.now() - lastDate.getTime()) >= 7 * 24 * 60 * 60 * 1000;
+        }
+
         function renderProjectOverview(data) {
             const grid = document.getElementById('project-overview-grid');
             if (!grid) return;
@@ -2502,6 +2527,7 @@
             const openCount = projectRows.filter(isProjectOpen).length;
             const wonCount = projectRows.filter(item => item.projectStage === '已成交').length;
             const overdueCount = projectRows.filter(isFollowOverdue).length;
+            const sevenDayUpdateCount = projectRows.filter(needsSevenDayUpdate).length;
             const quantityTotal = projectRows.reduce((sum, item) => sum + (Number(item.estimatedQuantity) || 0), 0);
 
             grid.innerHTML = `
@@ -2519,6 +2545,11 @@
                     <div class="project-overview-label">逾期跟进</div>
                     <div class="project-overview-value" style="color:#dc3545">${overdueCount}</div>
                     <div class="project-overview-note">到期未成交/关闭</div>
+                </div>
+                <div class="project-overview-card">
+                    <div class="project-overview-label">7天未更新</div>
+                    <div class="project-overview-value" style="color:#f59e0b">${sevenDayUpdateCount}</div>
+                    <div class="project-overview-note">需业务员补充反馈</div>
                 </div>
                 <div class="project-overview-card">
                     <div class="project-overview-label">预计总台数</div>
