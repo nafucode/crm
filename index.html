@@ -114,7 +114,7 @@
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 980px;
             padding: 2.5rem;
             background-color: var(--white);
             border-radius: var(--border-radius);
@@ -197,6 +197,24 @@
             gap: 0 1rem;
         }
 
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem 1.25rem;
+        }
+
+        .form-grid .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-section-title {
+            grid-column: 1 / -1;
+            margin: 0.25rem 0 -0.25rem;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
         label {
             font-weight: 500;
             color: var(--dark-gray);
@@ -204,6 +222,9 @@
             padding-top: 0.75rem; /* Vertically align with input text */
         }
 
+        input[type="date"],
+        input[type="email"],
+        input[type="number"],
         input[type="text"],
         textarea,
         select {
@@ -217,6 +238,9 @@
             box-sizing: border-box;
         }
 
+        input[type="date"]:focus,
+        input[type="email"]:focus,
+        input[type="number"]:focus,
         input[type="text"]:focus,
         textarea:focus,
         select:focus {
@@ -313,6 +337,13 @@
         .btn-save:hover {
             background-color: #0056b3;
         }
+
+        @media (max-width: 760px) {
+            .container { padding: 1.5rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group { grid-template-columns: 1fr; }
+            label { text-align: left; padding-top: 0; }
+        }
     </style>
 </head>
 <body>
@@ -359,7 +390,19 @@
                             <th>日期</th>
                             <th>国家</th>
                             <th>客户信息</th>
+                            <th>联系人</th>
                             <th>电话</th>
+                            <th>WhatsApp</th>
+                            <th>邮箱</th>
+                            <th>客户类型</th>
+                            <th>项目类型</th>
+                            <th>项目名称</th>
+                            <th>预计台数</th>
+                            <th>项目阶段</th>
+                            <th>跟进状态</th>
+                            <th>下次跟进</th>
+                            <th>负责人</th>
+                            <th>下一步</th>
                             <th>其他描述</th>
                             <th>操作</th>
                         </tr>
@@ -491,6 +534,9 @@
                         submitterInput.value = user.realName;
                         submitterInput.readOnly = true;
                         submitterInput.style.backgroundColor = '#e9ecef';
+                        document.querySelectorAll('[name="owner"]').forEach(input => {
+                            if (!input.value) input.value = user.realName;
+                        });
                     })
                     .catch(error => {
                         console.error('获取用户信息失败:', error);
@@ -513,7 +559,19 @@
                 const row = button.closest('tr');
                 const timestamp = row.dataset.timestamp;
                 const customerId = row.querySelector('[data-field="customerId"]').textContent;
+                const contactName = row.querySelector('[data-field="contactName"]').textContent;
                 const phone = row.querySelector('[data-field="phone"]').textContent;
+                const whatsapp = row.querySelector('[data-field="whatsapp"]').textContent;
+                const email = row.querySelector('[data-field="email"]').textContent;
+                const customerType = row.querySelector('[data-field="customerType"]').textContent;
+                const projectType = row.querySelector('[data-field="projectType"]').textContent;
+                const projectName = row.querySelector('[data-field="projectName"]').textContent;
+                const estimatedQuantity = row.querySelector('[data-field="estimatedQuantity"]').textContent;
+                const projectStage = row.querySelector('[data-field="projectStage"]').textContent;
+                const followStatus = row.querySelector('[data-field="followStatus"]').textContent;
+                const nextFollowDate = row.querySelector('[data-field="nextFollowDate"]').textContent;
+                const owner = row.querySelector('[data-field="owner"]').textContent;
+                const nextAction = row.querySelector('[data-field="nextAction"]').textContent;
                 const summary = row.querySelector('[data-field="summary"]').textContent;
 
                 fetch('/api/update', {
@@ -522,7 +580,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ timestamp, customerId, phone, summary })
+                    body: JSON.stringify({ timestamp, customerId, contactName, phone, whatsapp, email, customerType, projectType, projectName, estimatedQuantity, projectStage, followStatus, nextFollowDate, owner, nextAction, summary })
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -559,21 +617,109 @@
                 formInstance.innerHTML = `
                     <button type="button" class="delete-btn" title="删除此客户">&times;</button>
                     <h2>客户</h2>
-                    <div class="form-group">
-                        <label for="country-${customerId}">国家</label>
-                        <select id="country-${customerId}" name="country" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label for="customerInfo-${customerId}">客户信息</label>
-                        <textarea id="customerInfo-${customerId}" name="customerInfo" rows="3" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone-${customerId}">电话</label>
-                        <input type="text" id="phone-${customerId}" name="phone">
-                    </div>
-                    <div class="form-group">
-                        <label for="description-${customerId}">其他描述</label>
-                        <textarea id="description-${customerId}" name="description" rows="3"></textarea>
+                    <div class="form-grid">
+                        <div class="form-section-title">基础信息</div>
+                        <div class="form-group">
+                            <label for="country-${customerId}">国家</label>
+                            <select id="country-${customerId}" name="country" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerType-${customerId}">客户类型</label>
+                            <select id="customerType-${customerId}" name="customerType">
+                                <option value="">请选择</option>
+                                <option value="经销商">经销商</option>
+                                <option value="直接客户">直接客户</option>
+                                <option value="建筑公司">建筑公司</option>
+                                <option value="设计院">设计院</option>
+                                <option value="业主">业主</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="customerInfo-${customerId}">客户公司</label>
+                            <textarea id="customerInfo-${customerId}" name="customerInfo" rows="2" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactName-${customerId}">联系人</label>
+                            <input type="text" id="contactName-${customerId}" name="contactName">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone-${customerId}">电话</label>
+                            <input type="text" id="phone-${customerId}" name="phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="whatsapp-${customerId}">WhatsApp</label>
+                            <input type="text" id="whatsapp-${customerId}" name="whatsapp">
+                        </div>
+                        <div class="form-group">
+                            <label for="email-${customerId}">邮箱</label>
+                            <input type="email" id="email-${customerId}" name="email">
+                        </div>
+
+                        <div class="form-section-title">项目信息</div>
+                        <div class="form-group">
+                            <label for="projectType-${customerId}">项目类型</label>
+                            <select id="projectType-${customerId}" name="projectType">
+                                <option value="">请选择</option>
+                                <option value="乘客电梯">乘客电梯</option>
+                                <option value="载货电梯">载货电梯</option>
+                                <option value="家用电梯">家用电梯</option>
+                                <option value="观光电梯">观光电梯</option>
+                                <option value="自动扶梯">自动扶梯</option>
+                                <option value="旧梯改造">旧梯改造</option>
+                                <option value="配件/维保">配件/维保</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="estimatedQuantity-${customerId}">预计台数</label>
+                            <input type="number" id="estimatedQuantity-${customerId}" name="estimatedQuantity" min="0" step="1">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="projectName-${customerId}">项目名称</label>
+                            <input type="text" id="projectName-${customerId}" name="projectName">
+                        </div>
+
+                        <div class="form-section-title">跟进信息</div>
+                        <div class="form-group">
+                            <label for="projectStage-${customerId}">项目阶段</label>
+                            <select id="projectStage-${customerId}" name="projectStage">
+                                <option value="初步接触">初步接触</option>
+                                <option value="需求确认">需求确认</option>
+                                <option value="方案/报价">方案/报价</option>
+                                <option value="商务谈判">商务谈判</option>
+                                <option value="已成交">已成交</option>
+                                <option value="暂停">暂停</option>
+                                <option value="已关闭">已关闭</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="followStatus-${customerId}">跟进状态</label>
+                            <select id="followStatus-${customerId}" name="followStatus">
+                                <option value="待跟进">待跟进</option>
+                                <option value="已跟进">已跟进</option>
+                                <option value="等客户回复">等客户回复</option>
+                                <option value="需要报价">需要报价</option>
+                                <option value="需要技术支持">需要技术支持</option>
+                                <option value="已完成">已完成</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="nextFollowDate-${customerId}">下次跟进</label>
+                            <input type="date" id="nextFollowDate-${customerId}" name="nextFollowDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="owner-${customerId}">负责人</label>
+                            <input type="text" id="owner-${customerId}" name="owner" value="${document.getElementById('submitter').value || ''}">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="nextAction-${customerId}">下一步</label>
+                            <textarea id="nextAction-${customerId}" name="nextAction" rows="2"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="description-${customerId}">本次沟通</label>
+                            <textarea id="description-${customerId}" name="description" rows="3"></textarea>
+                        </div>
                     </div>
                 `;
 
@@ -613,6 +759,7 @@
             }
 
             addCustomerBtn.addEventListener('click', addCustomerForm);
+            addCustomerForm();
 
             // Fetch and render history on initial load
             fetchAndRenderHistory();
@@ -641,7 +788,19 @@
                             <td>${new Date(timestamp).toLocaleString()}</td>
                             <td>${item.country}</td>
                             <td data-field="customerId" contenteditable="true">${item.customerId}</td>
+                            <td data-field="contactName" contenteditable="true">${item.contactName || ''}</td>
                             <td data-field="phone" contenteditable="true">${item.phone || '-'}</td>
+                            <td data-field="whatsapp" contenteditable="true">${item.whatsapp || ''}</td>
+                            <td data-field="email" contenteditable="true">${item.email || ''}</td>
+                            <td data-field="customerType" contenteditable="true">${item.customerType || ''}</td>
+                            <td data-field="projectType" contenteditable="true">${item.projectType || ''}</td>
+                            <td data-field="projectName" contenteditable="true">${item.projectName || ''}</td>
+                            <td data-field="estimatedQuantity" contenteditable="true">${item.estimatedQuantity || ''}</td>
+                            <td data-field="projectStage" contenteditable="true">${item.projectStage || '初步接触'}</td>
+                            <td data-field="followStatus" contenteditable="true">${item.followStatus || '待跟进'}</td>
+                            <td data-field="nextFollowDate" contenteditable="true">${item.nextFollowDate || ''}</td>
+                            <td data-field="owner" contenteditable="true">${item.owner || item.salesperson || ''}</td>
+                            <td data-field="nextAction" contenteditable="true">${item.nextAction || ''}</td>
                             <td data-field="summary" contenteditable="true">${item.summary || '-'}</td>
                             <td><button class="btn btn-save" onclick="updateHistoryRow(this)">保存</button></td>
                         `;
@@ -665,7 +824,19 @@
                     allCustomersData.push({
                         country: country,
                         customerId: customerForm.querySelector(`[name="customerInfo"]`).value, // 使用 customerId
+                        contactName: customerForm.querySelector(`[name="contactName"]`).value,
                         phone: customerForm.querySelector(`[name="phone"]`).value,
+                        whatsapp: customerForm.querySelector(`[name="whatsapp"]`).value,
+                        email: customerForm.querySelector(`[name="email"]`).value,
+                        customerType: customerForm.querySelector(`[name="customerType"]`).value,
+                        projectType: customerForm.querySelector(`[name="projectType"]`).value,
+                        projectName: customerForm.querySelector(`[name="projectName"]`).value,
+                        estimatedQuantity: customerForm.querySelector(`[name="estimatedQuantity"]`).value,
+                        projectStage: customerForm.querySelector(`[name="projectStage"]`).value,
+                        followStatus: customerForm.querySelector(`[name="followStatus"]`).value,
+                        nextFollowDate: customerForm.querySelector(`[name="nextFollowDate"]`).value,
+                        owner: customerForm.querySelector(`[name="owner"]`).value || submitter,
+                        nextAction: customerForm.querySelector(`[name="nextAction"]`).value,
                         summary: customerForm.querySelector(`[name="description"]`).value, // 使用 summary
                         salesperson: submitter, // 字段名改为 salesperson 以保持一致
                         Timestamp: new Date().toISOString()

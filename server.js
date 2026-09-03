@@ -138,6 +138,18 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
                         customerId: submission.customerId, // 更新客户信息
                         summary: `${submission.summary} (更新于 ${new Date(submission.Timestamp).toLocaleString()})\n${existingRecord.summary}`,
                         salesperson: submission.salesperson, // 更新提交人
+                        contactName: submission.contactName || existingRecord.contactName,
+                        whatsapp: submission.whatsapp || existingRecord.whatsapp,
+                        email: submission.email || existingRecord.email,
+                        customerType: submission.customerType || existingRecord.customerType,
+                        projectType: submission.projectType || existingRecord.projectType,
+                        projectName: submission.projectName || existingRecord.projectName,
+                        estimatedQuantity: submission.estimatedQuantity || existingRecord.estimatedQuantity,
+                        projectStage: submission.projectStage || existingRecord.projectStage,
+                        followStatus: submission.followStatus || existingRecord.followStatus,
+                        nextFollowDate: submission.nextFollowDate || existingRecord.nextFollowDate,
+                        owner: submission.owner || existingRecord.owner,
+                        nextAction: submission.nextAction || existingRecord.nextAction,
                         Timestamp: submission.Timestamp, // 更新时间戳
                     };
                     delete mergedRecord.originalIndex; // 删除辅助字段
@@ -573,7 +585,25 @@ app.get('/api/map-data', authenticateAdmin, async (req, res) => {
 
 // API 路由：更新数据行（管理员或记录所有者）
 app.post('/api/update', authenticateToken, async (req, res) => {
-    const { timestamp, customerId, phone, summary, isDealer } = req.body;
+    const {
+        timestamp,
+        customerId,
+        phone,
+        summary,
+        isDealer,
+        contactName,
+        whatsapp,
+        email,
+        customerType,
+        projectType,
+        projectName,
+        estimatedQuantity,
+        projectStage,
+        followStatus,
+        nextFollowDate,
+        owner,
+        nextAction
+    } = req.body;
 
     if (!timestamp) {
         return res.status(400).send('缺少时间戳标识');
@@ -596,9 +626,21 @@ app.post('/api/update', authenticateToken, async (req, res) => {
 
         const newRecord = {
             ...oldRecord,
-            customerId: customerId,
-            phone: phone,
-            summary: summary,
+            ...(customerId !== undefined && { customerId }),
+            ...(phone !== undefined && { phone }),
+            ...(summary !== undefined && { summary }),
+            ...(contactName !== undefined && { contactName }),
+            ...(whatsapp !== undefined && { whatsapp }),
+            ...(email !== undefined && { email }),
+            ...(customerType !== undefined && { customerType }),
+            ...(projectType !== undefined && { projectType }),
+            ...(projectName !== undefined && { projectName }),
+            ...(estimatedQuantity !== undefined && { estimatedQuantity }),
+            ...(projectStage !== undefined && { projectStage }),
+            ...(followStatus !== undefined && { followStatus }),
+            ...(nextFollowDate !== undefined && { nextFollowDate }),
+            ...(owner !== undefined && { owner }),
+            ...(nextAction !== undefined && { nextAction }),
             ...(isDealer !== undefined && { isDealer })
         };
 
