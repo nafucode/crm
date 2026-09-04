@@ -225,6 +225,10 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
+        .merged-input-card.single-field-card {
+            grid-template-columns: 1fr;
+        }
+
         .merged-input-card:focus-within {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
@@ -943,14 +947,9 @@
                         </div>
                         <div class="form-group full-width merged-field">
                             <label>电话/WhatsApp</label>
-                            <div class="merged-input-card">
+                            <div class="merged-input-card single-field-card">
                                 <div class="merged-input-section">
-                                    <span class="field-caption">电话</span>
                                     <input type="text" id="phone-${customerId}" name="phone">
-                                </div>
-                                <div class="merged-input-section">
-                                    <span class="field-caption">WhatsApp</span>
-                                    <input type="text" id="whatsapp-${customerId}" name="whatsapp">
                                 </div>
                             </div>
                         </div>
@@ -1124,8 +1123,7 @@
                 setField(formInstance, 'customerType', item.customerType);
                 setField(formInstance, 'customerInfo', getRecordValue(item, 'customerId', 'customerInfo'));
                 setField(formInstance, 'contactName', item.contactName);
-                setField(formInstance, 'phone', item.phone);
-                setField(formInstance, 'whatsapp', item.whatsapp);
+                setField(formInstance, 'phone', getRecordValue(item, 'phone', 'whatsapp'));
                 setField(formInstance, 'email', item.email);
                 setField(formInstance, 'projectType', item.projectType);
                 setField(formInstance, 'estimatedQuantity', item.estimatedQuantity);
@@ -1175,12 +1173,13 @@
             }
 
             function collectCustomerFormData(customerForm, submitter) {
+                const phoneOrWhatsapp = customerForm.querySelector(`[name="phone"]`).value;
                 return {
                     country: customerForm.querySelector(`[name="country"]`).value,
                     customerId: customerForm.querySelector(`[name="customerInfo"]`).value,
                     contactName: customerForm.querySelector(`[name="contactName"]`).value,
-                    phone: customerForm.querySelector(`[name="phone"]`).value,
-                    whatsapp: customerForm.querySelector(`[name="whatsapp"]`).value,
+                    phone: phoneOrWhatsapp,
+                    whatsapp: phoneOrWhatsapp,
                     email: customerForm.querySelector(`[name="email"]`).value,
                     customerType: customerForm.querySelector(`[name="customerType"]`).value,
                     projectType: customerForm.querySelector(`[name="projectType"]`).value,
