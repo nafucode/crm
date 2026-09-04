@@ -743,6 +743,10 @@
         .peru-status.pending{background:#f1f3f5;color:#5f6b76}
         .peru-status.closed{background:#f1f3f5;color:#868e96}
         /* ── Freight history reference ── */
+        .elevator-tool-nav{display:flex;gap:.45rem;max-width:1180px;margin:0 auto 1rem;padding:.35rem;border:1px solid #dbe3ec;border-radius:12px;background:#eef3f8}
+        .elevator-tool-btn{flex:1;min-height:44px;border:0;border-radius:9px;background:transparent;color:#64748b;font-family:inherit;font-size:.9rem;font-weight:800;cursor:pointer}
+        .elevator-tool-btn.active{background:#fff;color:#0b5ed7;box-shadow:0 2px 10px rgba(15,23,42,.1)}
+        .elevator-tool-view[hidden]{display:none}
         .freight-history-shell{max-width:1180px;margin:0 auto}
         .freight-history-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(220px,.65fr);gap:1.5rem;align-items:end;margin-bottom:1.2rem;padding:1.35rem 0 1.2rem;border-bottom:2px solid #182331}
         .freight-history-eyebrow{color:#c4512d;font-size:.72rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
@@ -760,29 +764,47 @@
         .freight-history-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.9rem}
         .freight-chip{border:1px solid #dbe3ec;border-radius:999px;background:#f8fafc;color:#475569;padding:.42rem .75rem;font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer}
         .freight-chip:hover,.freight-chip.active{border-color:var(--primary-color);background:#e8f1ff;color:var(--primary-color)}
+        .freight-estimate-control{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;padding-top:.85rem;border-top:1px solid #e9edf2;color:#334155;font-size:.84rem;font-weight:800;cursor:pointer}
+        .freight-estimate-control input{width:18px;height:18px;margin:0;accent-color:var(--primary-color)}
+        .freight-estimate-control small{color:var(--secondary-text-color);font-weight:500}
         .freight-history-summary{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin:.9rem 0}
         .freight-history-summary h2{margin:0;color:#182331;font-size:1.35rem}
         .freight-history-summary p{margin:0;color:var(--secondary-text-color);font-size:.86rem}
         .freight-history-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
         .freight-card{padding:1rem;border:1px solid #dfe5eb;border-radius:12px;background:#fff;box-shadow:0 2px 10px rgba(15,23,42,.04)}
         .freight-card.tour{border-color:#f3c969;background:linear-gradient(180deg,#fffdf5,#fff)}
+        .freight-card.estimate{border:2px dashed #91a2a9;background:rgba(255,255,255,.62);box-shadow:none}
         .freight-cardhead{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;margin-bottom:.9rem}
         .freight-load{color:#101828;font-size:1.55rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
         .freight-load small{color:var(--secondary-text-color);font-size:.78rem}
         .freight-tags{text-align:right}
         .freight-floors{color:#475569;font-size:.82rem;font-weight:800}
         .freight-tour-badge{display:inline-block;margin-top:.35rem;border-radius:999px;background:#fff1bd;color:#8a5a00;padding:.2rem .48rem;font-size:.72rem;font-weight:800}
+        .freight-estimate-badge{display:inline-block;margin-top:.35rem;border:1px dashed #78919a;border-radius:999px;background:#edf2f3;color:#365966;padding:.2rem .48rem;font-size:.72rem;font-weight:800}
         .freight-label{margin-bottom:.25rem;color:var(--secondary-text-color);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
         .freight-value{color:#182331;font-size:1.2rem;font-weight:800;font-variant-numeric:tabular-nums}
         .freight-twocol{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.8rem}
         .freight-foot{display:flex;justify-content:space-between;gap:.7rem;margin-top:.9rem;padding-top:.75rem;border-top:1px solid #edf0f4;color:var(--secondary-text-color);font-size:.78rem}
         .freight-complete{color:#198754;font-weight:800}
         .freight-partial{color:#b56a00;font-weight:800}
+        .freight-estimate-note{color:#456b78;font-weight:800}
         .freight-empty{grid-column:1/-1;border:1px dashed #cbd5e1;border-radius:12px;padding:2.4rem 1rem;text-align:center;color:var(--secondary-text-color);background:#fff}
         .freight-history-note{margin-top:1rem;color:var(--secondary-text-color);font-size:.78rem;line-height:1.7}
+        /* ── CBM & delivery cost calculator ── */
+        .cbm-shell{max-width:1180px;margin:0 auto}
+        .cbm-heading{margin-bottom:1.25rem}.cbm-heading h1{margin:0;color:#111827;font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.035em}.cbm-heading p{max-width:760px;margin:.55rem 0 0;color:var(--secondary-text-color);font-size:.94rem;line-height:1.65}
+        .cbm-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(320px,.82fr);gap:1rem;align-items:stretch}.cbm-panel{margin:0;border-radius:14px;padding:1.4rem}
+        .cbm-mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:1.25rem;padding:4px;border-radius:10px;background:#edf2f7}.cbm-mode-btn{height:42px;border:0;border-radius:8px;background:transparent;color:var(--secondary-text-color);font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer}.cbm-mode-btn.active{background:#fff;color:var(--text-color);box-shadow:0 2px 8px rgba(15,23,42,.1)}
+        .cbm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.85rem}.cbm-grid-top{grid-template-columns:minmax(0,1fr) 160px;margin-bottom:.9rem}.cbm-field label{display:block;margin:0 0 6px 2px;color:var(--secondary-text-color);font-size:.82rem;font-weight:700}.cbm-field input,.cbm-field select{width:100%;height:50px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;background:#fff;color:var(--text-color);padding:0 12px;font-family:inherit;font-size:1rem;font-weight:500;outline:none}.cbm-field input:focus,.cbm-field select:focus{border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(0,123,255,.12)}
+        .cbm-input-wrap{position:relative}.cbm-input-wrap input{padding-right:52px}.cbm-suffix{position:absolute;right:13px;bottom:16px;color:var(--secondary-text-color);font-size:.78rem;font-weight:700;pointer-events:none}.cbm-direct-box{padding:1rem;border:1px solid #cfe1ff;border-radius:10px;background:#f7fbff}.cbm-direct-box p{margin:0 0 .85rem;color:var(--secondary-text-color);font-size:.84rem;line-height:1.55}
+        .cbm-shipping{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,280px);gap:1rem;align-items:end;margin-top:1.15rem;padding:1rem;border:1px solid #f0d7cb;border-radius:10px;background:#fff8f5}.cbm-shipping-label{align-self:center}.cbm-shipping-label span{display:block;color:#c4512d;font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.cbm-shipping-label strong{display:block;margin-top:4px;font-size:.98rem}.cbm-rate-wrap input{padding-right:90px}.cbm-rate-wrap .cbm-suffix{font-size:.72rem}
+        .cbm-actions{display:flex;gap:.65rem;margin-top:1.15rem}.cbm-actions .btn{min-height:46px;padding:.55rem 1.25rem;border-radius:8px;font-size:.9rem}.cbm-actions .cbm-calculate{flex:1;background:#172333}.cbm-actions .cbm-calculate:hover{background:#243b55}
+        .cbm-result-panel{display:flex;flex-direction:column;justify-content:space-between;min-height:385px;background:linear-gradient(145deg,#163b55,#245d78);border-color:#245d78;color:#fff}.cbm-result-label{color:#bfdae7;font-size:.74rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase}.cbm-result-value{margin:.35rem 0 0;font-size:clamp(2.7rem,6vw,4.8rem);font-weight:750;letter-spacing:-.045em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.cbm-result-value small{font-size:1rem;letter-spacing:0}.cbm-cost-block{margin-top:1.1rem;padding:1rem 0;border-top:1px solid rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.2)}.cbm-cost-value{margin:.3rem 0;font-size:clamp(1.8rem,4vw,2.55rem);font-weight:750;letter-spacing:-.025em;font-variant-numeric:tabular-nums}.cbm-cost-detail{color:#c9dce5;font-size:.79rem}.cbm-result-note{margin-top:.9rem;padding:.8rem .9rem;border-radius:8px;background:rgba(255,255,255,.09);color:#dce9ef;font-size:.82rem;line-height:1.55}.cbm-formula{margin-top:1rem;color:#d0e1e9;font-size:.82rem;line-height:1.6}.cbm-formula strong{display:block;color:#fff;font-size:.9rem}
         @media (max-width: 900px){.africa-group-panel{grid-template-columns:1fr}}
+        @media (max-width: 860px){.cbm-layout{grid-template-columns:1fr}.cbm-result-panel{min-height:330px}}
         @media (max-width: 850px){.freight-history-hero{grid-template-columns:1fr}.freight-history-meta{text-align:left}.freight-history-row{grid-template-columns:1fr 1fr}.freight-clear-btn{grid-column:1/-1}.freight-history-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-        @media (max-width: 560px){.freight-history-row,.freight-history-grid,.freight-twocol{grid-template-columns:1fr}.freight-history-summary{display:block}.freight-history-summary p{margin-top:.35rem}}
+        @media (max-width: 620px){.cbm-grid,.cbm-grid-top,.cbm-shipping{grid-template-columns:1fr}.cbm-panel{padding:1rem}.cbm-actions{align-items:stretch}.cbm-actions .btn{min-height:48px}}
+        @media (max-width: 560px){.freight-history-row,.freight-history-grid,.freight-twocol{grid-template-columns:1fr}.freight-history-summary{display:block}.freight-history-summary p{margin-top:.35rem}.elevator-tool-nav{position:sticky;top:64px;z-index:20}}
     </style>
 </head>
 
@@ -794,7 +816,7 @@
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
             <a href="https://xinfuji-sales-library.nafaxai.chatgpt.site" class="nav-link">📚 销售资料库</a>
             <a href="#" class="nav-link" onclick="switchTab('updates', null);return false;">📝 销售动态</a>
-            <a href="#" class="nav-link" onclick="switchTab('calculator', null);return false;">📦 体积运费</a>
+            <a href="#" class="nav-link" onclick="switchTab('calculator', null);return false;">🛗 电梯工具</a>
             <a href="#" class="nav-link" id="nav-peru" style="display:none" onclick="switchTab('peru', null);return false;">🇵🇪 秘鲁客户</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
@@ -980,9 +1002,15 @@
 
         </div><!-- end tab-dashboard -->
 
-        <!-- TAB: 体积运费历史 -->
+        <!-- TAB: 电梯体积与运费工具 -->
         <div id="tab-calculator" class="tab-pane">
-            <div class="freight-history-shell">
+            <div class="elevator-tool-nav" aria-label="电梯工具切换">
+                <button class="elevator-tool-btn active" id="elevator-tool-history-btn" type="button" aria-pressed="true">历史体积查询</button>
+                <button class="elevator-tool-btn" id="elevator-tool-calc-btn" type="button" aria-pressed="false">CBM / 运费计算</button>
+            </div>
+
+            <div class="elevator-tool-view" id="elevator-tool-history">
+              <div class="freight-history-shell">
                 <section class="freight-history-hero">
                     <div>
                         <div class="freight-history-eyebrow">Historical Shipping Reference</div>
@@ -1010,6 +1038,7 @@
                         <button class="freight-clear-btn" id="freight-clear-btn" type="button">清除筛选</button>
                     </div>
                     <div class="freight-history-chips" id="freight-load-chips" aria-label="快速选择载重"></div>
+                    <label class="freight-estimate-control"><input id="freight-estimate-toggle" type="checkbox" checked>显示 15 层内推算 <small>仅在选择具体载重后显示，计算时排除观光梯</small></label>
                 </section>
 
                 <section class="freight-history-summary">
@@ -1017,7 +1046,44 @@
                     <p id="freight-result-count"></p>
                 </section>
                 <section class="freight-history-grid" id="freight-history-results" aria-live="polite"></section>
-                <div class="freight-history-note">说明：范围取同载重、同层站有效历史记录中的最小值和最大值；“部分缺失”表示该组合存在历史记录，但部分记录未填写或已排除明显异常值。原始数据中的吨位已按 1 TON = 1,000 KGS 转换。标记“观光梯”的记录，其代表重量比同载重历史中位值高出至少 30%。</div>
+                <div class="freight-history-note">说明：范围取同载重、同层站有效历史记录中的最小值和最大值；“部分缺失”表示该组合存在历史记录，但部分记录未填写或已排除明显异常值。异常值仅在同组至少有 3 条有效记录，并且同时满足统计离群和偏离中位数超过 20% 时排除。原始数据中的吨位已按 1 TON = 1,000 KGS 转换。标记“观光梯”的记录，其代表重量比同载重历史中位值高出至少 30%。虚线卡片采用保守下限推算，计算时排除观光梯及异常值。推算重量固定层增量为：450KG 每层 +180 KGS、630KG 每层 +200 KGS、800KG 每层 +220 KGS、1000KG 每层 +240 KGS；其他载重按历史较低一侧趋势估计。推算 CBM 每增加一层约增加 0.5 CBM，并保证同一层站下载重越大、CBM 越大。推算值仅供前期估算。</div>
+              </div>
+            </div>
+
+            <div class="elevator-tool-view" id="elevator-tool-calc" hidden>
+              <div class="cbm-shell">
+                <div class="cbm-heading"><h1>体积与费用计算器</h1><p>按货物尺寸换算总体积，或直接输入已知 CBM，快速估算 YY Cargo Lagos 到门费用。</p></div>
+                <div class="cbm-layout">
+                    <section class="panel cbm-panel" aria-labelledby="cbm-input-title">
+                        <div class="panel-title" id="cbm-input-title" style="font-size:1.15rem;margin-bottom:1rem">选择计算方式</div>
+                        <div class="cbm-mode-tabs" aria-label="体积计算方式">
+                            <button type="button" class="cbm-mode-btn active" id="cbm-mode-dimensions" aria-pressed="true">按尺寸换算</button>
+                            <button type="button" class="cbm-mode-btn" id="cbm-mode-direct" aria-pressed="false">直接输入 CBM</button>
+                        </div>
+                        <div id="cbm-dimension-fields">
+                            <div class="cbm-grid cbm-grid-top">
+                                <div class="cbm-field"><label for="cbm-unit">尺寸单位</label><select id="cbm-unit"><option value="cm" selected>厘米（cm）</option><option value="mm">毫米（mm）</option><option value="m">米（m）</option></select></div>
+                                <div class="cbm-field"><label for="cbm-quantity">件数</label><input id="cbm-quantity" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+                            </div>
+                            <div class="cbm-grid">
+                                <div class="cbm-field cbm-input-wrap"><label for="cbm-length">长度</label><input id="cbm-length" type="number" min="0" step="any" placeholder="例如 200" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
+                                <div class="cbm-field cbm-input-wrap"><label for="cbm-width">宽度</label><input id="cbm-width" type="number" min="0" step="any" placeholder="例如 100" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
+                                <div class="cbm-field cbm-input-wrap"><label for="cbm-height">高度</label><input id="cbm-height" type="number" min="0" step="any" placeholder="例如 150" inputmode="decimal"><span class="cbm-suffix cbm-dimension-suffix">cm</span></div>
+                            </div>
+                        </div>
+                        <div class="cbm-direct-box" id="cbm-direct-fields" hidden><p>已经知道大概立方数时，可直接输入总体积，无需填写长、宽、高。</p><div class="cbm-field cbm-input-wrap"><label for="cbm-direct">总体积</label><input id="cbm-direct" type="number" min="0" step="any" placeholder="例如 5.5" inputmode="decimal"><span class="cbm-suffix">CBM</span></div></div>
+                        <div class="cbm-shipping">
+                            <div class="cbm-shipping-label"><span>YY Cargo · Lagos</span><strong>到门费用估算</strong></div>
+                            <div class="cbm-field cbm-input-wrap cbm-rate-wrap"><label for="cbm-rate">到门单价</label><input id="cbm-rate" type="number" min="0" step="0.01" value="320" inputmode="decimal"><span class="cbm-suffix">USD/CBM</span></div>
+                        </div>
+                        <div class="cbm-actions"><button class="btn cbm-calculate" id="cbm-calculate" type="button">计算 CBM 与费用</button><button class="btn btn-secondary" id="cbm-reset" type="button">清空</button></div>
+                    </section>
+                    <aside class="panel cbm-panel cbm-result-panel" aria-live="polite">
+                        <div><div class="cbm-result-label">总体积</div><div class="cbm-result-value"><span id="cbm-result">0.000</span> <small>CBM</small></div><div class="cbm-cost-block"><div class="cbm-result-label">预计到门费用</div><div class="cbm-cost-value" id="cbm-cost">USD 0.00</div><div class="cbm-cost-detail" id="cbm-cost-detail">按 320.00 USD/CBM 计算</div></div><div class="cbm-result-note" id="cbm-detail">请输入长、宽、高开始计算。</div></div>
+                        <div class="cbm-formula"><strong id="cbm-formula-title">厘米换算公式</strong><span id="cbm-formula-text">长 × 宽 × 高 × 件数 ÷ 1,000,000</span></div>
+                    </aside>
+                </div>
+              </div>
             </div>
         </div><!-- end tab-calculator -->
 
@@ -1859,7 +1925,7 @@
                 setupReportGenerator();
             }
             setupSalesUpdateForm();
-            initFreightHistory();
+            initElevatorTools();
 
             // Role-based access control
             if (canViewFullDashboard) {
@@ -3149,8 +3215,7 @@
 
     function freightMedian(values) {
         const sorted = values.slice().sort((a, b) => a - b);
-        const mid = Math.floor(sorted.length / 2);
-        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        return sorted.length ? sorted[Math.floor((sorted.length - 1) / 2)] : 0;
     }
 
     function buildFreightTourKeys() {
@@ -3166,7 +3231,9 @@
 
         FREIGHT_HISTORY_DATA.forEach(item => {
             if (item.weightMinKg == null || item.weightMaxKg == null) return;
-            const baseline = freightMedian(byLoad.get(item.load) || []);
+            const peerWeights = byLoad.get(item.load) || [];
+            if (peerWeights.length < 2) return;
+            const baseline = freightMedian(peerWeights);
             const center = (item.weightMinKg + item.weightMaxKg) / 2;
             if (baseline && center >= baseline * 1.3) keys.add(`${item.load}|${item.floors}`);
         });
@@ -3174,17 +3241,110 @@
     }
 
     const FREIGHT_TOUR_KEYS = buildFreightTourKeys();
+    const FREIGHT_LOADS = [...new Set(FREIGHT_HISTORY_DATA.map(item => item.load))].sort((a, b) => a - b);
+    const FREIGHT_FIXED_WEIGHT_SLOPE = { 450: 180, 630: 200, 800: 220, 1000: 240 };
+
+    function freightAnchorsFor(load) {
+        return FREIGHT_HISTORY_DATA
+            .filter(item => item.load === load && item.weightMinKg != null && item.cbmMin != null && !FREIGHT_TOUR_KEYS.has(`${item.load}|${item.floors}`) && freightCanonicalFloor(item.floors) != null)
+            .map(item => ({ n: freightCanonicalFloor(item.floors), weight: item.weightMinKg, cbm: item.cbmMin }));
+    }
+
+    function freightFit(points, key) {
+        if (points.length < 2) return null;
+        const meanX = points.reduce((sum, item) => sum + item.n, 0) / points.length;
+        const meanY = points.reduce((sum, item) => sum + item[key], 0) / points.length;
+        const denominator = points.reduce((sum, item) => sum + ((item.n - meanX) ** 2), 0);
+        const rawSlope = denominator
+            ? points.reduce((sum, item) => sum + ((item.n - meanX) * (item[key] - meanY)), 0) / denominator
+            : 0;
+        const slope = Math.max(0, rawSlope);
+        return { slope, intercept: meanY - slope * meanX };
+    }
+
+    function freightLowerMedian(values) {
+        const sorted = values.slice().sort((a, b) => a - b);
+        return sorted.length ? sorted[Math.floor((sorted.length - 1) / 2)] : 0;
+    }
+
+    const freightWeightSlopes = [];
+    FREIGHT_LOADS.forEach(load => {
+        const weightFit = freightFit(freightAnchorsFor(load), 'weight');
+        if (weightFit && weightFit.slope > 0) freightWeightSlopes.push(weightFit.slope);
+    });
+    const FREIGHT_GLOBAL_WEIGHT_SLOPE = freightLowerMedian(freightWeightSlopes) || 200;
+    const FREIGHT_MODELS = new Map();
+    FREIGHT_LOADS.forEach(load => {
+        const anchors = freightAnchorsFor(load);
+        if (!anchors.length) return;
+        const fittedWeight = freightFit(anchors, 'weight');
+        const weightSlope = FREIGHT_FIXED_WEIGHT_SLOPE[load] ?? fittedWeight?.slope ?? FREIGHT_GLOBAL_WEIGHT_SLOPE;
+        FREIGHT_MODELS.set(load, {
+            weight: { slope: weightSlope, intercept: Math.min(...anchors.map(item => item.weight - (weightSlope * item.n))) },
+            cbm: { slope: 0.5, intercept: Math.min(...anchors.map(item => item.cbm - (0.5 * item.n))) }
+        });
+    });
+
+    function freightRawPrediction(load, floorCount) {
+        const model = FREIGHT_MODELS.get(load);
+        return model ? {
+            weight: Math.max(1000, model.weight.intercept + (model.weight.slope * floorCount)),
+            cbm: Math.max(1, model.cbm.intercept + (model.cbm.slope * floorCount))
+        } : null;
+    }
+
+    function freightIncreasingCbm(load, floorCount) {
+        let previous = null;
+        let previousLoad = null;
+        for (const currentLoad of FREIGHT_LOADS) {
+            const raw = freightRawPrediction(currentLoad, floorCount);
+            if (!raw) continue;
+            const gap = previous == null ? 0 : Math.max(0.05, (currentLoad - previousLoad) * 0.0005);
+            const adjusted = previous == null ? raw.cbm : Math.max(raw.cbm, previous + gap);
+            if (currentLoad === load) return Math.floor(adjusted * 1000) / 1000;
+            previous = adjusted;
+            previousLoad = currentLoad;
+        }
+        return null;
+    }
+
+    function freightEstimatesFor(load) {
+        if (!freightAnchorsFor(load).length) return [];
+        const existing = new Set(FREIGHT_HISTORY_DATA.filter(item => item.load === load).map(item => freightCanonicalFloor(item.floors)).filter(Boolean));
+        const rounding = FREIGHT_FIXED_WEIGHT_SLOPE[load] ? 10 : 50;
+        const estimates = [];
+        for (let floorCount = 2; floorCount <= 15; floorCount += 1) {
+            if (existing.has(floorCount)) continue;
+            const raw = freightRawPrediction(load, floorCount);
+            if (!raw) continue;
+            estimates.push({
+                load,
+                floors: `${floorCount}/${floorCount}/${floorCount}`,
+                estimated: true,
+                weightMinKg: Math.floor(raw.weight / rounding) * rounding,
+                weightMaxKg: null,
+                cbmMin: freightIncreasingCbm(load, floorCount),
+                cbmMax: null
+            });
+        }
+        return estimates;
+    }
 
     function updateFreightFloors() {
         const input = document.getElementById('freight-load-input');
         const select = document.getElementById('freight-floor-select');
+        const estimateToggle = document.getElementById('freight-estimate-toggle');
         if (!input || !select) return;
         const previous = select.value;
         const load = Number(input.value);
         const rows = Number.isFinite(load) && load > 0
             ? FREIGHT_HISTORY_DATA.filter(item => item.load === load)
             : FREIGHT_HISTORY_DATA;
-        const floors = [...new Set(rows.map(item => item.floors))]
+        let floorValues = rows.map(item => item.floors);
+        if (Number.isFinite(load) && load > 0 && estimateToggle?.checked) {
+            floorValues = [...floorValues, ...Array.from({ length: 14 }, (_, index) => `${index + 2}/${index + 2}/${index + 2}`)];
+        }
+        const floors = [...new Set(floorValues)]
             .sort((a, b) => (freightCanonicalFloor(a) || 999) - (freightCanonicalFloor(b) || 999) || a.localeCompare(b));
         select.innerHTML = '<option value="">全部层站</option>' + floors.map(item => `<option value="${item}">${item}</option>`).join('');
         select.value = floors.includes(previous) ? previous : '';
@@ -3198,20 +3358,42 @@
 
         const load = Number(input.value);
         const floor = select.value;
-        const rows = FREIGHT_HISTORY_DATA
+        const actualRows = FREIGHT_HISTORY_DATA
             .filter(item => (!Number.isFinite(load) || load <= 0 || item.load === load) && (!floor || item.floors === floor))
+        const estimateToggle = document.getElementById('freight-estimate-toggle');
+        const estimatedRows = Number.isFinite(load) && load > 0 && estimateToggle?.checked
+            ? freightEstimatesFor(load).filter(item => !floor || item.floors === floor)
+            : [];
+        const rows = [...actualRows, ...estimatedRows]
             .sort((a, b) => a.load - b.load || (freightCanonicalFloor(a.floors) || 999) - (freightCanonicalFloor(b.floors) || 999) || a.floors.localeCompare(b.floors));
 
         document.querySelectorAll('.freight-chip').forEach(chip => {
             chip.classList.toggle('active', Number(chip.dataset.load) === load);
         });
         const title = Number.isFinite(load) && load > 0
-            ? `${load}KG 历史范围${floor ? ` · ${floor}` : ''}`
+            ? `${load}KG 历史与推算${floor ? ` · ${floor}` : ''}`
             : (floor ? `${floor} 历史范围` : '全部历史范围');
         document.getElementById('freight-result-title').textContent = title;
-        document.getElementById('freight-result-count').textContent = `${rows.length} 个层站组合 · ${rows.reduce((sum, item) => sum + item.records, 0)} 条历史记录`;
+        document.getElementById('freight-result-count').textContent = Number.isFinite(load) && load > 0
+            ? `${actualRows.length} 组历史 · ${estimatedRows.length} 组推算`
+            : `${actualRows.length} 个层站组合 · ${actualRows.reduce((sum, item) => sum + item.records, 0)} 条历史记录 · 选择载重后显示推算`;
 
         results.innerHTML = rows.length ? rows.map(item => {
+            if (item.estimated) {
+                const increment = FREIGHT_FIXED_WEIGHT_SLOPE[item.load];
+                return `
+                    <article class="freight-card estimate">
+                        <div class="freight-cardhead">
+                            <div class="freight-load">${item.load}<small> KG</small></div>
+                            <div class="freight-tags"><div class="freight-floors">${item.floors}</div><span class="freight-estimate-badge">推算值</span></div>
+                        </div>
+                        <div class="freight-twocol">
+                            <div><div class="freight-label">估算包装重量</div><div class="freight-value">≈ ${freightFormatRange(item.weightMinKg, item.weightMinKg)} KGS</div></div>
+                            <div><div class="freight-label">估算总体积</div><div class="freight-value">≈ ${freightFormatRange(item.cbmMin, item.cbmMin, 3)} CBM</div></div>
+                        </div>
+                        <div class="freight-foot"><span>${increment ? `每层 +${increment} KGS` : '按历史较低趋势'}</span><span class="freight-estimate-note">已排除观光梯</span></div>
+                    </article>`;
+            }
             const hasTour = FREIGHT_TOUR_KEYS.has(`${item.load}|${item.floors}`);
             const statusText = item.complete === 0
                 ? '无有效汇总'
@@ -3230,11 +3412,11 @@
                     <div class="freight-twocol">
                         <div>
                             <div class="freight-label">包装重量</div>
-                            <div class="freight-value">${freightFormatRange(item.weightMinKg, item.weightMaxKg)} KGS</div>
+                            <div class="freight-value">${freightFormatRange(item.weightMinKg, item.weightMaxKg)}${item.weightMinKg == null ? '' : ' KGS'}</div>
                         </div>
                         <div>
                             <div class="freight-label">总体积</div>
-                            <div class="freight-value">${freightFormatRange(item.cbmMin, item.cbmMax, 2)} CBM</div>
+                            <div class="freight-value">${freightFormatRange(item.cbmMin, item.cbmMax, 6)}${item.cbmMin == null ? '' : ' CBM'}</div>
                         </div>
                     </div>
                     <div class="freight-foot">
@@ -3251,7 +3433,8 @@
         const chipWrap = document.getElementById('freight-load-chips');
         const select = document.getElementById('freight-floor-select');
         const clearBtn = document.getElementById('freight-clear-btn');
-        if (!input || !chipWrap || !select || !clearBtn) return;
+        const estimateToggle = document.getElementById('freight-estimate-toggle');
+        if (!input || !chipWrap || !select || !clearBtn || !estimateToggle) return;
 
         document.getElementById('freight-record-total').textContent = FREIGHT_HISTORY_DATA.reduce((sum, item) => sum + item.records, 0);
         if (!freightHistoryInitialized) {
@@ -3270,6 +3453,11 @@
                 renderFreightHistory();
             });
             select.addEventListener('change', renderFreightHistory);
+            estimateToggle.addEventListener('change', () => {
+                select.value = '';
+                updateFreightFloors();
+                renderFreightHistory();
+            });
             clearBtn.addEventListener('click', () => {
                 input.value = '';
                 select.value = '';
@@ -3281,6 +3469,144 @@
         }
         updateFreightFloors();
         renderFreightHistory();
+    }
+
+    // ── 电梯工具内页切换与费用计算 ────────────────────────
+    const CRM_CBM_UNITS = {
+        cm: { factor: 0.01, name: '厘米', formula: '长 × 宽 × 高 × 件数 ÷ 1,000,000' },
+        mm: { factor: 0.001, name: '毫米', formula: '长 × 宽 × 高 × 件数 ÷ 1,000,000,000' },
+        m: { factor: 1, name: '米', formula: '长 × 宽 × 高 × 件数' }
+    };
+    let elevatorToolsInitialized = false;
+    let crmCbmCalculatorInitialized = false;
+    let crmCbmMode = 'dimensions';
+
+    function showElevatorTool(view) {
+        const isHistory = view === 'history';
+        document.getElementById('elevator-tool-history').hidden = !isHistory;
+        document.getElementById('elevator-tool-calc').hidden = isHistory;
+        const historyButton = document.getElementById('elevator-tool-history-btn');
+        const calcButton = document.getElementById('elevator-tool-calc-btn');
+        historyButton.classList.toggle('active', isHistory);
+        calcButton.classList.toggle('active', !isHistory);
+        historyButton.setAttribute('aria-pressed', String(isHistory));
+        calcButton.setAttribute('aria-pressed', String(!isHistory));
+        if (isHistory) initFreightHistory();
+        else calculateCrmCbm();
+    }
+
+    function crmFormatCbm(value) {
+        return value.toLocaleString('zh-CN', { minimumFractionDigits: 3, maximumFractionDigits: 6 });
+    }
+
+    function crmFormatUsd(value) {
+        return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateCrmCbm() {
+        const rate = Math.max(0, Number(document.getElementById('cbm-rate').value) || 0);
+        let cbm = 0;
+        let detailText = '';
+
+        if (crmCbmMode === 'direct') {
+            cbm = Math.max(0, Number(document.getElementById('cbm-direct').value) || 0);
+            if (!(cbm > 0)) {
+                updateCrmCbmResult(0, rate, '请输入大于 0 的总体积。');
+                return;
+            }
+            detailText = `直接输入总体积 ${crmFormatCbm(cbm)} CBM。`;
+        } else {
+            const length = Number(document.getElementById('cbm-length').value);
+            const width = Number(document.getElementById('cbm-width').value);
+            const height = Number(document.getElementById('cbm-height').value);
+            const quantityInput = document.getElementById('cbm-quantity');
+            const quantity = Math.max(1, Math.floor(Number(quantityInput.value) || 1));
+            const unit = document.getElementById('cbm-unit').value;
+            const unitConfig = CRM_CBM_UNITS[unit];
+            quantityInput.value = quantity;
+            if (!(length > 0 && width > 0 && height > 0)) {
+                updateCrmCbmResult(0, rate, '请输入大于 0 的长、宽、高。');
+                return;
+            }
+            cbm = length * width * height * (unitConfig.factor ** 3) * quantity;
+            detailText = `${length} × ${width} × ${height} ${unit}，共 ${quantity} 件；单件 ${crmFormatCbm(cbm / quantity)} CBM。`;
+        }
+        updateCrmCbmResult(cbm, rate, detailText);
+    }
+
+    function updateCrmCbmResult(cbm, rate, detailText) {
+        document.getElementById('cbm-result').textContent = crmFormatCbm(cbm);
+        document.getElementById('cbm-cost').textContent = `USD ${crmFormatUsd(cbm * rate)}`;
+        document.getElementById('cbm-cost-detail').textContent = cbm > 0
+            ? `${crmFormatCbm(cbm)} CBM × ${crmFormatUsd(rate)} USD/CBM`
+            : `按 ${crmFormatUsd(rate)} USD/CBM 计算`;
+        document.getElementById('cbm-detail').textContent = detailText;
+    }
+
+    function updateCrmCbmUnit() {
+        const unit = document.getElementById('cbm-unit').value;
+        const unitConfig = CRM_CBM_UNITS[unit];
+        document.querySelectorAll('.cbm-dimension-suffix').forEach(item => { item.textContent = unit; });
+        if (crmCbmMode === 'dimensions') {
+            document.getElementById('cbm-formula-title').textContent = `${unitConfig.name}换算公式`;
+            document.getElementById('cbm-formula-text').textContent = unitConfig.formula;
+        }
+        calculateCrmCbm();
+    }
+
+    function setCrmCbmMode(mode, focusInput = false) {
+        crmCbmMode = mode;
+        const direct = mode === 'direct';
+        const dimensionButton = document.getElementById('cbm-mode-dimensions');
+        const directButton = document.getElementById('cbm-mode-direct');
+        document.getElementById('cbm-dimension-fields').hidden = direct;
+        document.getElementById('cbm-direct-fields').hidden = !direct;
+        dimensionButton.classList.toggle('active', !direct);
+        directButton.classList.toggle('active', direct);
+        dimensionButton.setAttribute('aria-pressed', String(!direct));
+        directButton.setAttribute('aria-pressed', String(direct));
+        if (direct) {
+            document.getElementById('cbm-formula-title').textContent = '费用计算公式';
+            document.getElementById('cbm-formula-text').textContent = '总体积（CBM）× 到门单价（USD/CBM）';
+            if (focusInput) document.getElementById('cbm-direct').focus();
+            calculateCrmCbm();
+        } else {
+            updateCrmCbmUnit();
+            if (focusInput) document.getElementById('cbm-length').focus();
+        }
+    }
+
+    function resetCrmCbm() {
+        ['cbm-length', 'cbm-width', 'cbm-height', 'cbm-direct'].forEach(id => { document.getElementById(id).value = ''; });
+        document.getElementById('cbm-quantity').value = 1;
+        document.getElementById('cbm-rate').value = 320;
+        calculateCrmCbm();
+        document.getElementById(crmCbmMode === 'direct' ? 'cbm-direct' : 'cbm-length').focus();
+    }
+
+    function setupCrmCbmCalculator() {
+        if (crmCbmCalculatorInitialized) return;
+        ['cbm-length', 'cbm-width', 'cbm-height', 'cbm-quantity', 'cbm-direct', 'cbm-rate'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateCrmCbm);
+        });
+        document.getElementById('cbm-unit').addEventListener('change', updateCrmCbmUnit);
+        document.getElementById('cbm-mode-dimensions').addEventListener('click', () => setCrmCbmMode('dimensions', true));
+        document.getElementById('cbm-mode-direct').addEventListener('click', () => setCrmCbmMode('direct', true));
+        document.getElementById('cbm-calculate').addEventListener('click', calculateCrmCbm);
+        document.getElementById('cbm-reset').addEventListener('click', resetCrmCbm);
+        crmCbmCalculatorInitialized = true;
+        setCrmCbmMode('dimensions');
+    }
+
+    function initElevatorTools() {
+        initFreightHistory();
+        setupCrmCbmCalculator();
+        if (!elevatorToolsInitialized) {
+            document.getElementById('elevator-tool-history-btn').addEventListener('click', () => showElevatorTool('history'));
+            document.getElementById('elevator-tool-calc-btn').addEventListener('click', () => showElevatorTool('calculator'));
+            elevatorToolsInitialized = true;
+        }
+        showElevatorTool('history');
     }
 
     // ── Tab 切换 ───────────────────────────────────────────
@@ -3302,7 +3628,7 @@
             renderOrderStatusTable();
         }
         if (id === 'updates') loadSalesUpdates();
-        if (id === 'calculator') initFreightHistory();
+        if (id === 'calculator') initElevatorTools();
         if (id === 'scripts') {
             scLoadScripts();
             scLoadVars();
