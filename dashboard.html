@@ -2711,7 +2711,7 @@
             const openCount = projectRows.filter(isProjectOpen).length;
             const wonCount = projectRows.filter(item => item.projectStage === '已成交').length;
             const overdueCount = projectRows.filter(isFollowOverdue).length;
-            const sevenDayUpdateCount = projectRows.filter(needsSevenDayUpdate).length;
+            const sevenDayUpdateCount = (Array.isArray(allData) ? allData : data).filter(needsSevenDayUpdate).length;
             const quantityTotal = projectRows.reduce((sum, item) => sum + (Number(item.estimatedQuantity) || 0), 0);
 
             grid.innerHTML = `
@@ -2733,7 +2733,7 @@
                 <div class="project-overview-card">
                     <div class="project-overview-label">7天未更新</div>
                     <div class="project-overview-value" style="color:#f59e0b">${sevenDayUpdateCount}</div>
-                    <div class="project-overview-note">需业务员补充反馈</div>
+                    <div class="project-overview-note">全部客户需补反馈</div>
                 </div>
                 <div class="project-overview-card">
                     <div class="project-overview-label">预计总台数</div>
