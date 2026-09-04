@@ -269,6 +269,68 @@
             height: 500px;
         }
 
+        .map-panel.is-collapsed #world-map {
+            display: none;
+        }
+
+        .map-summary-list {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .map-panel.is-collapsed .map-summary-list {
+            display: grid;
+        }
+
+        .map-summary-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+        }
+
+        .map-summary-country {
+            color: var(--text-color);
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .map-summary-count {
+            color: var(--primary-color);
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+
+        .map-empty-summary {
+            grid-column: 1 / -1;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 1.2rem;
+            color: var(--secondary-text-color);
+            text-align: center;
+        }
+
+        .map-toggle-btn {
+            min-height: 36px;
+            padding: 6px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--secondary-text-color);
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .map-toggle-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.12);
+        }
+
         .project-overview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -778,9 +840,13 @@
         <div class="panel map-panel">
             <div class="panel-title-container map-title-row">
                 <div class="panel-title">全球分布</div>
-                <div class="map-scope-label" id="map-scope-label">全部客户</div>
+                <div class="panel-title-actions">
+                    <div class="map-scope-label" id="map-scope-label">全部客户</div>
+                    <button id="map-toggle-btn" class="map-toggle-btn" type="button" aria-expanded="true">折叠概述</button>
+                </div>
             </div>
             <div id="world-map"></div>
+            <div id="map-summary-list" class="map-summary-list"></div>
         </div>
 
         <div class="panel filter-panel">
@@ -1741,6 +1807,7 @@
         let canManageScripts = false;
         let canViewFullDashboard = false;
         let activeDashboardMapPeriod = 'all';
+        let isDashboardMapCollapsed = false;
         const dashboardMapPeriodLabels = {
             all: '全部客户',
             today: '今日新增',
@@ -1783,6 +1850,7 @@
                 document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
                 document.getElementById('filter-salesperson').addEventListener('change', applyFilters);
                 setupDashboardMapFilters();
+                setupDashboardMapCollapse();
                 if (payload.role === 'admin') {
                     document.getElementById('africa-filter-apply-btn').addEventListener('click', applyAfricaFilters);
                     document.getElementById('africa-filter-reset-btn').addEventListener('click', resetAfricaFilters);
@@ -1931,7 +1999,51 @@
         }
 
         function renderDashboardMap(data) {
-            renderMap(generateMapData(getDashboardMapScopedData(data)));
+            const scopedData = getDashboardMapScopedData(data);
+            const mapData = generateMapData(scopedData);
+            renderMapSummary(mapData);
+            if (!isDashboardMapCollapsed) {
+                renderMap(mapData);
+            }
+        }
+
+        function setupDashboardMapCollapse() {
+            const button = document.getElementById('map-toggle-btn');
+            if (!button) return;
+            button.addEventListener('click', () => {
+                isDashboardMapCollapsed = !isDashboardMapCollapsed;
+                updateDashboardMapCollapseState();
+                renderDashboardMap(currentFilteredData);
+            });
+            updateDashboardMapCollapseState();
+        }
+
+        function updateDashboardMapCollapseState() {
+            const panel = document.querySelector('.map-panel');
+            const button = document.getElementById('map-toggle-btn');
+            if (!panel || !button) return;
+            panel.classList.toggle('is-collapsed', isDashboardMapCollapsed);
+            button.textContent = isDashboardMapCollapsed ? '展开地图' : '折叠概述';
+            button.setAttribute('aria-expanded', String(!isDashboardMapCollapsed));
+            if (!isDashboardMapCollapsed && window.dashboardMapChart) {
+                setTimeout(() => window.dashboardMapChart.resize(), 80);
+            }
+        }
+
+        function renderMapSummary(mapData) {
+            const list = document.getElementById('map-summary-list');
+            if (!list) return;
+            const sorted = [...mapData].sort((a, b) => b.value - a.value || translateCountry(a.name).localeCompare(translateCountry(b.name), 'zh-Hans-CN'));
+            if (!sorted.length) {
+                list.innerHTML = '<div class="map-empty-summary">当前筛选条件下暂无国家客户数据。</div>';
+                return;
+            }
+            list.innerHTML = sorted.map(item => `
+                <div class="map-summary-item">
+                    <div class="map-summary-country">${crmEscapeHtml(translateCountry(item.name))}</div>
+                    <div class="map-summary-count">${item.value} 个客户</div>
+                </div>
+            `).join('');
         }
 
         function exportToExcel() {
@@ -2395,7 +2507,12 @@
         }
 
         function renderMap(mapData) {
-            const mapChart = echarts.init(document.getElementById('world-map'));
+            const mapElement = document.getElementById('world-map');
+            if (window.dashboardMapChart) {
+                window.dashboardMapChart.dispose();
+            }
+            const mapChart = echarts.init(mapElement);
+            window.dashboardMapChart = mapChart;
             const option = {
                 tooltip: {
                     trigger: 'item',
