@@ -188,6 +188,38 @@
             margin-bottom: 1.5rem;
         }
 
+        .panel-title-actions {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .salesperson-filter {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            min-width: 180px;
+        }
+
+        .salesperson-filter label {
+            color: var(--secondary-text-color);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .salesperson-filter select {
+            min-height: 40px;
+            padding: 7px 34px 7px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--text-color);
+            font: inherit;
+            font-size: 0.92rem;
+        }
+
         .map-title-row {
             margin-bottom: 1rem;
         }
@@ -775,7 +807,15 @@
         <div class="panel table-panel">
             <div class="panel-title-container">
                 <div class="panel-title">客户信息</div>
-                <button id="export-excel-btn" class="btn">导出 Excel</button>
+                <div class="panel-title-actions">
+                    <div class="salesperson-filter" id="salesperson-filter-wrap">
+                        <label for="filter-salesperson">业务员</label>
+                        <select id="filter-salesperson">
+                            <option value="">全部业务员</option>
+                        </select>
+                    </div>
+                    <button id="export-excel-btn" class="btn">导出 Excel</button>
+                </div>
             </div>
             <div class="table-container">
                 <table id="data-table">
@@ -1699,6 +1739,7 @@
         let canViewPeruCustomers = false;
         let peruCustomersLoaded = false;
         let canManageScripts = false;
+        let canViewFullDashboard = false;
         let activeDashboardMapPeriod = 'all';
         const dashboardMapPeriodLabels = {
             all: '全部客户',
@@ -1720,6 +1761,7 @@
             const username = payload.username;
             document.getElementById('username-display').textContent = `Welcome, ${username}`;
             canManageScripts = payload.role === 'admin';
+            canViewFullDashboard = payload.role === 'admin' || String(username || '').toLowerCase() === 'naf';
             canViewPeruCustomers = payload.role === 'admin' || String(username || '').toLowerCase() === 'naf';
             if (canViewPeruCustomers) {
                 document.getElementById('nav-peru').style.display = '';
@@ -1732,18 +1774,22 @@
             initFreightHistory();
 
             // Role-based access control
-            if (payload.role === 'admin') {
-                document.getElementById('script-management-section').style.display = '';
-                // Admin sees everything
+            if (canViewFullDashboard) {
+                if (payload.role === 'admin') {
+                    document.getElementById('script-management-section').style.display = '';
+                }
                 document.getElementById('filter-apply-btn').addEventListener('click', applyFilters);
                 document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
                 document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
+                document.getElementById('filter-salesperson').addEventListener('change', applyFilters);
                 setupDashboardMapFilters();
-                document.getElementById('africa-filter-apply-btn').addEventListener('click', applyAfricaFilters);
-                document.getElementById('africa-filter-reset-btn').addEventListener('click', resetAfricaFilters);
-                document.getElementById('africa-export-excel-btn').addEventListener('click', exportAfricaToExcel);
-                renderAfricaGroupBoard();
-                populateAfricaGroupFilter();
+                if (payload.role === 'admin') {
+                    document.getElementById('africa-filter-apply-btn').addEventListener('click', applyAfricaFilters);
+                    document.getElementById('africa-filter-reset-btn').addEventListener('click', resetAfricaFilters);
+                    document.getElementById('africa-export-excel-btn').addEventListener('click', exportAfricaToExcel);
+                    renderAfricaGroupBoard();
+                    populateAfricaGroupFilter();
+                }
                 fetchInitialDataForAdmin();
             } else {
                 // Salesperson sees only the map and the trend chart
@@ -1778,10 +1824,27 @@
             .then(response => response.json())
             .then(data => {
                 allData = data;
+                populateSalespersonFilter(allData);
                 currentFilteredData = allData;
                 renderAll(currentFilteredData);
             })
             .catch(error => console.error('Error fetching admin data:', error));
+        }
+
+        function populateSalespersonFilter(data) {
+            const select = document.getElementById('filter-salesperson');
+            if (!select) return;
+            const selected = select.value;
+            const names = [...new Set((Array.isArray(data) ? data : [])
+                .map(item => item.salesperson || '')
+                .filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b, 'zh-Hans-CN'));
+            select.innerHTML = '<option value="">全部业务员</option>' + names
+                .map(name => `<option value="${crmEscapeHtml(name)}">${crmEscapeHtml(name)}</option>`)
+                .join('');
+            if (names.includes(selected)) {
+                select.value = selected;
+            }
         }
 
         function fetchAfricaDataAndRender() {
@@ -2237,6 +2300,7 @@
             const startDate = document.getElementById('filter-start-date').value;
             const endDate = document.getElementById('filter-end-date').value;
             const country = document.getElementById('filter-country').value.toLowerCase();
+            const salesperson = document.getElementById('filter-salesperson')?.value || '';
 
             let filteredData = allData.filter(item => {
                 const itemDate = new Date(item.Timestamp || item.timestamp);
@@ -2255,8 +2319,9 @@
                 }
 
                 const countryMatch = country ? itemCountry.includes(country) || translatedCountry.includes(country) : true;
+                const salespersonMatch = salesperson ? item.salesperson === salesperson : true;
 
-                return dateMatch && countryMatch;
+                return dateMatch && countryMatch && salespersonMatch;
             });
 
             renderAll(filteredData);
@@ -2266,6 +2331,8 @@
             document.getElementById('filter-start-date').value = '';
             document.getElementById('filter-end-date').value = '';
             document.getElementById('filter-country').value = '';
+            const salespersonSelect = document.getElementById('filter-salesperson');
+            if (salespersonSelect) salespersonSelect.value = '';
             renderAll(allData);
         }
 

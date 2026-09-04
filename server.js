@@ -106,6 +106,21 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
+const authenticateDashboardManager = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        const isNaf = String(user.username || '').toLowerCase() === 'naf';
+        if (user.role !== 'admin' && !isNaf) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+};
+
 // API: 获取当前用户信息
 app.get('/api/user', authenticateToken, (req, res) => {
     res.json({ realName: req.user.realName });
@@ -243,7 +258,7 @@ app.post('/api/africa-submit', authenticateToken, async (req, res) => {
 });
 
 // API 路由：读取并返回所有反馈数据
-app.get('/api/data', authenticateAdmin, async (req, res) => {
+app.get('/api/data', authenticateDashboardManager, async (req, res) => {
     try {
         const feedback = await kv.lrange('feedback', 0, -1);
         res.json(feedback); // Keep original order for client-side reversal
