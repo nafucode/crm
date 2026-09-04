@@ -747,6 +747,13 @@
         .elevator-tool-btn{flex:1;min-height:44px;border:0;border-radius:9px;background:transparent;color:#64748b;font-family:inherit;font-size:.9rem;font-weight:800;cursor:pointer}
         .elevator-tool-btn.active{background:#fff;color:#0b5ed7;box-shadow:0 2px 10px rgba(15,23,42,.1)}
         .elevator-tool-view[hidden]{display:none}
+        .passenger-config-shell{max-width:1500px;margin:0 auto}
+        .passenger-config-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.8rem;padding:.95rem 1rem;border:1px solid #dbe3ec;border-radius:12px;background:#fff}
+        .passenger-config-head h1{margin:0;color:#182331;font-size:1.15rem}
+        .passenger-config-head p{margin:.3rem 0 0;color:var(--secondary-text-color);font-size:.82rem;line-height:1.55}
+        .passenger-config-open{flex:0 0 auto;border:1px solid #c9d8eb;border-radius:9px;background:#f7fbff;color:#0b5ed7;padding:.65rem .9rem;font-size:.82rem;font-weight:800;text-decoration:none;white-space:nowrap}
+        .passenger-config-open:hover{border-color:#0b5ed7;background:#e8f1ff}
+        .passenger-config-frame{display:block;width:100%;height:max(900px,calc(100vh - 185px));border:1px solid #dbe3ec;border-radius:14px;background:#f4f7fa;box-shadow:0 3px 14px rgba(15,23,42,.06)}
         .freight-history-shell{max-width:1180px;margin:0 auto}
         .freight-history-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(220px,.65fr);gap:1.5rem;align-items:end;margin-bottom:1.2rem;padding:1.35rem 0 1.2rem;border-bottom:2px solid #182331}
         .freight-history-eyebrow{color:#c4512d;font-size:.72rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
@@ -804,7 +811,7 @@
         @media (max-width: 860px){.cbm-layout{grid-template-columns:1fr}.cbm-result-panel{min-height:330px}}
         @media (max-width: 850px){.freight-history-hero{grid-template-columns:1fr}.freight-history-meta{text-align:left}.freight-history-row{grid-template-columns:1fr 1fr}.freight-clear-btn{grid-column:1/-1}.freight-history-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media (max-width: 620px){.cbm-grid,.cbm-grid-top,.cbm-shipping{grid-template-columns:1fr}.cbm-panel{padding:1rem}.cbm-actions{align-items:stretch}.cbm-actions .btn{min-height:48px}}
-        @media (max-width: 560px){.freight-history-row,.freight-history-grid,.freight-twocol{grid-template-columns:1fr}.freight-history-summary{display:block}.freight-history-summary p{margin-top:.35rem}.elevator-tool-nav{position:sticky;top:64px;z-index:20}}
+        @media (max-width: 560px){.freight-history-row,.freight-history-grid,.freight-twocol{grid-template-columns:1fr}.freight-history-summary{display:block}.freight-history-summary p{margin-top:.35rem}.elevator-tool-nav{position:sticky;top:64px;z-index:20;overflow-x:auto}.elevator-tool-btn{flex:0 0 auto;padding:0 .85rem}.passenger-config-head{align-items:flex-start;flex-direction:column}.passenger-config-frame{height:calc(100vh - 155px);min-height:720px}}
     </style>
 </head>
 
@@ -1007,6 +1014,7 @@
             <div class="elevator-tool-nav" aria-label="电梯工具切换">
                 <button class="elevator-tool-btn active" id="elevator-tool-history-btn" type="button" aria-pressed="true">历史体积查询</button>
                 <button class="elevator-tool-btn" id="elevator-tool-calc-btn" type="button" aria-pressed="false">CBM / 运费计算</button>
+                <button class="elevator-tool-btn" id="elevator-tool-passenger-btn" type="button" aria-pressed="false">客梯方案配置器</button>
             </div>
 
             <div class="elevator-tool-view" id="elevator-tool-history">
@@ -1083,6 +1091,19 @@
                         <div class="cbm-formula"><strong id="cbm-formula-title">厘米换算公式</strong><span id="cbm-formula-text">长 × 宽 × 高 × 件数 ÷ 1,000,000</span></div>
                     </aside>
                 </div>
+              </div>
+            </div>
+
+            <div class="elevator-tool-view" id="elevator-tool-passenger" hidden>
+              <div class="passenger-config-shell">
+                <div class="passenger-config-head">
+                    <div>
+                        <h1>客梯方案配置器</h1>
+                        <p>按载重、机房形式与井道净尺寸生成候选方案，并展示面积校核和完整推导过程。</p>
+                    </div>
+                    <a class="passenger-config-open" href="https://elevator-configurator1.vercel.app/" target="_blank" rel="noopener noreferrer">新窗口打开 ↗</a>
+                </div>
+                <iframe class="passenger-config-frame" id="passenger-config-frame" src="about:blank" data-src="https://elevator-configurator1.vercel.app/" title="客梯方案配置器" loading="lazy"></iframe>
               </div>
             </div>
         </div><!-- end tab-calculator -->
@@ -3483,16 +3504,26 @@
 
     function showElevatorTool(view) {
         const isHistory = view === 'history';
+        const isCalculator = view === 'calculator';
+        const isPassenger = view === 'passenger';
         document.getElementById('elevator-tool-history').hidden = !isHistory;
-        document.getElementById('elevator-tool-calc').hidden = isHistory;
+        document.getElementById('elevator-tool-calc').hidden = !isCalculator;
+        document.getElementById('elevator-tool-passenger').hidden = !isPassenger;
         const historyButton = document.getElementById('elevator-tool-history-btn');
         const calcButton = document.getElementById('elevator-tool-calc-btn');
+        const passengerButton = document.getElementById('elevator-tool-passenger-btn');
         historyButton.classList.toggle('active', isHistory);
-        calcButton.classList.toggle('active', !isHistory);
+        calcButton.classList.toggle('active', isCalculator);
+        passengerButton.classList.toggle('active', isPassenger);
         historyButton.setAttribute('aria-pressed', String(isHistory));
-        calcButton.setAttribute('aria-pressed', String(!isHistory));
+        calcButton.setAttribute('aria-pressed', String(isCalculator));
+        passengerButton.setAttribute('aria-pressed', String(isPassenger));
         if (isHistory) initFreightHistory();
-        else calculateCrmCbm();
+        if (isCalculator) calculateCrmCbm();
+        if (isPassenger) {
+            const frame = document.getElementById('passenger-config-frame');
+            if (frame.getAttribute('src') === 'about:blank') frame.setAttribute('src', frame.dataset.src);
+        }
     }
 
     function crmFormatCbm(value) {
@@ -3604,6 +3635,7 @@
         if (!elevatorToolsInitialized) {
             document.getElementById('elevator-tool-history-btn').addEventListener('click', () => showElevatorTool('history'));
             document.getElementById('elevator-tool-calc-btn').addEventListener('click', () => showElevatorTool('calculator'));
+            document.getElementById('elevator-tool-passenger-btn').addEventListener('click', () => showElevatorTool('passenger'));
             elevatorToolsInitialized = true;
         }
         showElevatorTool('history');
