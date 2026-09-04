@@ -342,6 +342,25 @@
             border-radius: 8px;
             padding: 1rem;
             background: linear-gradient(180deg, #ffffff, #f8fbff);
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.2s;
+        }
+
+        .project-overview-card:hover,
+        .project-overview-card:focus-visible {
+            border-color: rgba(0, 123, 255, 0.42);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .project-overview-card.is-active {
+            border-color: var(--primary-color);
+            background: linear-gradient(180deg, #eef6ff, #ffffff);
+            box-shadow: 0 14px 30px rgba(0, 123, 255, 0.16);
         }
 
         .project-overview-label {
@@ -814,26 +833,26 @@
                 <div class="panel-title">项目进度概览</div>
             </div>
             <div class="project-overview-grid" id="project-overview-grid">
-                <div class="project-overview-card">
+                <button class="project-overview-card" type="button" data-project-filter="open" aria-pressed="false">
                     <div class="project-overview-label">进行中项目</div>
                     <div class="project-overview-value">—</div>
                     <div class="project-overview-note">未成交、未关闭</div>
-                </div>
-                <div class="project-overview-card">
+                </button>
+                <button class="project-overview-card" type="button" data-project-filter="won" aria-pressed="false">
                     <div class="project-overview-label">已成交项目</div>
                     <div class="project-overview-value">—</div>
                     <div class="project-overview-note">阶段为已成交</div>
-                </div>
-                <div class="project-overview-card">
+                </button>
+                <button class="project-overview-card" type="button" data-project-filter="overdue" aria-pressed="false">
                     <div class="project-overview-label">逾期跟进</div>
                     <div class="project-overview-value">—</div>
                     <div class="project-overview-note">到期未成交/关闭</div>
-                </div>
-                <div class="project-overview-card">
+                </button>
+                <button class="project-overview-card" type="button" data-project-filter="quantity" aria-pressed="false">
                     <div class="project-overview-label">预计总台数</div>
                     <div class="project-overview-value">—</div>
                     <div class="project-overview-note">按预计台数汇总</div>
-                </div>
+                </button>
             </div>
         </div>
 
@@ -1808,6 +1827,8 @@
         let canViewFullDashboard = false;
         let activeDashboardMapPeriod = 'week';
         let isDashboardMapCollapsed = false;
+        let activeProjectFilter = '';
+        let currentBaseFilteredData = [];
         const dashboardMapPeriodLabels = {
             all: '全部客户',
             today: '今日新增',
@@ -1849,6 +1870,7 @@
                 document.getElementById('filter-reset-btn').addEventListener('click', resetFilters);
                 document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
                 document.getElementById('filter-salesperson').addEventListener('change', applyFilters);
+                setupProjectOverviewFilters();
                 setupDashboardMapFilters();
                 setupDashboardMapCollapse();
                 if (payload.role === 'admin') {
@@ -1948,12 +1970,13 @@
         }
 
         function renderAll(data) {
-            currentFilteredData = data; // Update the global filtered data
-            renderTable(data);
-            updateSummary(data);
-            renderProjectOverview(data);
-            renderDashboardMap(data);
-            renderDailySubmissionChart(data);
+            currentBaseFilteredData = Array.isArray(data) ? data : [];
+            currentFilteredData = applyProjectStatusFilter(currentBaseFilteredData);
+            renderTable(currentFilteredData);
+            updateSummary(currentBaseFilteredData);
+            renderProjectOverview(currentBaseFilteredData);
+            renderDashboardMap(currentBaseFilteredData);
+            renderDailySubmissionChart(currentBaseFilteredData);
         }
 
         function setupDashboardMapFilters() {
@@ -1962,7 +1985,7 @@
                 card.addEventListener('click', () => {
                     activeDashboardMapPeriod = card.dataset.mapPeriod || 'all';
                     updateDashboardMapFilterState();
-                    renderDashboardMap(currentFilteredData);
+                    renderDashboardMap(currentBaseFilteredData);
                 });
             });
             updateDashboardMapFilterState();
@@ -2013,7 +2036,7 @@
             button.addEventListener('click', () => {
                 isDashboardMapCollapsed = !isDashboardMapCollapsed;
                 updateDashboardMapCollapseState();
-                renderDashboardMap(currentFilteredData);
+                renderDashboardMap(currentBaseFilteredData);
             });
             updateDashboardMapCollapseState();
         }
@@ -2445,6 +2468,7 @@
             document.getElementById('filter-country').value = '';
             const salespersonSelect = document.getElementById('filter-salesperson');
             if (salespersonSelect) salespersonSelect.value = '';
+            activeProjectFilter = '';
             renderAll(allData);
         }
 
@@ -2689,6 +2713,46 @@
             return nextDate < today;
         }
 
+        function hasProjectInfo(item) {
+            return Boolean(
+                item.projectStage ||
+                item.projectType ||
+                item.projectName ||
+                item.estimatedQuantity ||
+                item.nextFollowDate ||
+                item.followStatus
+            );
+        }
+
+        function matchesProjectStatusFilter(item, filter) {
+            if (!filter) return true;
+            if (filter === 'open') return hasProjectInfo(item) && isProjectOpen(item);
+            if (filter === 'won') return item.projectStage === '已成交';
+            if (filter === 'overdue') return isFollowOverdue(item);
+            if (filter === 'stale') return needsSevenDayUpdate(item);
+            if (filter === 'quantity') return Number(item.estimatedQuantity) > 0;
+            return true;
+        }
+
+        function applyProjectStatusFilter(data) {
+            const source = Array.isArray(data) ? data : [];
+            return source.filter(item => matchesProjectStatusFilter(item, activeProjectFilter));
+        }
+
+        function setupProjectOverviewFilters() {
+            const grid = document.getElementById('project-overview-grid');
+            if (!grid) return;
+            grid.addEventListener('click', event => {
+                const card = event.target.closest('.project-overview-card[data-project-filter]');
+                if (!card) return;
+                const nextFilter = card.dataset.projectFilter || '';
+                activeProjectFilter = activeProjectFilter === nextFilter ? '' : nextFilter;
+                currentFilteredData = applyProjectStatusFilter(currentBaseFilteredData);
+                renderTable(currentFilteredData);
+                renderProjectOverview(currentBaseFilteredData);
+            });
+        }
+
         function getLastFeedbackDate(item) {
             const raw = item.lastFeedbackAt || item.updatedAt || item.Timestamp || item.timestamp;
             const date = raw ? new Date(raw) : null;
@@ -2705,9 +2769,7 @@
         function renderProjectOverview(data) {
             const grid = document.getElementById('project-overview-grid');
             if (!grid) return;
-            const projectRows = data.filter(item =>
-                item.projectStage || item.projectType || item.estimatedQuantity || item.nextFollowDate || item.followStatus
-            );
+            const projectRows = data.filter(hasProjectInfo);
             const openCount = projectRows.filter(isProjectOpen).length;
             const wonCount = projectRows.filter(item => item.projectStage === '已成交').length;
             const overdueCount = projectRows.filter(isFollowOverdue).length;
@@ -2715,31 +2777,31 @@
             const quantityTotal = projectRows.reduce((sum, item) => sum + (Number(item.estimatedQuantity) || 0), 0);
 
             grid.innerHTML = `
-                <div class="project-overview-card">
+                <button class="project-overview-card ${activeProjectFilter === 'open' ? 'is-active' : ''}" type="button" data-project-filter="open" aria-pressed="${activeProjectFilter === 'open'}">
                     <div class="project-overview-label">进行中项目</div>
                     <div class="project-overview-value">${openCount}</div>
                     <div class="project-overview-note">未成交、未关闭</div>
-                </div>
-                <div class="project-overview-card">
+                </button>
+                <button class="project-overview-card ${activeProjectFilter === 'won' ? 'is-active' : ''}" type="button" data-project-filter="won" aria-pressed="${activeProjectFilter === 'won'}">
                     <div class="project-overview-label">已成交项目</div>
                     <div class="project-overview-value" style="color:#16a34a">${wonCount}</div>
                     <div class="project-overview-note">阶段为已成交</div>
-                </div>
-                <div class="project-overview-card">
+                </button>
+                <button class="project-overview-card ${activeProjectFilter === 'overdue' ? 'is-active' : ''}" type="button" data-project-filter="overdue" aria-pressed="${activeProjectFilter === 'overdue'}">
                     <div class="project-overview-label">逾期跟进</div>
                     <div class="project-overview-value" style="color:#dc3545">${overdueCount}</div>
                     <div class="project-overview-note">到期未成交/关闭</div>
-                </div>
-                <div class="project-overview-card">
+                </button>
+                <button class="project-overview-card ${activeProjectFilter === 'stale' ? 'is-active' : ''}" type="button" data-project-filter="stale" aria-pressed="${activeProjectFilter === 'stale'}">
                     <div class="project-overview-label">7天未更新</div>
                     <div class="project-overview-value" style="color:#f59e0b">${sevenDayUpdateCount}</div>
                     <div class="project-overview-note">全部客户需补反馈</div>
-                </div>
-                <div class="project-overview-card">
+                </button>
+                <button class="project-overview-card ${activeProjectFilter === 'quantity' ? 'is-active' : ''}" type="button" data-project-filter="quantity" aria-pressed="${activeProjectFilter === 'quantity'}">
                     <div class="project-overview-label">预计总台数</div>
                     <div class="project-overview-value">${quantityTotal}</div>
                     <div class="project-overview-note">按预计台数汇总</div>
-                </div>
+                </button>
             `;
         }
 
