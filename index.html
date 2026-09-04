@@ -384,6 +384,34 @@
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 0.5rem;
         }
+        .history-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0.25rem 0 1rem;
+            flex-wrap: wrap;
+        }
+        .history-search {
+            flex: 1 1 320px;
+            min-width: min(100%, 260px);
+            min-height: 44px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            font: inherit;
+            background-color: var(--white);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .history-search:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+            outline: none;
+        }
+        .history-search-meta {
+            color: var(--secondary-text-color);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
         .table-container {
             overflow-x: auto;
             max-height: 400px; /* Limit height and make it scrollable */
@@ -633,6 +661,10 @@
 
     <div class="history-container">
         <h2>我的提交历史 <span id="follow-reminder-badge" class="follow-reminder-badge" style="display:none"></span></h2>
+        <div class="history-toolbar">
+            <input type="search" id="history-search" class="history-search" placeholder="搜索国家、客户、联系人、电话、WhatsApp、邮箱、跟进内容...">
+            <span id="history-search-meta" class="history-search-meta"></span>
+        </div>
         <div class="table-container">
             <table id="history-table">
                 <thead>
@@ -916,6 +948,8 @@
             let nextCustomerId = 1;
             let editingTimestamp = '';
             let selectedHistoryItem = null;
+            let historyRecords = [];
+            let historySearchQuery = '';
             const countryChoiceInstances = new Map();
 
             function renumberVisualHeaders() {
@@ -1218,6 +1252,14 @@
             // Fetch and render history on initial load
             fetchAndRenderHistory();
 
+            const historySearchInput = document.getElementById('history-search');
+            if (historySearchInput) {
+                historySearchInput.addEventListener('input', () => {
+                    historySearchQuery = historySearchInput.value.trim().toLowerCase();
+                    renderHistoryTable();
+                });
+            }
+
             function fetchAndRenderHistory() {
                 fetch('/api/my-submissions', { 
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -1227,14 +1269,60 @@
                     return response.json();
                 })
                 .then(data => {
-                    const historyTableBody = document.querySelector('#history-table tbody');
-                    historyTableBody.innerHTML = ''; // Clear existing rows
-                    const sortedHistory = [...data].sort((a, b) => {
+                    historyRecords = [...data].sort((a, b) => {
                         const dateA = new Date(a.Timestamp || a.timestamp || 0);
                         const dateB = new Date(b.Timestamp || b.timestamp || 0);
                         return dateB - dateA;
                     });
-                    sortedHistory.forEach(item => {
+                    renderHistoryTable();
+                    renderFollowUpdateReminder(historyRecords);
+                })
+                .catch(error => console.error('Error fetching history:', error));
+            }
+            window.fetchAndRenderHistory = fetchAndRenderHistory;
+
+            function getHistorySearchText(item) {
+                return [
+                    formatDateTime(item.Timestamp || item.timestamp),
+                    getRecordValue(item, 'country', 'Country'),
+                    getRecordValue(item, 'customerId', 'customerInfo'),
+                    item.contactName,
+                    item.phone,
+                    item.whatsapp,
+                    item.email,
+                    item.customerType,
+                    item.projectType,
+                    item.projectName,
+                    item.estimatedQuantity,
+                    item.projectStage,
+                    item.followStatus,
+                    item.nextFollowDate,
+                    item.owner,
+                    item.summary,
+                    item.customerNeed,
+                    item.nextAction
+                ].join(' ').toLowerCase();
+            }
+
+            function getVisibleHistoryRecords() {
+                if (!historySearchQuery) return historyRecords;
+                return historyRecords.filter(item => getHistorySearchText(item).includes(historySearchQuery));
+            }
+
+            function updateHistorySearchMeta(visibleCount) {
+                const meta = document.getElementById('history-search-meta');
+                if (!meta) return;
+                meta.textContent = historySearchQuery
+                    ? `共 ${historyRecords.length} 条，匹配 ${visibleCount} 条`
+                    : `共 ${historyRecords.length} 条`;
+            }
+
+            function renderHistoryTable() {
+                    const historyTableBody = document.querySelector('#history-table tbody');
+                    historyTableBody.innerHTML = ''; // Clear existing rows
+                    const visibleHistory = getVisibleHistoryRecords();
+                    updateHistorySearchMeta(visibleHistory.length);
+                    visibleHistory.forEach(item => {
                         const row = historyTableBody.insertRow();
                         const timestamp = item.Timestamp || item.timestamp;
                         row.dataset.timestamp = timestamp; // Store timestamp for updates
@@ -1268,11 +1356,11 @@
                             populateFormFromHistory(item);
                         });
                     });
-                    renderFollowUpdateReminder(sortedHistory);
-                })
-                .catch(error => console.error('Error fetching history:', error));
+                    if (!visibleHistory.length) {
+                        const row = historyTableBody.insertRow();
+                        row.innerHTML = `<td colspan="19" style="text-align:center;color:var(--secondary-text-color);padding:2rem;">${historySearchQuery ? '没有匹配的提交历史。' : '暂无提交历史。'}</td>`;
+                    }
             }
-            window.fetchAndRenderHistory = fetchAndRenderHistory;
 
             function renderFollowUpdateReminder(data) {
                 const dueItems = data.filter(needsFollowUpdate);
