@@ -199,6 +199,11 @@
             grid-template-columns: 90px 1fr;
             align-items: start;
             gap: 0 1rem;
+            min-width: 0;
+        }
+
+        .form-group > * {
+            min-width: 0;
         }
 
         .form-grid {
@@ -286,6 +291,13 @@
             padding-top: 0.75rem; /* Vertically align with input text */
         }
 
+        label.wrap-label {
+            justify-self: start;
+            text-align: left;
+            line-height: 1.35;
+            white-space: normal;
+        }
+
         input[type="date"],
         input[type="email"],
         input[type="number"],
@@ -341,6 +353,7 @@
 
         .choices {
             width: 100%;
+            min-width: 0;
             margin-bottom: 0;
         }
         .choices__inner {
@@ -348,6 +361,12 @@
             border-radius: var(--border-radius);
             background-color: var(--white);
             min-height: 44px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .choices[data-type*=select-one] {
+            box-sizing: border-box;
         }
         .choices__input {
             background-color: transparent;
@@ -946,7 +965,7 @@
                             </div>
                         </div>
                         <div class="form-group full-width merged-field">
-                            <label>电话/WhatsApp</label>
+                            <label class="wrap-label">电话<br>WhatsApp</label>
                             <div class="merged-input-card single-field-card">
                                 <div class="merged-input-section">
                                     <input type="text" id="phone-${customerId}" name="phone">
