@@ -211,6 +211,62 @@
             grid-column: 1 / -1;
         }
 
+        .form-group.merged-field {
+            align-items: stretch;
+        }
+
+        .merged-input-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: #fff;
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .merged-input-card:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        .merged-input-section {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 0.7rem 0.9rem;
+        }
+
+        .merged-input-section + .merged-input-section {
+            border-left: 1px solid var(--border-color);
+        }
+
+        .field-caption {
+            color: var(--dark-gray);
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .merged-input-card input,
+        .merged-input-card textarea {
+            border: 0;
+            border-radius: 0;
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .merged-input-card input:focus,
+        .merged-input-card textarea:focus {
+            border-color: transparent;
+            box-shadow: none;
+        }
+
+        .merged-input-card textarea {
+            min-height: 58px;
+        }
+
         .form-section-title {
             grid-column: 1 / -1;
             margin: 0.25rem 0 -0.25rem;
@@ -506,6 +562,11 @@
             .form-grid { grid-template-columns: 1fr; }
             .form-group { grid-template-columns: 1fr; }
             label { text-align: left; padding-top: 0; }
+            .merged-input-card { grid-template-columns: 1fr; }
+            .merged-input-section + .merged-input-section {
+                border-left: 0;
+                border-top: 1px solid var(--border-color);
+            }
         }
     </style>
 </head>
@@ -867,21 +928,31 @@
                                 <option value="其他">其他</option>
                             </select>
                         </div>
-                        <div class="form-group full-width">
-                            <label for="customerInfo-${customerId}">客户公司</label>
-                            <textarea id="customerInfo-${customerId}" name="customerInfo" rows="2" required></textarea>
+                        <div class="form-group full-width merged-field">
+                            <label>联系人/公司</label>
+                            <div class="merged-input-card">
+                                <div class="merged-input-section">
+                                    <span class="field-caption">客户公司</span>
+                                    <textarea id="customerInfo-${customerId}" name="customerInfo" rows="2" required></textarea>
+                                </div>
+                                <div class="merged-input-section">
+                                    <span class="field-caption">联系人</span>
+                                    <input type="text" id="contactName-${customerId}" name="contactName">
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="contactName-${customerId}">联系人</label>
-                            <input type="text" id="contactName-${customerId}" name="contactName">
-                        </div>
-                        <div class="form-group">
-                            <label for="phone-${customerId}">电话</label>
-                            <input type="text" id="phone-${customerId}" name="phone">
-                        </div>
-                        <div class="form-group">
-                            <label for="whatsapp-${customerId}">WhatsApp</label>
-                            <input type="text" id="whatsapp-${customerId}" name="whatsapp">
+                        <div class="form-group full-width merged-field">
+                            <label>电话/WhatsApp</label>
+                            <div class="merged-input-card">
+                                <div class="merged-input-section">
+                                    <span class="field-caption">电话</span>
+                                    <input type="text" id="phone-${customerId}" name="phone">
+                                </div>
+                                <div class="merged-input-section">
+                                    <span class="field-caption">WhatsApp</span>
+                                    <input type="text" id="whatsapp-${customerId}" name="whatsapp">
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="email-${customerId}">邮箱</label>
