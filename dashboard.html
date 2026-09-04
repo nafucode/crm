@@ -791,7 +791,7 @@
         <div id="tab-dashboard" class="tab-pane active">
 
         <div class="summary-grid" id="summary-grid">
-            <button class="stat-card dashboard-stat-filter is-active" type="button" data-map-period="all" aria-pressed="true">
+            <button class="stat-card dashboard-stat-filter" type="button" data-map-period="all" aria-pressed="false">
                 <div class="stat-label">总客户数</div>
                 <div class="stat-value" id="stat-total">—</div>
             </button>
@@ -799,7 +799,7 @@
                 <div class="stat-label">今日新增</div>
                 <div class="stat-value" id="stat-today">—</div>
             </button>
-            <button class="stat-card dashboard-stat-filter" type="button" data-map-period="week" aria-pressed="false">
+            <button class="stat-card dashboard-stat-filter is-active" type="button" data-map-period="week" aria-pressed="true">
                 <div class="stat-label">本周新增</div>
                 <div class="stat-value" id="stat-week">—</div>
             </button>
@@ -951,7 +951,7 @@
             <div class="panel-title-container map-title-row">
                 <div class="panel-title">全球分布</div>
                 <div class="panel-title-actions">
-                    <div class="map-scope-label" id="map-scope-label">全部客户</div>
+                    <div class="map-scope-label" id="map-scope-label">本周新增</div>
                     <button id="map-toggle-btn" class="map-toggle-btn" type="button" aria-expanded="true">折叠概述</button>
                 </div>
             </div>
@@ -1806,7 +1806,7 @@
         let peruCustomersLoaded = false;
         let canManageScripts = false;
         let canViewFullDashboard = false;
-        let activeDashboardMapPeriod = 'all';
+        let activeDashboardMapPeriod = 'week';
         let isDashboardMapCollapsed = false;
         const dashboardMapPeriodLabels = {
             all: '全部客户',
