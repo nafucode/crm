@@ -993,7 +993,7 @@
                             <div class="merged-input-card">
                                 <div class="merged-input-section">
                                     <span class="field-caption">客户公司</span>
-                                    <textarea id="customerInfo-${customerId}" name="customerInfo" rows="2" required></textarea>
+                                    <textarea id="customerInfo-${customerId}" name="customerInfo" rows="2"></textarea>
                                 </div>
                                 <div class="merged-input-section">
                                     <span class="field-caption">联系人</span>
@@ -1252,6 +1252,13 @@
                 };
             }
 
+            function hasContactOrCompany(customerData) {
+                return Boolean(
+                    String(customerData.customerId || '').trim() ||
+                    String(customerData.contactName || '').trim()
+                );
+            }
+
             // Fetch and render history on initial load
             fetchAndRenderHistory();
 
@@ -1435,6 +1442,10 @@
                         alert('客户必须选择一个国家。');
                         return;
                     }
+                    if (!hasContactOrCompany(updatedData)) {
+                        alert('客户公司或联系人至少填写一个。');
+                        return;
+                    }
                     fetch('/api/update', {
                         method: 'POST',
                         headers: {
@@ -1465,6 +1476,10 @@
                     const customerData = collectCustomerFormData(customerForm, submitter);
                     if (!customerData.country) {
                         alert('所有客户都必须选择一个国家。');
+                        return;
+                    }
+                    if (!hasContactOrCompany(customerData)) {
+                        alert('每个客户的客户公司或联系人至少填写一个。');
                         return;
                     }
                     allCustomersData.push({
