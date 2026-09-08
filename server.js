@@ -616,6 +616,7 @@ app.get('/api/map-data', authenticateAdmin, async (req, res) => {
 app.post('/api/update', authenticateToken, async (req, res) => {
     const {
         timestamp,
+        country,
         customerId,
         phone,
         summary,
@@ -657,6 +658,7 @@ app.post('/api/update', authenticateToken, async (req, res) => {
         const updatedAt = new Date().toISOString();
         const newRecord = {
             ...oldRecord,
+            ...(country !== undefined && { country }),
             ...(customerId !== undefined && { customerId }),
             ...(phone !== undefined && { phone }),
             ...(summary !== undefined && { summary }),
