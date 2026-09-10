@@ -416,6 +416,7 @@
             overflow-x: auto;
             max-height: 400px; /* Limit height and make it scrollable */
             margin-top: 1.5rem;
+            -webkit-overflow-scrolling: touch;
         }
         .history-container .table-container {
             max-height: 4400px;
@@ -620,6 +621,187 @@
             .merged-input-section + .merged-input-section {
                 border-left: 0;
                 border-top: 1px solid var(--border-color);
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                background-color: #f5f7fb;
+            }
+
+            .navbar {
+                height: auto;
+                min-height: 58px;
+                padding: 0.55rem 0.75rem;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .navbar-brand {
+                flex: 0 0 auto;
+            }
+
+            .navbar-brand img {
+                height: 32px;
+            }
+
+            .nav-links {
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow-x: auto;
+                padding: 0.15rem 0 0.35rem;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav-links::-webkit-scrollbar {
+                display: none;
+            }
+
+            .nav-links a,
+            #logout-btn {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                flex: 0 0 auto;
+                padding: 0.55rem 0.72rem;
+                font-size: 0.84rem;
+            }
+
+            #username-display {
+                flex: 0 0 auto;
+                margin-left: 0 !important;
+                font-size: 0.82rem !important;
+                white-space: nowrap;
+            }
+
+            .main-content {
+                padding: 78px 0.75rem 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+                border-radius: 12px;
+                box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+            }
+
+            h1 {
+                font-size: 1.45rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .customer-form-instance {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+
+            .customer-form-instance h2 {
+                font-size: 1.05rem;
+                margin-bottom: 1rem;
+            }
+
+            .delete-btn {
+                width: 34px;
+                height: 34px;
+            }
+
+            input[type="date"],
+            input[type="email"],
+            input[type="number"],
+            input[type="text"],
+            textarea,
+            select,
+            .choices__inner {
+                min-height: 46px;
+                font-size: 16px;
+            }
+
+            .merged-input-section {
+                padding: 0.75rem;
+            }
+
+            .merged-input-card textarea {
+                min-height: 92px;
+            }
+
+            button[type="submit"],
+            #add-customer-btn,
+            #cancel-edit-btn {
+                min-height: 48px;
+                font-size: 0.95rem;
+            }
+
+            .history-container {
+                padding: 1rem 0.75rem 1.5rem;
+            }
+
+            .history-container h2 {
+                font-size: 1.25rem;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .follow-reminder-badge {
+                margin-left: 0;
+            }
+
+            .history-toolbar {
+                align-items: stretch;
+            }
+
+            .history-search {
+                flex-basis: 100%;
+                min-width: 0;
+                font-size: 16px;
+            }
+
+            .history-search-meta {
+                width: 100%;
+            }
+
+            .history-container .table-container {
+                max-height: 72vh;
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                background: #fff;
+            }
+
+            #history-table {
+                min-width: 1680px;
+            }
+
+            th,
+            td {
+                padding: 10px 12px;
+                font-size: 0.86rem;
+            }
+
+            .btn-save {
+                min-height: 40px;
+                padding: 8px 12px;
+            }
+
+            .follow-reminder-modal {
+                padding: 0.75rem;
+                align-items: flex-end;
+            }
+
+            .follow-reminder-card {
+                max-height: 88vh;
+                border-radius: 16px 16px 0 0;
+                padding: 1rem;
+            }
+
+            .follow-reminder-actions {
+                flex-direction: column-reverse;
+            }
+
+            .follow-reminder-actions button {
+                width: 100%;
+                min-height: 46px;
             }
         }
     </style>

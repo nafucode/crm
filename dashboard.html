@@ -385,6 +385,7 @@
         .table-container {
             overflow-x: auto;
             max-height: 600px;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
@@ -812,6 +813,222 @@
         @media (max-width: 850px){.freight-history-hero{grid-template-columns:1fr}.freight-history-meta{text-align:left}.freight-history-row{grid-template-columns:1fr 1fr}.freight-clear-btn{grid-column:1/-1}.freight-history-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media (max-width: 620px){.cbm-grid,.cbm-grid-top,.cbm-shipping{grid-template-columns:1fr}.cbm-panel{padding:1rem}.cbm-actions{align-items:stretch}.cbm-actions .btn{min-height:48px}}
         @media (max-width: 560px){.freight-history-row,.freight-history-grid,.freight-twocol{grid-template-columns:1fr}.freight-history-summary{display:block}.freight-history-summary p{margin-top:.35rem}.elevator-tool-nav{position:sticky;top:64px;z-index:20;overflow-x:auto}.elevator-tool-btn{flex:0 0 auto;padding:0 .85rem}.passenger-config-head{align-items:flex-start;flex-direction:column}.passenger-config-frame{height:calc(100vh - 155px);min-height:720px}}
+        @media (max-width: 640px){
+            .navbar{
+                height:auto;
+                min-height:58px;
+                padding:.55rem .75rem;
+                align-items:center;
+                gap:.75rem;
+            }
+            .navbar-brand{
+                flex:0 0 auto;
+            }
+            .logo-img{
+                height:32px;
+            }
+            .navbar-nav{
+                flex:1 1 auto;
+                min-width:0;
+                flex-wrap:nowrap;
+                overflow-x:auto;
+                padding:.15rem 0 .35rem;
+                scrollbar-width:none;
+                -webkit-overflow-scrolling:touch;
+            }
+            .navbar-nav::-webkit-scrollbar{
+                display:none;
+            }
+            .nav-link{
+                min-height:44px;
+                display:inline-flex;
+                align-items:center;
+                flex:0 0 auto;
+                padding:.55rem .72rem;
+                font-size:.84rem;
+            }
+            #username-display.nav-link{
+                font-size:.82rem;
+            }
+            .main-content{
+                padding:78px .75rem 1rem;
+            }
+            .summary-grid{
+                grid-template-columns:repeat(2,minmax(0,1fr));
+                gap:.75rem;
+                margin-bottom:1rem;
+            }
+            .stat-card{
+                padding:1rem .75rem;
+                min-height:108px;
+            }
+            .stat-label{
+                font-size:.78rem;
+            }
+            .stat-value{
+                font-size:1.55rem;
+            }
+            .panel{
+                padding:1rem;
+                margin-bottom:1rem;
+                border-radius:12px;
+                box-shadow:0 2px 12px rgba(15,23,42,.08);
+            }
+            .panel-title-container,
+            .report-header{
+                align-items:flex-start;
+                flex-direction:column;
+                gap:.75rem;
+            }
+            .panel-title{
+                font-size:1.2rem;
+            }
+            .panel-title-actions,
+            .filter-controls,
+            .report-controls,
+            .report-actions,
+            .form-group-buttons{
+                width:100%;
+                align-items:stretch;
+                flex-direction:column;
+                gap:.65rem;
+            }
+            .form-group,
+            .salesperson-filter,
+            .form-control,
+            .filter-controls input,
+            .filter-controls select,
+            .report-controls input,
+            .report-controls select{
+                width:100%;
+                min-width:0;
+                box-sizing:border-box;
+            }
+            .form-control,
+            .salesperson-filter select,
+            input[type="text"],
+            input[type="number"],
+            textarea{
+                min-height:46px;
+                font-size:16px;
+            }
+            .btn,
+            .map-toggle-btn,
+            .sc-btn-copy,
+            .sm-edit-btn,
+            .sm-del-btn,
+            .peru-save-btn{
+                min-height:44px;
+                width:100%;
+                justify-content:center;
+            }
+            .project-overview-grid,
+            .map-summary-list,
+            .report-kpis,
+            .peru-summary{
+                grid-template-columns:1fr;
+                gap:.75rem;
+            }
+            .project-overview-card{
+                min-height:104px;
+            }
+            .table-container{
+                max-height:72vh;
+                border:1px solid var(--border-color);
+                border-radius:10px;
+                background:#fff;
+            }
+            th,
+            td{
+                padding:10px 12px;
+                font-size:.84rem;
+            }
+            #data-table{
+                min-width:2380px;
+            }
+            .prospect-search-row{
+                display:grid;
+                grid-template-columns:1fr;
+                gap:.75rem;
+            }
+            .prospect-field select,
+            .prospect-field input{
+                width:100%;
+                min-width:0;
+                min-height:46px;
+                font-size:16px;
+                box-sizing:border-box;
+            }
+            .updates-masthead,
+            .updates-layout{
+                grid-template-columns:1fr;
+                padding:1rem;
+            }
+            .updates-masthead h1{
+                font-size:1.65rem;
+            }
+            .update-card.featured .update-title{
+                font-size:1.5rem;
+            }
+            .updates-feed{
+                grid-template-columns:1fr;
+            }
+            .updates-editor{
+                position:static;
+            }
+            #world-map{
+                height:360px;
+            }
+            .report-output{
+                min-height:300px;
+                font-size:16px;
+            }
+            .tab-nav{
+                overflow-x:auto;
+                scrollbar-width:none;
+                -webkit-overflow-scrolling:touch;
+            }
+            .tab-nav::-webkit-scrollbar{
+                display:none;
+            }
+            .tab-btn{
+                flex:0 0 auto;
+                min-height:44px;
+                padding:10px 14px;
+                white-space:nowrap;
+            }
+            .sales-viz-months{
+                grid-template-columns:repeat(3,1fr);
+            }
+            .sales-viz-track-meta{
+                flex-direction:column;
+                gap:.25rem;
+            }
+            .peru-table{
+                min-width:1120px;
+            }
+            .peru-followup{
+                flex-direction:column;
+            }
+            .freight-history-row,
+            .freight-history-grid,
+            .freight-twocol{
+                grid-template-columns:1fr;
+            }
+            .freight-history-query,
+            .freight-card{
+                padding:.85rem;
+            }
+            .passenger-config-frame{
+                height:calc(100vh - 145px);
+                min-height:620px;
+            }
+        }
+        @media (max-width: 380px){
+            .summary-grid{
+                grid-template-columns:1fr;
+            }
+        }
     </style>
 </head>
 
