@@ -830,6 +830,10 @@
                     <label for="submitter">提交人</label>
                     <input type="text" id="submitter" name="submitter" required>
                 </div>
+                <div class="form-group">
+                    <label for="submit-date">提交日期</label>
+                    <input type="date" id="submit-date" name="submitDate">
+                </div>
 
                 <div id="customer-forms-container">
                     <!-- 客户表单将动态插入这里 -->
@@ -1130,12 +1134,56 @@
             const selectedUpdateHistory = document.getElementById('selected-update-history');
             const container = document.getElementById('customer-forms-container');
             const form = document.getElementById('feedbackForm');
+            const submitDateInput = document.getElementById('submit-date');
             let nextCustomerId = 1;
             let editingTimestamp = '';
             let selectedHistoryItem = null;
             let historyRecords = [];
             let historySearchQuery = '';
             const countryChoiceInstances = new Map();
+
+            function getDateInputValue(date = new Date()) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function buildSubmissionTimestamp(dateValue, offsetMs = 0) {
+                const now = new Date();
+                const parts = String(dateValue || '').split('-').map(Number);
+                if (parts.length !== 3 || parts.some(part => !Number.isFinite(part))) {
+                    return new Date(now.getTime() + offsetMs).toISOString();
+                }
+                const [year, month, day] = parts;
+                if (!year || month < 1 || month > 12 || day < 1 || day > 31) {
+                    return new Date(now.getTime() + offsetMs).toISOString();
+                }
+                const selected = new Date(
+                    year,
+                    month - 1,
+                    day,
+                    now.getHours(),
+                    now.getMinutes(),
+                    now.getSeconds(),
+                    now.getMilliseconds() + offsetMs
+                );
+                return selected.toISOString();
+            }
+
+            function syncSubmitDateInput(item = null) {
+                if (!submitDateInput) return;
+                const todayValue = getDateInputValue();
+                submitDateInput.max = todayValue;
+                submitDateInput.disabled = Boolean(editingTimestamp);
+                submitDateInput.title = editingTimestamp ? '更新已有客户时保留原提交日期' : '可选择今天、昨天或更早日期补录客户';
+                if (editingTimestamp && item) {
+                    const recordDate = new Date(item.Timestamp || item.timestamp || Date.now());
+                    submitDateInput.value = getDateInputValue(Number.isNaN(recordDate.getTime()) ? new Date() : recordDate);
+                } else {
+                    submitDateInput.value = todayValue;
+                }
+            }
 
             function renumberVisualHeaders() {
                 container.querySelectorAll('.customer-form-instance').forEach((form, index) => {
@@ -1306,6 +1354,7 @@
 
             addCustomerBtn.addEventListener('click', addCustomerForm);
             addCustomerForm();
+            syncSubmitDateInput();
             cancelEditBtn.addEventListener('click', resetCustomerFormMode);
 
             function getPrimaryCustomerForm() {
@@ -1344,6 +1393,7 @@
                 formModeNote.textContent = '';
                 selectedUpdateHistory.classList.remove('active');
                 selectedUpdateHistory.innerHTML = '';
+                syncSubmitDateInput();
                 document.querySelectorAll('#history-table tbody tr.selected-history-row').forEach(row => row.classList.remove('selected-history-row'));
             }
 
@@ -1378,6 +1428,7 @@
                 submitFormBtn.textContent = '保存客户更新';
                 formModeNote.textContent = `正在更新：${getRecordValue(item, 'customerId', 'customerInfo') || '未填写客户'}。保存后会保留本次更新记录。`;
                 formModeNote.classList.add('active');
+                syncSubmitDateInput(item);
                 renderSelectedUpdateHistory(item);
                 document.querySelector('.main-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
@@ -1655,6 +1706,7 @@
                 }
 
                 for (const customerForm of customerForms) {
+                    const timestampOffset = allCustomersData.length;
                     const customerData = collectCustomerFormData(customerForm, submitter);
                     if (!customerData.country) {
                         alert('所有客户都必须选择一个国家。');
@@ -1666,7 +1718,7 @@
                     }
                     allCustomersData.push({
                         ...customerData,
-                        Timestamp: new Date().toISOString()
+                        Timestamp: buildSubmissionTimestamp(submitDateInput?.value, timestampOffset)
                     });
                 }
 
