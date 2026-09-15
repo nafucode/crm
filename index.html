@@ -828,7 +828,7 @@
             <form id="feedbackForm">
                 <div class="form-group">
                     <label for="submitter">提交人</label>
-                    <input type="text" id="submitter" name="submitter" required>
+                    <select id="submitter" name="submitter" required></select>
                 </div>
                 <div class="form-group">
                     <label for="submit-date">提交日期</label>
@@ -1039,6 +1039,26 @@
             return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : '';
         }
 
+        function configureSubmitterSelect(user = {}, payload = {}) {
+            const submitterInput = document.getElementById('submitter');
+            if (!submitterInput) return;
+            const username = String(payload.username || '').toLowerCase();
+            const canChooseCrmSubmitter = payload.role === 'admin' || username === 'naf';
+            const options = canChooseCrmSubmitter
+                ? [
+                    { value: 'NAF', label: 'NAF' },
+                    { value: 'CRM', label: 'CRM' }
+                ]
+                : [{ value: user.realName || payload.realName || payload.username || '', label: user.realName || payload.realName || payload.username || '' }];
+            submitterInput.innerHTML = options
+                .filter(option => option.value)
+                .map(option => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`)
+                .join('');
+            submitterInput.value = canChooseCrmSubmitter && username !== 'naf' ? 'CRM' : (options[0]?.value || '');
+            submitterInput.disabled = !canChooseCrmSubmitter;
+            submitterInput.style.backgroundColor = canChooseCrmSubmitter ? '#fff' : '#e9ecef';
+        }
+
         // 认证和用户信息获取
         const token = localStorage.getItem('token');
         if (!token) {
@@ -1057,12 +1077,12 @@
                         return response.json();
                     })
                     .then(user => {
-                        const submitterInput = document.getElementById('submitter');
-                        submitterInput.value = user.realName;
-                        submitterInput.readOnly = true;
-                        submitterInput.style.backgroundColor = '#e9ecef';
+                        configureSubmitterSelect(user, userPayload);
                         document.querySelectorAll('[name="owner"]').forEach(input => {
-                            if (!input.value) input.value = user.realName;
+                            if (!input.value || input.dataset.autoOwner === 'true') {
+                                input.value = document.getElementById('submitter').value || user.realName;
+                                input.dataset.autoOwner = 'true';
+                            }
                         });
                     })
                     .catch(error => {
@@ -1185,6 +1205,16 @@
                 }
             }
 
+            function syncAutoOwnerFields() {
+                const submitter = document.getElementById('submitter').value;
+                document.querySelectorAll('[name="owner"]').forEach(input => {
+                    if (!input.value || input.dataset.autoOwner === 'true') {
+                        input.value = submitter;
+                        input.dataset.autoOwner = 'true';
+                    }
+                });
+            }
+
             function renumberVisualHeaders() {
                 container.querySelectorAll('.customer-form-instance').forEach((form, index) => {
                     form.querySelector('h2').textContent = `客户 #${index + 1}`;
@@ -1298,7 +1328,7 @@
                         </div>
                         <div class="form-group">
                             <label for="owner-${customerId}">负责人</label>
-                            <input type="text" id="owner-${customerId}" name="owner" value="${document.getElementById('submitter').value || ''}">
+                            <input type="text" id="owner-${customerId}" name="owner" value="${document.getElementById('submitter').value || ''}" data-auto-owner="true">
                         </div>
                         <div class="form-group full-width">
                             <label for="description-${customerId}">本次沟通内容</label>
@@ -1349,12 +1379,17 @@
                 });
 
                 container.appendChild(formInstance);
+                const ownerInput = formInstance.querySelector('[name="owner"]');
+                ownerInput?.addEventListener('input', () => {
+                    ownerInput.dataset.autoOwner = ownerInput.value ? 'false' : 'true';
+                });
                 renumberVisualHeaders();
             }
 
             addCustomerBtn.addEventListener('click', addCustomerForm);
             addCustomerForm();
             syncSubmitDateInput();
+            document.getElementById('submitter').addEventListener('change', syncAutoOwnerFields);
             cancelEditBtn.addEventListener('click', resetCustomerFormMode);
 
             function getPrimaryCustomerForm() {

@@ -121,6 +121,20 @@ const authenticateDashboardManager = (req, res, next) => {
     });
 };
 
+function salespersonBelongsToUser(item = {}, user = {}) {
+    const names = new Set([user.realName, user.username].filter(Boolean));
+    const username = String(user.username || '').toLowerCase();
+    if (username === 'naf') {
+        names.add('NAF');
+        names.add('胡佳润');
+    }
+    if (user.role === 'admin') {
+        names.add('CRM');
+        names.add('admin');
+    }
+    return names.has(item.salesperson);
+}
+
 // API: 获取当前用户信息
 app.get('/api/user', authenticateToken, (req, res) => {
     res.json({ realName: req.user.realName });
@@ -566,7 +580,7 @@ app.post('/api/order-status', authenticateToken, async (req, res) => {
 app.get('/api/my-submissions', authenticateToken, async (req, res) => {
     try {
         const allFeedback = await kv.lrange('feedback', 0, -1);
-        const userSubmissions = allFeedback.filter(item => item.salesperson === req.user.realName);
+        const userSubmissions = allFeedback.filter(item => salespersonBelongsToUser(item, req.user));
         userSubmissions.sort((a, b) => new Date(b.Timestamp || b.timestamp || 0) - new Date(a.Timestamp || a.timestamp || 0));
         res.json(userSubmissions);
     } catch (error) {
@@ -578,7 +592,7 @@ app.get('/api/my-submissions', authenticateToken, async (req, res) => {
 app.get('/api/africa-my-submissions', authenticateToken, async (req, res) => {
     try {
         const allFeedback = await kv.lrange('africa_feedback', 0, -1);
-        const userSubmissions = allFeedback.filter(item => item.salesperson === req.user.realName);
+        const userSubmissions = allFeedback.filter(item => salespersonBelongsToUser(item, req.user));
         userSubmissions.sort((a, b) => new Date(b.Timestamp || b.timestamp || 0) - new Date(a.Timestamp || a.timestamp || 0));
         res.json(userSubmissions);
     } catch (error) {

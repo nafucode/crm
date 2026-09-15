@@ -2667,7 +2667,7 @@
                 const itemDate = (item.Timestamp || item.timestamp).split('T')[0];
                 const dateIndex = dates.indexOf(itemDate);
                 if (dateIndex > -1) {
-                    if (item.salesperson === 'admin') {
+                    if (item.salesperson === 'admin' || item.salesperson === 'CRM') {
                         adminData[dateIndex]++;
                     } else {
                         otherData[dateIndex]++;
