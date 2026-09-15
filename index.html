@@ -1046,7 +1046,7 @@
             const canChooseCrmSubmitter = payload.role === 'admin' || username === 'naf';
             const options = canChooseCrmSubmitter
                 ? [
-                    { value: 'NAF', label: 'NAF' },
+                    { value: '胡佳润', label: '胡佳润' },
                     { value: 'CRM', label: 'CRM' }
                 ]
                 : [{ value: user.realName || payload.realName || payload.username || '', label: user.realName || payload.realName || payload.username || '' }];
