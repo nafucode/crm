@@ -35,6 +35,9 @@ app.use(express.json()); // 解析 JSON 请求体
 app.use(express.static(path.join(__dirname, 'public'))); // 只托管 public 目录下的静态文件
 
 // 明确的页面路由
+app.get('/watermark.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'watermark.html'));
+});
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html')); // 根目录直接导向登录
 });
