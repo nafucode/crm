@@ -284,6 +284,24 @@
             font-weight: 700;
         }
 
+        .development-guide {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: -0.35rem 0 0.1rem 106px;
+            color: var(--dark-gray);
+            font-size: 0.76rem;
+            line-height: 1.4;
+        }
+
+        .development-guide strong {
+            display: block;
+            margin-bottom: 0.12rem;
+            color: var(--text-color);
+            font-size: 0.78rem;
+        }
+
         label {
             font-weight: 500;
             color: var(--dark-gray);
@@ -621,6 +639,10 @@
             .merged-input-section + .merged-input-section {
                 border-left: 0;
                 border-top: 1px solid var(--border-color);
+            }
+            .development-guide {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                margin-left: 0;
             }
         }
 
@@ -1305,7 +1327,6 @@
                                 <option value="真实商机">真实商机</option>
                                 <option value="仅转发项目/无效线索">仅转发项目/无效线索</option>
                             </select>
-                            <small style="display:block;margin-top:6px;color:#6b7280;line-height:1.5">有效对话指客户愿意互动并继续沟通；只转发项目询价、不愿深入沟通的不计入有效对话。</small>
                         </div>
                         <div class="form-group">
                             <label for="developmentMode-${customerId}">开发方式</label>
@@ -1313,7 +1334,12 @@
                                 <option value="快速筛选">快速筛选</option>
                                 <option value="深度研究">深度研究</option>
                             </select>
-                            <small style="display:block;margin-top:6px;color:#6b7280;line-height:1.5">建议每天 10 家快速筛选 + 5 家深度研究。</small>
+                        </div>
+                        <div class="development-guide">
+                            <div><strong>有效对话</strong>愿意互动并继续沟通</div>
+                            <div><strong>潜在合作客户</strong>表达合作兴趣，有后续合作可能</div>
+                            <div><strong>真实商机</strong>有具体采购需求和明确推进动作</div>
+                            <div><strong>开发建议</strong>每日 10 家快速筛选 + 5 家深度研究</div>
                         </div>
                         <div class="form-group full-width">
                             <label for="owner-${customerId}">负责人</label>
