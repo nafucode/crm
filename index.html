@@ -847,6 +847,50 @@
                 min-height: 46px;
             }
         }
+        /* A single alignment system for the submission surface. */
+        .main-content .container { max-width: 1040px; }
+        .main-content h1 { text-align: left; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .submission-meta-row { max-width: 640px; gap: 1rem; }
+        .main-content .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .main-content label,
+        .main-content label.wrap-label {
+            text-align: left;
+            justify-self: auto;
+            padding: 0;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.4;
+            color: #525b66;
+        }
+        .main-content label.wrap-label br { display: none; }
+        .main-content label.wrap-label br::after { content: ' / '; }
+        .customer-form-instance { padding-top: 1.25rem; }
+        .customer-form-instance h2 {
+            margin: 0 0 1rem;
+            border: 0;
+            padding: 0;
+            font-size: 16px;
+            color: #252c35;
+        }
+        .form-grid { gap: 14px 20px; }
+        .form-section-title {
+            margin: 12px 0 0;
+            padding-bottom: 8px;
+            font-size: 13px;
+            color: #42546b;
+            border-bottom: 1px solid #dde2e8;
+        }
+        .development-guide { margin: 0; font-size: 12px; gap: 16px; }
+        .development-guide strong { font-size: 12px; font-weight: 600; }
+        .main-content .merged-input-card.single-field-card { border: 0; background: transparent; overflow: visible; }
+        .main-content .single-field-card .merged-input-section { padding: 0; }
+        .main-content .single-field-card input { border: 1px solid var(--border-color); border-radius: 6px; padding: 0.48rem 0.72rem; background: white; }
+        .main-content .merged-input-card:focus-within { box-shadow: none; }
+        @media (max-width: 760px) {
+            .submission-meta-row { max-width: none; }
+            .main-content h1 { font-size: 1.3rem; }
+            .form-grid { gap: 12px; }
+        }
     </style>
 </head>
 <body>
