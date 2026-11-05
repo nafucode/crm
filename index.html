@@ -115,10 +115,10 @@
         .container {
             width: 100%;
             max-width: 1100px;
-            padding: 1.5rem;
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
+            padding: 1rem 0.5rem;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
             transition: all 0.3s ease;
         }
 
@@ -136,16 +136,23 @@
             gap: 1rem;
         }
 
+        .submission-meta-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.9rem;
+        }
+
         .customer-form-instance {
-            border: 1px solid var(--medium-gray);
-            border-radius: var(--border-radius);
-            padding: 1rem 1.25rem;
-            margin-bottom: 1rem;
+            border: 0;
+            border-bottom: 1px solid var(--medium-gray);
+            border-radius: 0;
+            padding: 0.85rem 0 1rem;
+            margin-bottom: 0.75rem;
             position: relative;
         }
         .customer-form-instance.editing-record {
-            border-color: var(--primary-color);
-            box-shadow: 0 12px 28px rgba(0, 123, 255, 0.12);
+            border-bottom-color: var(--primary-color);
+            box-shadow: none;
         }
         .customer-form-instance h2 {
             margin-top: 0;
@@ -637,6 +644,7 @@
 
         @media (max-width: 760px) {
             .container { padding: 1.5rem; }
+            .submission-meta-row { grid-template-columns: 1fr; }
             .form-grid { grid-template-columns: 1fr; }
             .form-group { grid-template-columns: 1fr; }
             label { text-align: left; padding-top: 0; }
@@ -707,9 +715,9 @@
             }
 
             .container {
-                padding: 1rem;
-                border-radius: 12px;
-                box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+                padding: 0.5rem 0;
+                border-radius: 0;
+                box-shadow: none;
             }
 
             h1 {
@@ -718,9 +726,9 @@
             }
 
             .customer-form-instance {
-                padding: 1rem;
+                padding: 0.75rem 0 1rem;
                 margin-bottom: 1rem;
-                border-radius: 12px;
+                border-radius: 0;
             }
 
             .customer-form-instance h2 {
@@ -853,13 +861,15 @@
             <h1>客户信息批量提交</h1>
             <div id="form-mode-note" class="form-mode-note"></div>
             <form id="feedbackForm">
-                <div class="form-group">
-                    <label for="submitter">提交人</label>
-                    <select id="submitter" name="submitter" required></select>
-                </div>
-                <div class="form-group">
-                    <label for="submit-date">提交日期</label>
-                    <input type="date" id="submit-date" name="submitDate">
+                <div class="submission-meta-row">
+                    <div class="form-group">
+                        <label for="submitter">提交人</label>
+                        <select id="submitter" name="submitter" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="submit-date">提交日期</label>
+                        <input type="date" id="submit-date" name="submitDate">
+                    </div>
                 </div>
 
                 <div id="customer-forms-container">
