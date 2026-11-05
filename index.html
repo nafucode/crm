@@ -866,6 +866,8 @@
                             <th>WhatsApp</th>
                             <th>邮箱</th>
                             <th>客户类型</th>
+                            <th>开发阶段</th>
+                            <th>开发方式</th>
                             <th>项目类型</th>
                             <th>项目名称</th>
                             <th>预计台数</th>
@@ -1113,6 +1115,8 @@
                 const whatsapp = row.querySelector('[data-field="whatsapp"]').textContent;
                 const email = row.querySelector('[data-field="email"]').textContent;
                 const customerType = row.querySelector('[data-field="customerType"]').textContent;
+                const developmentStage = row.querySelector('[data-field="developmentStage"]').textContent;
+                const developmentMode = row.querySelector('[data-field="developmentMode"]').textContent;
                 const projectType = row.querySelector('[data-field="projectType"]').textContent;
                 const projectName = row.querySelector('[data-field="projectName"]').textContent;
                 const estimatedQuantity = row.querySelector('[data-field="estimatedQuantity"]').textContent;
@@ -1130,7 +1134,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ timestamp, customerId, contactName, phone, whatsapp, email, customerType, projectType, projectName, estimatedQuantity, projectStage, followStatus, nextFollowDate, owner, summary, customerNeed, nextAction })
+                    body: JSON.stringify({ timestamp, customerId, contactName, phone, whatsapp, email, customerType, developmentStage, developmentMode, projectType, projectName, estimatedQuantity, projectStage, followStatus, nextFollowDate, owner, summary, customerNeed, nextAction })
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -1302,6 +1306,25 @@
 
                         <div class="form-section-title">跟进信息</div>
                         <div class="form-group">
+                            <label for="developmentStage-${customerId}">开发阶段</label>
+                            <select id="developmentStage-${customerId}" name="developmentStage">
+                                <option value="新增合格公司">新增合格公司</option>
+                                <option value="有效对话">有效对话</option>
+                                <option value="潜在合作客户">潜在合作客户</option>
+                                <option value="真实商机">真实商机</option>
+                                <option value="仅转发项目/无效线索">仅转发项目/无效线索</option>
+                            </select>
+                            <small style="display:block;margin-top:6px;color:#6b7280;line-height:1.5">有效对话指客户愿意互动并继续沟通；只转发项目询价、不愿深入沟通的不计入有效对话。</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="developmentMode-${customerId}">开发方式</label>
+                            <select id="developmentMode-${customerId}" name="developmentMode">
+                                <option value="快速筛选">快速筛选</option>
+                                <option value="深度研究">深度研究</option>
+                            </select>
+                            <small style="display:block;margin-top:6px;color:#6b7280;line-height:1.5">建议每天 10 家快速筛选 + 5 家深度研究。</small>
+                        </div>
+                        <div class="form-group">
                             <label for="projectStage-${customerId}">项目阶段</label>
                             <select id="projectStage-${customerId}" name="projectStage">
                                 <option value="初步接触">初步接触</option>
@@ -1446,6 +1469,8 @@
                 formInstance.querySelector('h2').textContent = '更新客户反馈';
                 setField(formInstance, 'country', getRecordValue(item, 'country', 'Country'));
                 setField(formInstance, 'customerType', item.customerType);
+                setField(formInstance, 'developmentStage', item.developmentStage || '新增合格公司');
+                setField(formInstance, 'developmentMode', item.developmentMode || '快速筛选');
                 setField(formInstance, 'customerInfo', getRecordValue(item, 'customerId', 'customerInfo'));
                 setField(formInstance, 'contactName', item.contactName);
                 setField(formInstance, 'phone', getRecordValue(item, 'phone', 'whatsapp'));
@@ -1485,7 +1510,7 @@
                     <div class="update-history-list">
                         ${history.reverse().map(entry => `
                             <div class="update-history-item">
-                                <div class="update-history-meta">${escapeHtml(formatDateTime(entry.updatedAt))} · ${escapeHtml(entry.updatedBy || '未填写')} · ${escapeHtml(entry.projectStage || '-')} · ${escapeHtml(entry.followStatus || '-')}</div>
+                                <div class="update-history-meta">${escapeHtml(formatDateTime(entry.updatedAt))} · ${escapeHtml(entry.updatedBy || '未填写')} · ${escapeHtml(entry.developmentStage || '新增合格公司')} · ${escapeHtml(entry.projectStage || '-')} · ${escapeHtml(entry.followStatus || '-')}</div>
                                 <div class="update-history-text">${escapeHtml([
                                     entry.summary ? `本次沟通：${entry.summary}` : '',
                                     entry.customerNeed ? `客户需求：${entry.customerNeed}` : '',
@@ -1508,6 +1533,8 @@
                     whatsapp: phoneOrWhatsapp,
                     email: customerForm.querySelector(`[name="email"]`).value,
                     customerType: customerForm.querySelector(`[name="customerType"]`).value,
+                    developmentStage: customerForm.querySelector(`[name="developmentStage"]`).value,
+                    developmentMode: customerForm.querySelector(`[name="developmentMode"]`).value,
                     projectType: customerForm.querySelector(`[name="projectType"]`).value,
                     projectName: customerForm.querySelector(`[name="projectName"]`).value,
                     estimatedQuantity: customerForm.querySelector(`[name="estimatedQuantity"]`).value,
@@ -1571,6 +1598,8 @@
                     item.whatsapp,
                     item.email,
                     item.customerType,
+                    item.developmentStage,
+                    item.developmentMode,
                     item.projectType,
                     item.projectName,
                     item.estimatedQuantity,
@@ -1617,6 +1646,8 @@
                             <td data-field="whatsapp" contenteditable="true">${item.whatsapp || ''}</td>
                             <td data-field="email" contenteditable="true">${item.email || ''}</td>
                             <td data-field="customerType" contenteditable="true">${item.customerType || ''}</td>
+                            <td data-field="developmentStage" contenteditable="true">${item.developmentStage || '新增合格公司'}</td>
+                            <td data-field="developmentMode" contenteditable="true">${item.developmentMode || '快速筛选'}</td>
                             <td data-field="projectType" contenteditable="true">${item.projectType || ''}</td>
                             <td data-field="projectName" contenteditable="true">${item.projectName || ''}</td>
                             <td data-field="estimatedQuantity" contenteditable="true">${item.estimatedQuantity || ''}</td>
@@ -1638,7 +1669,7 @@
                     });
                     if (!visibleHistory.length) {
                         const row = historyTableBody.insertRow();
-                        row.innerHTML = `<td colspan="19" style="text-align:center;color:var(--secondary-text-color);padding:2rem;">${historySearchQuery ? '没有匹配的提交历史。' : '暂无提交历史。'}</td>`;
+                        row.innerHTML = `<td colspan="21" style="text-align:center;color:var(--secondary-text-color);padding:2rem;">${historySearchQuery ? '没有匹配的提交历史。' : '暂无提交历史。'}</td>`;
                     }
             }
 

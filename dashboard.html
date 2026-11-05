@@ -382,6 +382,29 @@
             margin-top: 0.25rem;
         }
 
+        .development-funnel-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(150px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .development-funnel-card {
+            border: 1px solid var(--border-color);
+            border-left: 4px solid #0d6efd;
+            border-radius: 6px;
+            padding: 0.85rem 1rem;
+            background: #fff;
+        }
+        .development-funnel-card:nth-child(2) { border-left-color: #06b6d4; }
+        .development-funnel-card:nth-child(3) { border-left-color: #8b5cf6; }
+        .development-funnel-card:nth-child(4) { border-left-color: #16a34a; }
+        .development-funnel-label { color: var(--secondary-text-color); font-size: 0.8rem; font-weight: 700; }
+        .development-funnel-value { margin-top: 0.2rem; font-size: 1.5rem; font-weight: 800; }
+        .development-funnel-note { margin-top: 0.2rem; color: var(--secondary-text-color); font-size: 0.76rem; }
+        .development-funnel-table { min-width: 720px; }
+        .development-funnel-table td:not(:first-child),
+        .development-funnel-table th:not(:first-child) { text-align: center; }
+
         .table-container {
             overflow-x: auto;
             max-height: 600px;
@@ -407,7 +430,7 @@
 
         #data-table {
             table-layout: fixed;
-            min-width: 2680px;
+            min-width: 2900px;
         }
         #data-table th:nth-child(1) { width: 155px; } /* 日期 */
         #data-table th:nth-child(2) { width: 72px;  } /* 提交人 */
@@ -418,18 +441,20 @@
         #data-table th:nth-child(7) { width: 135px; } /* WhatsApp */
         #data-table th:nth-child(8) { width: 170px; } /* 邮箱 */
         #data-table th:nth-child(9) { width: 105px; } /* 类型 */
-        #data-table th:nth-child(10) { width: 105px; } /* 项目类型 */
-        #data-table th:nth-child(11) { width: 170px; } /* 项目名称 */
-        #data-table th:nth-child(12) { width: 80px; }  /* 台数 */
-        #data-table th:nth-child(13) { width: 105px; } /* 阶段 */
-        #data-table th:nth-child(14) { width: 110px; } /* 状态 */
-        #data-table th:nth-child(15) { width: 105px; } /* 跟进日期 */
-        #data-table th:nth-child(16) { width: 190px; } /* 本次沟通内容 */
-        #data-table th:nth-child(17) { width: 180px; } /* 客户核心需求 */
-        #data-table th:nth-child(18) { width: 180px; } /* 下一步计划 */
-        #data-table th:nth-child(19) { width: 72px;  } /* 经销商 */
-        #data-table th:nth-child(20) { width: 90px;  } /* 负责人 */
-        #data-table th:nth-child(21) { width: 130px; } /* 操作 */
+        #data-table th:nth-child(10) { width: 125px; } /* 开发阶段 */
+        #data-table th:nth-child(11) { width: 100px; } /* 开发方式 */
+        #data-table th:nth-child(12) { width: 105px; } /* 项目类型 */
+        #data-table th:nth-child(13) { width: 170px; } /* 项目名称 */
+        #data-table th:nth-child(14) { width: 80px; }  /* 台数 */
+        #data-table th:nth-child(15) { width: 105px; } /* 项目阶段 */
+        #data-table th:nth-child(16) { width: 110px; } /* 跟进状态 */
+        #data-table th:nth-child(17) { width: 105px; } /* 跟进日期 */
+        #data-table th:nth-child(18) { width: 190px; } /* 本次沟通内容 */
+        #data-table th:nth-child(19) { width: 180px; } /* 客户核心需求 */
+        #data-table th:nth-child(20) { width: 180px; } /* 下一步计划 */
+        #data-table th:nth-child(21) { width: 72px;  } /* 经销商 */
+        #data-table th:nth-child(22) { width: 90px;  } /* 负责人 */
+        #data-table th:nth-child(23) { width: 130px; } /* 操作 */
 
         td[data-field="summary"],
         td[data-field="customerId"],
@@ -923,6 +948,7 @@
                 justify-content:center;
             }
             .project-overview-grid,
+            .development-funnel-grid,
             .map-summary-list,
             .report-kpis,
             .peru-summary{
@@ -944,7 +970,7 @@
                 font-size:.84rem;
             }
             #data-table{
-                min-width:2380px;
+                min-width:2700px;
             }
             .prospect-search-row{
                 display:grid;
@@ -1074,6 +1100,32 @@
             </button>
         </div>
 
+        <div class="panel" id="development-funnel-panel">
+            <div class="panel-title-container">
+                <div>
+                    <div class="panel-title">本周客户开发漏斗</div>
+                    <div style="margin-top:.3rem;color:var(--secondary-text-color);font-size:.84rem">按客户去重统计；同一家公司多次沟通只算一个客户。每日目标 15 家，其中建议 10 家快速筛选、5 家深度研究。</div>
+                </div>
+                <span id="development-funnel-period" style="color:var(--secondary-text-color);font-size:.82rem"></span>
+            </div>
+            <div class="development-funnel-grid" id="development-funnel-grid"></div>
+            <div class="table-container" style="max-height:360px">
+                <table class="development-funnel-table">
+                    <thead>
+                        <tr>
+                            <th>业务员</th>
+                            <th>新增合格公司</th>
+                            <th>有效对话</th>
+                            <th>潜在合作客户</th>
+                            <th>真实商机</th>
+                            <th>深度研究</th>
+                        </tr>
+                    </thead>
+                    <tbody id="development-funnel-body"></tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="panel project-overview-panel">
             <div class="panel-title-container">
                 <div class="panel-title">项目进度概览</div>
@@ -1149,6 +1201,8 @@
                             <th>WhatsApp</th>
                             <th>邮箱</th>
                             <th>客户类型</th>
+                            <th>开发阶段</th>
+                            <th>开发方式</th>
                             <th>项目类型</th>
                             <th>项目名称</th>
                             <th>预计台数</th>
@@ -2135,6 +2189,13 @@
         let isDashboardMapCollapsed = false;
         let activeProjectFilter = '';
         let currentBaseFilteredData = [];
+        const DEVELOPMENT_STAGE_RANK = {
+            '仅转发项目/无效线索': 0,
+            '新增合格公司': 1,
+            '有效对话': 2,
+            '潜在合作客户': 3,
+            '真实商机': 4
+        };
         const dashboardMapPeriodLabels = {
             all: '全部客户',
             today: '今日新增',
@@ -2193,6 +2254,12 @@
                 document.querySelector('.filter-panel').style.display = 'none';
                 document.querySelector('.table-panel').style.display = 'none';
                 fetchDataForSalesperson();
+                fetch('/api/my-submissions', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                })
+                    .then(response => response.ok ? response.json() : [])
+                    .then(renderDevelopmentFunnel)
+                    .catch(error => console.error('Error fetching development funnel:', error));
             }
 
             document.getElementById('logout').addEventListener('click', function (e) {
@@ -2280,6 +2347,7 @@
             currentFilteredData = applyProjectStatusFilter(currentBaseFilteredData);
             renderTable(currentFilteredData);
             updateSummary(currentBaseFilteredData);
+            renderDevelopmentFunnel(currentBaseFilteredData);
             renderProjectOverview(currentBaseFilteredData);
             renderDashboardMap(currentBaseFilteredData);
             renderDailySubmissionChart(currentBaseFilteredData);
@@ -2392,6 +2460,8 @@
                 'WhatsApp': item.whatsapp || '',
                 '邮箱': item.email || '',
                 '客户类型': item.customerType || '',
+                '开发阶段': getDevelopmentStage(item),
+                '开发方式': item.developmentMode || '',
                 '项目类型': item.projectType || '',
                 '项目名称': item.projectName || '',
                 '预计台数': item.estimatedQuantity || '',
@@ -2554,6 +2624,11 @@
                     .sort((a, b) => b._date - a._date);
 
                 const dealerCount = scoped.filter(item => item.isDealer).length;
+                const funnelRows = [...new Map(scoped.map(item => [getDevelopmentClientKey(item), item])).values()];
+                const qualifiedCount = funnelRows.filter(item => DEVELOPMENT_STAGE_RANK[getDevelopmentStage(item)] >= 1).length;
+                const effectiveCount = funnelRows.filter(item => DEVELOPMENT_STAGE_RANK[getDevelopmentStage(item)] >= 2).length;
+                const partnerCount = funnelRows.filter(item => DEVELOPMENT_STAGE_RANK[getDevelopmentStage(item)] >= 3).length;
+                const opportunityCount = funnelRows.filter(item => DEVELOPMENT_STAGE_RANK[getDevelopmentStage(item)] >= 4).length;
                 const salespersonCounts = countBy(scoped, item => item.salesperson || '未填写');
                 const countryCounts = countBy(scoped, item => getChineseCountryName(item.country || ''));
                 const dailyTrend = buildDailyTrend(scoped, start, end);
@@ -2565,10 +2640,10 @@
                 const feedbackLines = summarizeFeedback(scoped);
 
                 kpis.innerHTML = `
-                    <div class="report-kpi"><div class="report-kpi-label">反馈总数</div><div class="report-kpi-value">${scoped.length}</div></div>
-                    <div class="report-kpi"><div class="report-kpi-label">参与业务员</div><div class="report-kpi-value">${activePeople}</div></div>
-                    <div class="report-kpi"><div class="report-kpi-label">涉及国家</div><div class="report-kpi-value">${Object.keys(countryCounts).length}</div></div>
-                    <div class="report-kpi"><div class="report-kpi-label">经销商标记</div><div class="report-kpi-value">${dealerCount}</div></div>
+                    <div class="report-kpi"><div class="report-kpi-label">新增合格公司</div><div class="report-kpi-value">${qualifiedCount}</div></div>
+                    <div class="report-kpi"><div class="report-kpi-label">有效对话</div><div class="report-kpi-value">${effectiveCount}</div></div>
+                    <div class="report-kpi"><div class="report-kpi-label">潜在合作客户</div><div class="report-kpi-value">${partnerCount}</div></div>
+                    <div class="report-kpi"><div class="report-kpi-label">真实商机</div><div class="report-kpi-value">${opportunityCount}</div></div>
                 `;
 
                 const trendText = dailyTrend.map(day => `${day.label}: ${day.value}`).join('，');
@@ -2577,7 +2652,7 @@
                     `统计周期：${formatReportDate(start)} - ${formatReportDate(end)}`,
                     '',
                     '一、整体概况',
-                    `本周期共收到客户反馈 ${scoped.length} 条，覆盖 ${Object.keys(countryCounts).length} 个国家/地区，参与反馈业务员 ${activePeople} 人。已标记为经销商或重点代理线索 ${dealerCount} 条，日均新增 ${averagePerDay} 条。`,
+                    `本周期新增合格公司 ${qualifiedCount} 家，形成有效对话 ${effectiveCount} 家，进入持续跟进的潜在合作客户 ${partnerCount} 家，形成真实商机 ${opportunityCount} 家。共收到客户反馈 ${scoped.length} 条，覆盖 ${Object.keys(countryCounts).length} 个国家/地区，参与反馈业务员 ${activePeople} 人。已标记为经销商或重点代理线索 ${dealerCount} 条，日均新增 ${averagePerDay} 条。`,
                     '',
                     '二、趋势分布',
                     `每日反馈趋势：${trendText || '暂无数据'}。`,
@@ -2912,6 +2987,8 @@
                     <td data-field="whatsapp" contenteditable="true">${crmEscapeHtml(item.whatsapp || '')}</td>
                     <td data-field="email" contenteditable="true">${crmEscapeHtml(item.email || '')}</td>
                     <td data-field="customerType" contenteditable="true">${crmEscapeHtml(item.customerType || '')}</td>
+                    <td data-field="developmentStage" contenteditable="true">${crmEscapeHtml(getDevelopmentStage(item))}</td>
+                    <td data-field="developmentMode" contenteditable="true">${crmEscapeHtml(item.developmentMode || '快速筛选')}</td>
                     <td data-field="projectType" contenteditable="true">${crmEscapeHtml(item.projectType || '')}</td>
                     <td data-field="projectName" contenteditable="true">${crmEscapeHtml(item.projectName || '')}</td>
                     <td data-field="estimatedQuantity" contenteditable="true">${crmEscapeHtml(item.estimatedQuantity || '')}</td>
@@ -3003,6 +3080,104 @@
             document.getElementById('stat-today').textContent = todayCount;
             document.getElementById('stat-week').textContent = weekCount;
             document.getElementById('stat-month').textContent = monthCount;
+        }
+
+        function getDevelopmentStage(item = {}) {
+            return DEVELOPMENT_STAGE_RANK[item.developmentStage] === undefined
+                ? '新增合格公司'
+                : item.developmentStage;
+        }
+
+        function getDevelopmentClientKey(item = {}) {
+            const normalize = value => String(value || '').trim().toLowerCase().replace(/[^\p{L}\p{N}@.+]/gu, '');
+            const country = normalize(item.country);
+            const company = normalize(item.customerId);
+            if (country && company && company.length >= 3 && !['无公司', '直接客户', '客户'].includes(company)) {
+                return `${country}:company:${company}`;
+            }
+            const contact = normalize(item.phone || item.whatsapp || item.email);
+            return contact ? `${country}:contact:${contact}` : `${country}:record:${item.Timestamp || item.timestamp || Math.random()}`;
+        }
+
+        function getFunnelSalesperson(item = {}) {
+            const name = String(item.salesperson || item.owner || '未填写').trim();
+            if (name === 'NAF') return '胡佳润';
+            if (name === 'admin') return 'CRM';
+            return name || '未填写';
+        }
+
+        function getWeekRange() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const day = start.getDay();
+            start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
+            const end = new Date(start);
+            end.setDate(start.getDate() + 7);
+            const elapsedWeekdays = Math.min(5, Math.max(1, (day === 0 ? 7 : day)));
+            return { start, end, elapsedWeekdays };
+        }
+
+        function isDateInRange(raw, start, end) {
+            const date = raw ? new Date(raw) : null;
+            return Boolean(date && !Number.isNaN(date.getTime()) && date >= start && date < end);
+        }
+
+        function renderDevelopmentFunnel(data) {
+            const grid = document.getElementById('development-funnel-grid');
+            const body = document.getElementById('development-funnel-body');
+            const period = document.getElementById('development-funnel-period');
+            if (!grid || !body) return;
+
+            const { start, end, elapsedWeekdays } = getWeekRange();
+            const unique = new Map();
+            (Array.isArray(data) ? data : []).forEach(item => {
+                const key = getDevelopmentClientKey(item);
+                const existing = unique.get(key);
+                const itemRank = DEVELOPMENT_STAGE_RANK[getDevelopmentStage(item)];
+                const existingRank = existing ? DEVELOPMENT_STAGE_RANK[getDevelopmentStage(existing)] : -1;
+                if (!existing || itemRank > existingRank || new Date(item.Timestamp || 0) > new Date(existing.Timestamp || 0)) {
+                    unique.set(key, item);
+                }
+            });
+
+            const rows = [...unique.values()];
+            const people = new Map();
+            const ensurePerson = name => {
+                if (!people.has(name)) people.set(name, { qualified: 0, effective: 0, partner: 0, opportunity: 0, deep: 0 });
+                return people.get(name);
+            };
+
+            rows.forEach(item => {
+                const stats = ensurePerson(getFunnelSalesperson(item));
+                const rank = DEVELOPMENT_STAGE_RANK[getDevelopmentStage(item)];
+                const firstSeen = item.firstSeenAt || item.Timestamp || item.timestamp;
+                const stageChanged = item.developmentStageUpdatedAt || item.Timestamp || item.timestamp;
+                if (rank >= 1 && isDateInRange(firstSeen, start, end)) stats.qualified++;
+                if (rank >= 2 && isDateInRange(stageChanged, start, end)) stats.effective++;
+                if (rank >= 3 && isDateInRange(stageChanged, start, end)) stats.partner++;
+                if (rank >= 4 && isDateInRange(stageChanged, start, end)) stats.opportunity++;
+                if (rank >= 1 && item.developmentMode === '深度研究' && isDateInRange(firstSeen, start, end)) stats.deep++;
+            });
+
+            const totals = [...people.values()].reduce((acc, row) => {
+                Object.keys(acc).forEach(key => { acc[key] += row[key]; });
+                return acc;
+            }, { qualified: 0, effective: 0, partner: 0, opportunity: 0, deep: 0 });
+            const selectedSalesperson = document.getElementById('filter-salesperson')?.value || '';
+            const targetHeadcount = canViewFullDashboard ? (selectedSalesperson ? 1 : 6) : 1;
+            const weeklyTarget = elapsedWeekdays * 15 * targetHeadcount;
+
+            grid.innerHTML = `
+                <div class="development-funnel-card"><div class="development-funnel-label">新增合格公司</div><div class="development-funnel-value">${totals.qualified}</div><div class="development-funnel-note">当前目标 ${weeklyTarget} 家</div></div>
+                <div class="development-funnel-card"><div class="development-funnel-label">有效对话</div><div class="development-funnel-value">${totals.effective}</div><div class="development-funnel-note">愿意互动并继续沟通</div></div>
+                <div class="development-funnel-card"><div class="development-funnel-label">潜在合作客户</div><div class="development-funnel-value">${totals.partner}</div><div class="development-funnel-note">进入持续跟进</div></div>
+                <div class="development-funnel-card"><div class="development-funnel-label">真实商机</div><div class="development-funnel-value">${totals.opportunity}</div><div class="development-funnel-note">明确项目并愿意推进</div></div>`;
+
+            body.innerHTML = [...people.entries()]
+                .sort((a, b) => b[1].qualified - a[1].qualified || a[0].localeCompare(b[0], 'zh-CN'))
+                .map(([name, row]) => `<tr><td style="font-weight:700">${crmEscapeHtml(name)}</td><td>${row.qualified}</td><td>${row.effective}</td><td>${row.partner}</td><td>${row.opportunity}</td><td>${row.deep}</td></tr>`)
+                .join('') || '<tr><td colspan="6" style="text-align:center;color:var(--secondary-text-color)">本周暂无开发记录</td></tr>';
+            if (period) period.textContent = `${start.getMonth() + 1}/${start.getDate()} - ${new Date(end.getTime() - 1).getMonth() + 1}/${new Date(end.getTime() - 1).getDate()}`;
         }
 
         function isProjectOpen(item) {
@@ -3156,6 +3331,8 @@
             const whatsapp = row.querySelector('[data-field="whatsapp"]').textContent;
             const email = row.querySelector('[data-field="email"]').textContent;
             const customerType = row.querySelector('[data-field="customerType"]').textContent;
+            const developmentStage = row.querySelector('[data-field="developmentStage"]').textContent;
+            const developmentMode = row.querySelector('[data-field="developmentMode"]').textContent;
             const projectType = row.querySelector('[data-field="projectType"]').textContent;
             const projectName = row.querySelector('[data-field="projectName"]').textContent;
             const estimatedQuantity = row.querySelector('[data-field="estimatedQuantity"]').textContent;
@@ -3182,6 +3359,8 @@
                     whatsapp,
                     email,
                     customerType,
+                    developmentStage,
+                    developmentMode,
                     projectType,
                     projectName,
                     estimatedQuantity,

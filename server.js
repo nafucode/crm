@@ -20,6 +20,8 @@ function buildUpdateHistoryEntry(record = {}, user = {}) {
     return {
         updatedAt: new Date().toISOString(),
         updatedBy: user.realName || user.username || record.salesperson || '',
+        developmentStage: record.developmentStage || '',
+        developmentMode: record.developmentMode || '',
         projectStage: record.projectStage || '',
         followStatus: record.followStatus || '',
         summary: record.summary || '',
@@ -138,6 +140,33 @@ function salespersonBelongsToUser(item = {}, user = {}) {
     return names.has(item.salesperson);
 }
 
+const DEVELOPMENT_STAGES = ['新增合格公司', '有效对话', '潜在合作客户', '真实商机', '仅转发项目/无效线索'];
+
+function normalizeIdentityText(value = '') {
+    return String(value).trim().toLowerCase().replace(/[^\p{L}\p{N}@.+]/gu, '');
+}
+
+function getFeedbackLookupKeys(record = {}) {
+    const country = normalizeIdentityText(record.country);
+    if (!country) return [];
+
+    const keys = [];
+    const company = normalizeIdentityText(record.customerId);
+    if (company && company.length >= 3 && !['无公司', '直接客户', '客户'].includes(company)) {
+        keys.push(`${country}:company:${company}`);
+    }
+
+    ['phone', 'whatsapp', 'email'].forEach(field => {
+        const value = normalizeIdentityText(record[field]);
+        if (value) keys.push(`${country}:${field}:${value}`);
+    });
+    return [...new Set(keys)];
+}
+
+function normalizeDevelopmentStage(value = '') {
+    return DEVELOPMENT_STAGES.includes(value) ? value : '新增合格公司';
+}
+
 // API: 获取当前用户信息
 app.get('/api/user', authenticateToken, (req, res) => {
     res.json({ realName: req.user.realName });
@@ -160,10 +189,9 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
         // 2. 创建一个查找映射表，提高效率
         const feedbackMap = new Map();
         allFeedback.forEach((item, index) => {
-            if (item.country && item.phone) {
-                const key = `${item.country}:${item.phone}`;
+            getFeedbackLookupKeys(item).forEach(key => {
                 feedbackMap.set(key, { ...item, originalIndex: index });
-            }
+            });
         });
 
         const pipeline = kv.pipeline();
@@ -171,12 +199,12 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
 
         // 3. 遍历本次提交的所有数据
         for (const submission of submissions) {
-            // 只有当国家和电话都存在时，才进行查重
-            if (submission.country && submission.phone) {
-                const key = `${submission.country}:${submission.phone}`;
-                const existingRecord = feedbackMap.get(key);
+            const incomingStage = normalizeDevelopmentStage(submission.developmentStage);
+            const lookupKeys = getFeedbackLookupKeys(submission);
+            const existingRecord = lookupKeys.map(key => feedbackMap.get(key)).find(Boolean);
 
-                if (existingRecord) {
+            if (existingRecord) {
+                    const previousStage = normalizeDevelopmentStage(existingRecord.developmentStage);
                     // 找到了重复记录，进行合并
                     const mergedRecord = {
                         ...existingRecord,
@@ -187,6 +215,12 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
                         whatsapp: submission.whatsapp || existingRecord.whatsapp,
                         email: submission.email || existingRecord.email,
                         customerType: submission.customerType || existingRecord.customerType,
+                        developmentStage: incomingStage,
+                        developmentMode: submission.developmentMode || existingRecord.developmentMode,
+                        developmentStageUpdatedAt: incomingStage !== previousStage
+                            ? (submission.Timestamp || new Date().toISOString())
+                            : (existingRecord.developmentStageUpdatedAt || existingRecord.Timestamp),
+                        firstSeenAt: existingRecord.firstSeenAt || existingRecord.Timestamp || submission.Timestamp,
                         projectType: submission.projectType || existingRecord.projectType,
                         projectName: submission.projectName || existingRecord.projectName,
                         estimatedQuantity: submission.estimatedQuantity || existingRecord.estimatedQuantity,
@@ -204,10 +238,14 @@ app.post('/api/submit', authenticateToken, async (req, res) => {
                     pipeline.lset('feedback', existingRecord.originalIndex, mergedRecord);
                     hasUpdates = true;
                     continue; // 处理下一个提交
-                }
             }
             // 如果没有重复，则作为新记录添加
-            pipeline.lpush('feedback', submission);
+            pipeline.lpush('feedback', {
+                ...submission,
+                developmentStage: incomingStage,
+                firstSeenAt: submission.firstSeenAt || submission.Timestamp || new Date().toISOString(),
+                developmentStageUpdatedAt: submission.developmentStageUpdatedAt || submission.Timestamp || new Date().toISOString()
+            });
         }
 
         await pipeline.exec();
@@ -642,6 +680,8 @@ app.post('/api/update', authenticateToken, async (req, res) => {
         whatsapp,
         email,
         customerType,
+        developmentStage,
+        developmentMode,
         projectType,
         projectName,
         estimatedQuantity,
@@ -683,6 +723,8 @@ app.post('/api/update', authenticateToken, async (req, res) => {
             ...(whatsapp !== undefined && { whatsapp }),
             ...(email !== undefined && { email }),
             ...(customerType !== undefined && { customerType }),
+            ...(developmentStage !== undefined && { developmentStage: normalizeDevelopmentStage(developmentStage) }),
+            ...(developmentMode !== undefined && { developmentMode }),
             ...(projectType !== undefined && { projectType }),
             ...(projectName !== undefined && { projectName }),
             ...(estimatedQuantity !== undefined && { estimatedQuantity }),
@@ -693,6 +735,10 @@ app.post('/api/update', authenticateToken, async (req, res) => {
             ...(customerNeed !== undefined && { customerNeed }),
             ...(nextAction !== undefined && { nextAction }),
             ...(isDealer !== undefined && { isDealer }),
+            firstSeenAt: oldRecord.firstSeenAt || oldRecord.Timestamp || oldRecord.timestamp || updatedAt,
+            developmentStageUpdatedAt: developmentStage !== undefined && normalizeDevelopmentStage(developmentStage) !== normalizeDevelopmentStage(oldRecord.developmentStage)
+                ? updatedAt
+                : (oldRecord.developmentStageUpdatedAt || oldRecord.Timestamp || oldRecord.timestamp || updatedAt),
             lastFeedbackAt: updatedAt
         };
         const existingHistory = Array.isArray(oldRecord.updateHistory) ? oldRecord.updateHistory : [];
