@@ -1254,18 +1254,9 @@
                                 <option value="其他">其他</option>
                             </select>
                         </div>
-                        <div class="form-group full-width merged-field">
-                            <label>联系人/公司</label>
-                            <div class="merged-input-card">
-                                <div class="merged-input-section">
-                                    <span class="field-caption">客户公司</span>
-                                    <textarea id="customerInfo-${customerId}" name="customerInfo" rows="2"></textarea>
-                                </div>
-                                <div class="merged-input-section">
-                                    <span class="field-caption">联系人</span>
-                                    <input type="text" id="contactName-${customerId}" name="contactName">
-                                </div>
-                            </div>
+                        <div class="form-group full-width">
+                            <label for="customerInfo-${customerId}">客户公司或名称</label>
+                            <input type="text" id="customerInfo-${customerId}" name="customerInfo">
                         </div>
                         <div class="form-group full-width merged-field">
                             <label class="wrap-label">电话<br>WhatsApp</label>
@@ -1437,7 +1428,6 @@
                 setField(formInstance, 'developmentStage', item.developmentStage || '新增合格公司');
                 setField(formInstance, 'developmentMode', item.developmentMode || '快速筛选');
                 setField(formInstance, 'customerInfo', getRecordValue(item, 'customerId', 'customerInfo'));
-                setField(formInstance, 'contactName', item.contactName);
                 setField(formInstance, 'phone', getRecordValue(item, 'phone', 'whatsapp'));
                 setField(formInstance, 'email', item.email);
                 setField(formInstance, 'projectType', item.projectType);
@@ -1489,7 +1479,7 @@
                 return {
                     country: customerForm.querySelector(`[name="country"]`).value,
                     customerId: customerForm.querySelector(`[name="customerInfo"]`).value,
-                    contactName: customerForm.querySelector(`[name="contactName"]`).value,
+                    contactName: preservedValue('contactName'),
                     phone: phoneOrWhatsapp,
                     whatsapp: phoneOrWhatsapp,
                     email: customerForm.querySelector(`[name="email"]`).value,
