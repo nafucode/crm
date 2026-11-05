@@ -3106,6 +3106,8 @@
             return name || '未填写';
         }
 
+        const INACTIVE_DEVELOPMENT_SALESPERSONS = new Set(['钱晨阳']);
+
         function getWeekRange() {
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -3148,7 +3150,9 @@
             };
 
             rows.forEach(item => {
-                const stats = ensurePerson(getFunnelSalesperson(item));
+                const salesperson = getFunnelSalesperson(item);
+                if (INACTIVE_DEVELOPMENT_SALESPERSONS.has(salesperson)) return;
+                const stats = ensurePerson(salesperson);
                 const rank = DEVELOPMENT_STAGE_RANK[getDevelopmentStage(item)];
                 const firstSeen = item.firstSeenAt || item.Timestamp || item.timestamp;
                 const stageChanged = item.developmentStageUpdatedAt || item.Timestamp || item.timestamp;
@@ -3164,7 +3168,7 @@
                 return acc;
             }, { qualified: 0, effective: 0, partner: 0, opportunity: 0, deep: 0 });
             const selectedSalesperson = document.getElementById('filter-salesperson')?.value || '';
-            const targetHeadcount = canViewFullDashboard ? (selectedSalesperson ? 1 : 6) : 1;
+            const targetHeadcount = canViewFullDashboard ? (selectedSalesperson ? 1 : 5) : 1;
             const weeklyTarget = elapsedWeekdays * 15 * targetHeadcount;
 
             grid.innerHTML = `
