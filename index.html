@@ -893,7 +893,7 @@
             <div class="follow-reminder-header">
                 <div>
                     <h3 class="follow-reminder-title" id="follow-reminder-title">有客户需要更新反馈</h3>
-                    <p class="follow-reminder-text">以下客户距离上次提交或反馈已满 7 天，请补充本次沟通内容、客户核心需求或下一步计划。</p>
+                    <p class="follow-reminder-text">以下客户距离上次提交或反馈已满 7 天，请补充最新备注。</p>
                 </div>
                 <button type="button" id="follow-reminder-close" class="delete-btn" title="关闭提醒">&times;</button>
             </div>
@@ -1324,48 +1324,13 @@
                             </select>
                             <small style="display:block;margin-top:6px;color:#6b7280;line-height:1.5">建议每天 10 家快速筛选 + 5 家深度研究。</small>
                         </div>
-                        <div class="form-group">
-                            <label for="projectStage-${customerId}">项目阶段</label>
-                            <select id="projectStage-${customerId}" name="projectStage">
-                                <option value="初步接触">初步接触</option>
-                                <option value="需求确认">需求确认</option>
-                                <option value="方案/报价">方案/报价</option>
-                                <option value="商务谈判">商务谈判</option>
-                                <option value="已成交">已成交</option>
-                                <option value="暂停">暂停</option>
-                                <option value="已关闭">已关闭</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="followStatus-${customerId}">跟进状态</label>
-                            <select id="followStatus-${customerId}" name="followStatus">
-                                <option value="待跟进">待跟进</option>
-                                <option value="已跟进">已跟进</option>
-                                <option value="等客户回复">等客户回复</option>
-                                <option value="需要报价">需要报价</option>
-                                <option value="需要技术支持">需要技术支持</option>
-                                <option value="已完成">已完成</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="nextFollowDate-${customerId}">下次跟进</label>
-                            <input type="date" id="nextFollowDate-${customerId}" name="nextFollowDate">
-                        </div>
-                        <div class="form-group">
+                        <div class="form-group full-width">
                             <label for="owner-${customerId}">负责人</label>
                             <input type="text" id="owner-${customerId}" name="owner" value="${document.getElementById('submitter').value || ''}" data-auto-owner="true">
                         </div>
                         <div class="form-group full-width">
-                            <label for="description-${customerId}">本次沟通内容</label>
-                            <textarea id="description-${customerId}" name="description" rows="3"></textarea>
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="customerNeed-${customerId}">客户核心需求</label>
-                            <textarea id="customerNeed-${customerId}" name="customerNeed" rows="2"></textarea>
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="nextAction-${customerId}">下一步计划</label>
-                            <textarea id="nextAction-${customerId}" name="nextAction" rows="2"></textarea>
+                            <label for="description-${customerId}">备注</label>
+                            <textarea id="description-${customerId}" name="description" rows="4" placeholder="记录沟通情况、客户需求或下一步安排"></textarea>
                         </div>
                     </div>
                 `;
@@ -1478,13 +1443,8 @@
                 setField(formInstance, 'projectType', item.projectType);
                 setField(formInstance, 'estimatedQuantity', item.estimatedQuantity);
                 setField(formInstance, 'projectName', item.projectName);
-                setField(formInstance, 'projectStage', item.projectStage || '初步接触');
-                setField(formInstance, 'followStatus', item.followStatus || '待跟进');
-                setField(formInstance, 'nextFollowDate', item.nextFollowDate);
                 setField(formInstance, 'owner', item.owner || item.salesperson || document.getElementById('submitter').value);
                 setField(formInstance, 'description', item.summary);
-                setField(formInstance, 'customerNeed', item.customerNeed);
-                setField(formInstance, 'nextAction', item.nextAction);
                 addCustomerBtn.style.display = 'none';
                 cancelEditBtn.style.display = '';
                 submitFormBtn.textContent = '保存客户更新';
@@ -1525,6 +1485,7 @@
 
             function collectCustomerFormData(customerForm, submitter) {
                 const phoneOrWhatsapp = customerForm.querySelector(`[name="phone"]`).value;
+                const preservedValue = field => editingTimestamp ? (selectedHistoryItem?.[field] || '') : '';
                 return {
                     country: customerForm.querySelector(`[name="country"]`).value,
                     customerId: customerForm.querySelector(`[name="customerInfo"]`).value,
@@ -1538,12 +1499,12 @@
                     projectType: customerForm.querySelector(`[name="projectType"]`).value,
                     projectName: customerForm.querySelector(`[name="projectName"]`).value,
                     estimatedQuantity: customerForm.querySelector(`[name="estimatedQuantity"]`).value,
-                    projectStage: customerForm.querySelector(`[name="projectStage"]`).value,
-                    followStatus: customerForm.querySelector(`[name="followStatus"]`).value,
-                    nextFollowDate: customerForm.querySelector(`[name="nextFollowDate"]`).value,
+                    projectStage: preservedValue('projectStage'),
+                    followStatus: preservedValue('followStatus'),
+                    nextFollowDate: preservedValue('nextFollowDate'),
                     owner: customerForm.querySelector(`[name="owner"]`).value || submitter,
-                    customerNeed: customerForm.querySelector(`[name="customerNeed"]`).value,
-                    nextAction: customerForm.querySelector(`[name="nextAction"]`).value,
+                    customerNeed: preservedValue('customerNeed'),
+                    nextAction: preservedValue('nextAction'),
                     summary: customerForm.querySelector(`[name="description"]`).value,
                     salesperson: submitter
                 };
