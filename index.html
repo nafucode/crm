@@ -872,7 +872,11 @@
             font-size: 16px;
             color: #252c35;
         }
-        .form-grid { gap: 14px 20px; }
+        .form-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px 16px; }
+        .form-grid > .form-group { grid-column: span 2; }
+        .form-grid > .form-group:nth-child(2),
+        .form-grid > .form-group:nth-child(3) { grid-column: span 3; }
+        .form-grid > .form-group.full-width { grid-column: 1 / -1; }
         .form-section-title {
             margin: 12px 0 0;
             padding-bottom: 8px;
@@ -889,7 +893,8 @@
         @media (max-width: 760px) {
             .submission-meta-row { max-width: none; }
             .main-content h1 { font-size: 1.3rem; }
-            .form-grid { gap: 12px; }
+            .form-grid { grid-template-columns: 1fr; gap: 12px; }
+            .form-grid > .form-group:nth-child(n) { grid-column: 1 / -1; }
         }
     </style>
 </head>
@@ -1343,12 +1348,12 @@
                                 <option value="其他">其他</option>
                             </select>
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label for="customerInfo-${customerId}">客户公司或名称</label>
                             <input type="text" id="customerInfo-${customerId}" name="customerInfo">
                         </div>
-                        <div class="form-group full-width merged-field">
-                            <label class="wrap-label">电话<br>WhatsApp</label>
+                        <div class="form-group merged-field">
+                            <label for="phone-${customerId}">电话 / WhatsApp</label>
                             <div class="merged-input-card single-field-card">
                                 <div class="merged-input-section">
                                     <input type="text" id="phone-${customerId}" name="phone">
@@ -1379,7 +1384,7 @@
                             <label for="estimatedQuantity-${customerId}">预计台数</label>
                             <input type="number" id="estimatedQuantity-${customerId}" name="estimatedQuantity" min="0" step="1">
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label for="projectName-${customerId}">项目名称</label>
                             <input type="text" id="projectName-${customerId}" name="projectName">
                         </div>
@@ -1402,15 +1407,15 @@
                                 <option value="深度研究">深度研究</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="owner-${customerId}">负责人</label>
+                            <input type="text" id="owner-${customerId}" name="owner" value="${document.getElementById('submitter').value || ''}" data-auto-owner="true">
+                        </div>
                         <div class="development-guide">
                             <div><strong>有效对话</strong>愿意互动并继续沟通</div>
                             <div><strong>潜在合作客户</strong>表达合作兴趣，有后续合作可能</div>
                             <div><strong>真实商机</strong>有具体采购需求和明确推进动作</div>
                             <div><strong>开发建议</strong>每日 10 家快速筛选 + 5 家深度研究</div>
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="owner-${customerId}">负责人</label>
-                            <input type="text" id="owner-${customerId}" name="owner" value="${document.getElementById('submitter').value || ''}" data-auto-owner="true">
                         </div>
                         <div class="form-group full-width">
                             <label for="description-${customerId}">备注</label>
