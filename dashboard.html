@@ -1064,10 +1064,10 @@
         <div class="navbar-nav">
             <a href="/index.html" class="nav-link">返回提交表单</a>
             <a href="#" class="nav-link" onclick="switchTab('prospects', document.querySelector('.tab-btn[onclick*=prospects]'));return false;">🌍 开发客户</a>
+            <a href="https://xinfuji-east-africa-crm-20261116.nafaxai.chatgpt.site" class="nav-link">🌐 全球客户</a>
             <a href="https://xinfuji-sales-library.nafaxai.chatgpt.site" class="nav-link">📚 销售资料库</a>
             <a href="#" class="nav-link" onclick="switchTab('updates', null);return false;">📝 销售动态</a>
             <a href="#" class="nav-link" onclick="switchTab('calculator', null);return false;">🛗 电梯工具</a>
-            <a href="#" class="nav-link" id="nav-peru" style="display:none" onclick="switchTab('peru', null);return false;">🇵🇪 秘鲁客户</a>
             <a href="#" class="nav-link" onclick="switchTab('dashboard', document.querySelector('.tab-btn[onclick*=dashboard]'));return false;">📊 数据看板</a>
             <a href="#" class="nav-link" onclick="switchTab('salesplan', null);return false;">🎯 销售计划</a>
             <a href="#" class="nav-link" onclick="switchTab('scripts', null);return false;">💬 话术模板</a>
@@ -1592,6 +1592,7 @@
                                 <option value="Iraq">伊拉克</option>
                                 <option value="Saudi Arabia">沙特阿拉伯</option>
                                 <option value="United Arab Emirates">阿联酋</option>
+                                <option value="Yemen">也门</option>
                                 <option value="Kazakhstan">哈萨克斯坦</option>
                                 <option value="Afghanistan">阿富汗</option>
                                 <option value="Myanmar">缅甸</option>
@@ -2055,6 +2056,7 @@
                 { value: "Thailand", label: "Thailand 泰国" },
                 { value: "Vietnam", label: "Vietnam 越南" },
                 { value: "United Arab Emirates", label: "United Arab Emirates 阿拉伯联合酋长国" },
+                { value: "Yemen", label: "Yemen 也门" },
             ],
             "欧洲": [
                 { value: "France", label: "France 法国" },
@@ -2218,10 +2220,6 @@
             canManageScripts = payload.role === 'admin';
             canViewFullDashboard = payload.role === 'admin' || String(username || '').toLowerCase() === 'naf';
             canViewPeruCustomers = payload.role === 'admin' || String(username || '').toLowerCase() === 'naf';
-            if (canViewPeruCustomers) {
-                document.getElementById('nav-peru').style.display = '';
-            }
-
             if (username === 'naf') {
                 setupReportGenerator();
             }
@@ -6010,5 +6008,3 @@ We invest more in the parts and processes that reduce your long-term installatio
 </body>
 
 </html>
-                                <option value="Yemen">也门</option>
-                { value: "Yemen", label: "Yemen 也门" },
