@@ -172,6 +172,47 @@ app.get('/api/user', authenticateToken, (req, res) => {
     res.json({ realName: req.user.realName });
 });
 
+const GLOBAL_CUSTOMER_TAGS_KEY = 'crm:global-customer-tags:v1';
+
+app.get('/api/global-customer-tags', authenticateToken, async (req, res) => {
+    try {
+        const stored = await kv.hgetall(GLOBAL_CUSTOMER_TAGS_KEY) || {};
+        res.set('Cache-Control', 'private, no-store').json(Object.fromEntries(
+            Object.entries(stored).map(([id, value]) => [id, parseStoredValue(value) || {}])
+        ));
+    } catch (error) {
+        console.error('读取全球客户标记失败:', error);
+        res.status(500).json({ error: '读取失败' });
+    }
+});
+
+app.put('/api/global-customer-tags/:id', authenticateToken, async (req, res) => {
+    const id = String(req.params.id || '');
+    const { grade, screen, contact, note = '' } = req.body || {};
+    const screens = ['待确认', '已筛选', '不适合'];
+    const contacts = ['实际联系待核实', '未联系', '已联系', '跟进中', '已成交', '暂缓'];
+    if (!/^[\w.:-]{1,160}$/.test(id) || !['A', 'B', 'C'].includes(grade) ||
+        !screens.includes(screen) || !contacts.includes(contact) ||
+        typeof note !== 'string' || note.length > 2000) {
+        return res.status(400).json({ error: '标记内容不正确' });
+    }
+    const saved = {
+        grade,
+        screen,
+        contact,
+        note: note.trim(),
+        updated: new Date().toISOString(),
+        updatedBy: req.user.realName || req.user.username
+    };
+    try {
+        await kv.hset(GLOBAL_CUSTOMER_TAGS_KEY, { [id]: saved });
+        res.json(saved);
+    } catch (error) {
+        console.error('保存全球客户标记失败:', error);
+        res.status(500).json({ error: '保存失败' });
+    }
+});
+
 
 
 // API 路由：处理表单提交（支持批量和合并）

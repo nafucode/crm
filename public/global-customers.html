@@ -1008,6 +1008,8 @@ try{if(localStorage.getItem('xinfuji-crm-sidebar')==='collapsed')setSidebar(true
   .customer-row { display:block; width:100%; text-align:left; padding:13px 16px; border:0; border-bottom:1px solid #e8edf2; border-radius:0; background:white; }
   .customer-row:hover { background:#f3f8fb; }
   .customer-row[aria-pressed="true"] { background:#eaf5ff; box-shadow:inset 3px 0 #0284c7; }
+  .customer-row.grade-c { background:#f8fafc; opacity:.58; filter:saturate(.55); }
+  .customer-row.grade-c:hover, .customer-row.grade-c[aria-pressed="true"] { opacity:.82; }
   .customer-title { display:flex; gap:8px; justify-content:space-between; align-items:flex-start; }
   .customer-title strong { font-size:14px; line-height:1.45; overflow-wrap:anywhere; font-weight:600; }
   .customer-title .badge { flex-shrink:0; }
@@ -1079,20 +1081,34 @@ window.addEventListener('load', () => {
       ds=[...new Map(matches.map(d=>[d.id,d])).values()];
     }
     if($('mapExtent').checked)ds=ds.filter(d=>matchLocations(d).some(l=>Number.isFinite(l[2])&&Number.isFinite(l[3])&&map.getBounds().contains([l[2],l[3]])));
-    return ds.sort((a,b)=>Number(activityTime(b)>0)-Number(activityTime(a)>0)||activityTime(b)-activityTime(a)||referenceTime(b)-referenceTime(a)||(a.Country||'').localeCompare(b.Country||'')||a.Company.localeCompare(b.Company));
+    return ds.sort((a,b)=>Number(state(a).grade==='C')-Number(state(b).grade==='C')||Number(activityTime(b)>0)-Number(activityTime(a)>0)||activityTime(b)-activityTime(a)||referenceTime(b)-referenceTime(a)||(a.Country||'').localeCompare(b.Country||'')||a.Company.localeCompare(b.Company));
   };
   let chosen=null, focusMarker=null;
   const originalRender=render;
   render=function(){
     originalRender();
     const ds=filtered(), view=ds.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
-    list.innerHTML=view.map(d=>'<button type="button" class="customer-row" data-client="'+esc(d.id)+'" aria-pressed="'+(chosen===d.id)+'"><span class="customer-title"><strong>'+esc(d.Company||'未填写名称')+'</strong><span class="badge">'+esc(state(d).grade)+'级</span></span><span class="customer-location">'+esc((d.Country||d.locations[0]?.[0]||'国家待核实')+' · '+(d.City||d.locations[0]?.[1]||'城市待核实'))+'</span><span class="customer-meta">'+(d.source_kinds?.includes('crm_submission')?'<span class="badge blue">业务员提交</span>'+esc((d.crm_salespeople||[]).join('、'))+'':siteBadge(d))+(activityLabel(d)?'<span>更新 '+esc(activityLabel(d))+'</span>':'')+'</span></button>').join('')||'<div class="empty">没有符合条件的客户</div>';
+    list.innerHTML=view.map(d=>'<button type="button" class="customer-row '+(state(d).grade==='C'?'grade-c':'')+'" data-client="'+esc(d.id)+'" aria-pressed="'+(chosen===d.id)+'"><span class="customer-title"><strong>'+esc(d.Company||'未填写名称')+'</strong><span class="badge">'+esc(state(d).grade)+'级</span></span><span class="customer-location">'+esc((d.Country||d.locations[0]?.[0]||'国家待核实')+' · '+(d.City||d.locations[0]?.[1]||'城市待核实'))+'</span><span class="customer-meta">'+(d.source_kinds?.includes('crm_submission')?'<span class="badge blue">业务员提交</span>'+esc((d.crm_salespeople||[]).join('、'))+'':siteBadge(d))+(activityLabel(d)?'<span>更新 '+esc(activityLabel(d))+'</span>':'')+'</span></button>').join('')||'<div class="empty">没有符合条件的客户</div>';
     list.querySelectorAll('[data-client]').forEach(el=>el.onclick=()=>show(el.dataset.client));
   };
   const originalShow=show;
   show=function(id){
     chosen=id;originalShow(id);
     const d=DATA.find(x=>x.id===id),loc=d&&matchLocations(d).find(l=>Number.isFinite(l[2])&&Number.isFinite(l[3]));
+    const saveButton=$('save');
+    saveButton.onclick=async()=>{
+      const payload={grade:$('editGrade').value,screen:$('editScreen').value,contact:$('editContact').value,note:$('note').value,updated:new Date().toISOString()};
+      edits[id]=payload;
+      try{localStorage.setItem(KEY,JSON.stringify(edits));}catch(error){}
+      render();
+      try{
+        const response=await fetch('/api/global-customer-tags/'+encodeURIComponent(id),{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('token')},body:JSON.stringify(payload)});
+        if(!response.ok)throw new Error('sync failed');
+        edits[id]=await response.json();
+        try{localStorage.setItem(KEY,JSON.stringify(edits));}catch(error){}
+        notify('客户标记已同步给所有账号');render();
+      }catch(error){notify('云端同步失败，已暂存在本机');}
+    };
     if(focusMarker){map.removeLayer(focusMarker);focusMarker=null;}
     if(loc){focusMarker=L.circleMarker([loc[2],loc[3]],{radius:13,color:'#e11d48',weight:3,fillOpacity:.15}).addTo(map);map.flyTo([loc[2],loc[3]],Math.max(map.getZoom(),loc[1]?6:4),{duration:.6});}
   };
@@ -1101,6 +1117,17 @@ window.addEventListener('load', () => {
   $('detailPanel').classList.remove('open');
   $('mapExtent').onchange=()=>{page=1;render();};
   map.on('moveend',()=>{if($('mapExtent').checked){page=1;render();}});
+  const loadSharedEdits=async()=>{
+    try{
+      const response=await fetch('/api/global-customer-tags',{headers:{'Authorization':'Bearer '+localStorage.getItem('token')}});
+      if(!response.ok)throw new Error('sync failed');
+      edits={...edits,...await response.json()};
+      try{localStorage.setItem(KEY,JSON.stringify(edits));}catch(error){}
+      render();
+    }catch(error){}
+  };
+  loadSharedEdits();
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadSharedEdits();});
   render();map.invalidateSize();
 });
 </script>
