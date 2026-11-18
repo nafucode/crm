@@ -1066,6 +1066,9 @@ window.addEventListener('load', () => {
   panel.querySelector('.pager').before(list);
   tools.querySelector('button').onclick=function(){this.setAttribute('aria-expanded',String(panel.classList.toggle('filters-open')));};
   const originalFiltered=filtered;
+  const activityTime=d=>Date.parse(state(d).updated||d.crm_last_submitted||d.registered_at||'')||0;
+  const referenceTime=d=>Date.parse(d.site_audit?.checked||d['Verified Date']||'')||0;
+  const activityLabel=d=>{const time=activityTime(d);return time?new Date(time).toLocaleDateString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}):'';};
   filtered=function(){
     const typed=$('search').value.trim(), translated=Object.entries(COUNTRY_ZH).filter(([,zh])=>zh.includes(typed)||typed.includes(zh)).map(([en])=>en);
     let ds=originalFiltered();
@@ -1075,14 +1078,15 @@ window.addEventListener('load', () => {
       $('search').value=original;
       ds=[...new Map(matches.map(d=>[d.id,d])).values()];
     }
-    return $('mapExtent').checked?ds.filter(d=>matchLocations(d).some(l=>Number.isFinite(l[2])&&Number.isFinite(l[3])&&map.getBounds().contains([l[2],l[3]]))):ds;
+    if($('mapExtent').checked)ds=ds.filter(d=>matchLocations(d).some(l=>Number.isFinite(l[2])&&Number.isFinite(l[3])&&map.getBounds().contains([l[2],l[3]])));
+    return ds.sort((a,b)=>Number(activityTime(b)>0)-Number(activityTime(a)>0)||activityTime(b)-activityTime(a)||referenceTime(b)-referenceTime(a)||(a.Country||'').localeCompare(b.Country||'')||a.Company.localeCompare(b.Company));
   };
   let chosen=null, focusMarker=null;
   const originalRender=render;
   render=function(){
     originalRender();
     const ds=filtered(), view=ds.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
-    list.innerHTML=view.map(d=>'<button type="button" class="customer-row" data-client="'+esc(d.id)+'" aria-pressed="'+(chosen===d.id)+'"><span class="customer-title"><strong>'+esc(d.Company||'未填写名称')+'</strong><span class="badge">'+esc(state(d).grade)+'级</span></span><span class="customer-location">'+esc((d.Country||d.locations[0]?.[0]||'国家待核实')+' · '+(d.City||d.locations[0]?.[1]||'城市待核实'))+'</span><span class="customer-meta">'+(d.source_kinds?.includes('crm_submission')?'<span class="badge blue">业务员提交</span>'+esc((d.crm_salespeople||[]).join('、'))+'':siteBadge(d))+'</span></button>').join('')||'<div class="empty">没有符合条件的客户</div>';
+    list.innerHTML=view.map(d=>'<button type="button" class="customer-row" data-client="'+esc(d.id)+'" aria-pressed="'+(chosen===d.id)+'"><span class="customer-title"><strong>'+esc(d.Company||'未填写名称')+'</strong><span class="badge">'+esc(state(d).grade)+'级</span></span><span class="customer-location">'+esc((d.Country||d.locations[0]?.[0]||'国家待核实')+' · '+(d.City||d.locations[0]?.[1]||'城市待核实'))+'</span><span class="customer-meta">'+(d.source_kinds?.includes('crm_submission')?'<span class="badge blue">业务员提交</span>'+esc((d.crm_salespeople||[]).join('、'))+'':siteBadge(d))+(activityLabel(d)?'<span>更新 '+esc(activityLabel(d))+'</span>':'')+'</span></button>').join('')||'<div class="empty">没有符合条件的客户</div>';
     list.querySelectorAll('[data-client]').forEach(el=>el.onclick=()=>show(el.dataset.client));
   };
   const originalShow=show;
